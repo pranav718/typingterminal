@@ -1,103 +1,156 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import './terminal.css'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [text, setText] = useState('')
+  const [userInput, setUserInput] = useState('')
+  const [startTime, setStartTime] = useState<number | null>(null)
+  const [endTime, setEndTime] = useState<number | null>(null)
+  const [errors, setErrors] = useState(0)
+  const [isComplete, setIsComplete] = useState(false)
+  const [wpm, setWpm] = useState(0)
+  const [accuracy, setAccuracy] = useState(100)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const sampleTexts = [
+    "The quick brown fox jumps over the lazy dog. This pangram sentence contains every letter of the alphabet at least once.",
+    "In the beginning was the Word, and the Word was with God, and the Word was God. All things were made through him.",
+    "To be or not to be, that is the question. Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune.",
+    "import React from 'react'; const App = () => { return <div>Hello World</div>; }; export default App;",
+  ]
+
+  useEffect(() => {
+    setText(sampleTexts[0])
+  }, [])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const input = e.target.value
+    
+    if (!startTime && input.length === 1) {
+      setStartTime(Date.now())
+    }
+
+    setUserInput(input)
+
+    let errorCount = 0
+    for (let i = 0; i < input.length; i++) {
+      if (input[i] !== text[i]) {
+        errorCount++
+      }
+    }
+    setErrors(errorCount)
+
+    if (input === text) {
+      const end = Date.now()
+      setEndTime(end)
+      setIsComplete(true)
+      
+      const timeInMinutes = (end - startTime!) / 60000
+      const words = text.split(' ').length
+      const calculatedWpm = Math.round(words / timeInMinutes)
+      setWpm(calculatedWpm)
+      
+      const calculatedAccuracy = Math.round(((text.length - errorCount) / text.length) * 100)
+      setAccuracy(calculatedAccuracy)
+    }
+  }
+
+  const reset = () => {
+    setUserInput('')
+    setStartTime(null)
+    setEndTime(null)
+    setErrors(0)
+    setIsComplete(false)
+    setWpm(0)
+    setAccuracy(100)
+    inputRef.current?.focus()
+  }
+
+  const loadNewText = () => {
+    const randomIndex = Math.floor(Math.random() * sampleTexts.length)
+    setText(sampleTexts[randomIndex])
+    reset()
+  }
+
+  const renderText = () => {
+    return text.split('').map((char, index) => {
+      let className = 'char'
+      if (index < userInput.length) {
+        className += userInput[index] === char ? ' correct' : ' incorrect'
+      } else if (index === userInput.length) {
+        className += ' current'
+      }
+      return (
+        <span key={index} className={className}>
+          {char}
+        </span>
+      )
+    })
+  }
+
+  return (
+    <div className="terminal-container">
+      <div className="terminal">
+        <div className="terminal-header">
+          <div className="terminal-buttons">
+            <span className="terminal-button red"></span>
+            <span className="terminal-button yellow"></span>
+            <span className="terminal-button green"></span>
+          </div>
+          <div className="terminal-title">Terminal Typing Test</div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        <div className="terminal-body">
+          <div className="terminal-prompt">
+            <span className="prompt-symbol">$</span>
+            <span className="prompt-text">type the following text:</span>
+          </div>
+          
+          <div className="text-display">
+            {renderText()}
+          </div>
+          
+          <div className="terminal-prompt">
+            <span className="prompt-symbol">$</span>
+            <textarea
+              ref={inputRef}
+              className="terminal-input"
+              value={userInput}
+              onChange={handleInputChange}
+              disabled={isComplete}
+              placeholder="Start typing..."
+              autoFocus
+            />
+          </div>
+          
+          <div className="stats">
+            <div className="stat">
+              <span className="stat-label">WPM:</span>
+              <span className="stat-value">{wpm}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">Accuracy:</span>
+              <span className="stat-value">{accuracy}%</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">Errors:</span>
+              <span className="stat-value">{errors}</span>
+            </div>
+          </div>
+          
+          {isComplete && (
+            <div className="completion-message">
+              <p>Test completed! Your speed: {wpm} WPM with {accuracy}% accuracy</p>
+              <div className="button-group">
+                <button onClick={reset} className="terminal-btn">Try Again</button>
+                <button onClick={loadNewText} className="terminal-btn">New Text</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  );
+  )
 }
