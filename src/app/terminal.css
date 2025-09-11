@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
 body {
-  background: #1a1b26; /* dark indigo/navy */
-  color: #c0caf5;
+  background: #0a0f0a; 
+  color: #00ff88; 
   font-family: 'JetBrains Mono', monospace;
   display: flex;
   align-items: center;
@@ -11,45 +11,97 @@ body {
   padding: 32px;
 }
 
-/* Container */
 .terminal-container {
-  width: 100%;
   max-width: 900px;
-  text-align: left;
+  width: 100%;
 }
 
-/* Typing text display */
 .text-display {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.8;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #555b6e; /* faded inactive text */
+  color: #1e4021; 
 }
 
-/* Default character style */
 .char {
-  transition: all 0.1s ease;
+  transition: all 0.1s;
 }
 
-/* Correctly typed characters */
 .char.correct {
-  color: #c0caf5; /* bright grey-white */
+  color: #00ff88; 
 }
 
-/* Incorrect characters */
 .char.incorrect {
-  color: #f7768e; /* soft pink/red */
-  background: rgba(247, 118, 142, 0.2);
+  color: #ff5555;
+  background: rgba(255, 85, 85, 0.2);
 }
 
-/* Current caret (blinking block) */
 .char.current {
-  background: rgba(200, 200, 255, 0.3);
-  border-radius: 2px;
+  background: rgba(100, 255, 180, 0.3);
+  border-radius: 3px;
   animation: blink 1s step-start infinite;
 }
 
 @keyframes blink {
   50% { background: transparent; }
+}
+
+.stats {
+  margin-top: 20px;
+  color: #7ce38b;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  max-width: 300px;
+}
+
+.completion-message {
+  margin-top: 20px;
+  color: #00ff88;
+  font-size: 18px;
+}
+
+.terminal-btn {
+  margin-top: 10px;
+  background: #00ff88;
+  color: #0a0f0a;
+  border: none;
+  padding: 6px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: bold;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.terminal-btn:hover {
+  background: #00cc66;
+}
+
+.hidden-input {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reset-btn {
+  margin-top: 20px;
+  background: transparent;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  padding: 8px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: normal;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  background: #00ff00;
+  color: #0a0a0a;
 }
