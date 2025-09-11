@@ -80,7 +80,7 @@ export default function Home() {
       if (index < userInput.length) {
         className += userInput[index] === char ? ' correct' : ' incorrect'
       } else if (index === userInput.length) {
-        className += ' current'
+        className += ' current' 
       }
       return (
         <span key={index} className={className}>
@@ -92,65 +92,23 @@ export default function Home() {
 
   return (
     <div className="terminal-container">
-      <div className="terminal">
-        <div className="terminal-header">
-          <div className="terminal-buttons">
-            <span className="terminal-button red"></span>
-            <span className="terminal-button yellow"></span>
-            <span className="terminal-button green"></span>
-          </div>
-          <div className="terminal-title">Terminal Typing Test</div>
-        </div>
+      <div className="text-display">{renderText()}</div>
+        <textarea
+          ref={inputRef}
+          className="terminal-input"
+          value={userInput}
+          onChange={handleInputChange}
+          disabled={isComplete}
+          placeholder="Start typing..."
+          autoFocus
+        />
         
-        <div className="terminal-body">
-          <div className="terminal-prompt">
-            <span className="prompt-symbol">$</span>
-            <span className="prompt-text">type the following text:</span>
-          </div>
-          
-          <div className="text-display">
-            {renderText()}
-          </div>
-          
-          <div className="terminal-prompt">
-            <span className="prompt-symbol">$</span>
-            <textarea
-              ref={inputRef}
-              className="terminal-input"
-              value={userInput}
-              onChange={handleInputChange}
-              disabled={isComplete}
-              placeholder="Start typing..."
-              autoFocus
-            />
-          </div>
-          
-          <div className="stats">
-            <div className="stat">
-              <span className="stat-label">WPM:</span>
-              <span className="stat-value">{wpm}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-label">Accuracy:</span>
-              <span className="stat-value">{accuracy}%</span>
-            </div>
-            <div className="stat">
-              <span className="stat-label">Errors:</span>
-              <span className="stat-value">{errors}</span>
-            </div>
-          </div>
-          
-          {isComplete && (
-            <div className="completion-message">
-              <p>Test completed! Your speed: {wpm} WPM with {accuracy}% accuracy</p>
-              <div className="button-group">
-                <button onClick={reset} className="terminal-btn">Try Again</button>
-                <button onClick={loadNewText} className="terminal-btn">New Text</button>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="stats">
+        <div>WPM: {wpm}</div>
+        <div>Accuracy: {accuracy}%</div>
+        <div>Errors: {errors}</div>
       </div>
+
     </div>
   )
 }
