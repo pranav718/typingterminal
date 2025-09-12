@@ -71,6 +71,30 @@ export default function Home() {
     }
   }
 
+  const skipPassage = () => {
+    if (book && book.passages.length > 0) {
+      const nextIndex = (currentPassageIndex + 1) % book.passages.length
+      setCurrentPassageIndex(nextIndex)
+      setText(book.passages[nextIndex])
+    } else {
+      const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
+      setText(newText)
+    }
+    
+    setUserInput('')
+    setStartTime(null)
+    setErrors(0)
+    setWpm(0)
+    setAccuracy(100)
+    setLiveWpm(0)
+    setLiveAccuracy(100)
+    setIsComplete(false)
+    
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 0)
+  }
+
   const resetTest = (changeText = true) => {
     if (changeText) {
       if (book && book.passages.length > 0) {
@@ -172,12 +196,22 @@ export default function Home() {
     <div className="terminal-container">
       <div className="header">
         <h1 className="title">Terminal Typing Test</h1>
-        <button 
-          className="terminal-btn upload-btn" 
-          onClick={() => setShowUpload(!showUpload)}
-        >
-          {showUpload ? 'Close' : 'Upload Book PDF'}
-        </button>
+        <div className="header-buttons">
+          {!isComplete && !showUpload && (
+            <button 
+              className="terminal-btn skip-btn" 
+              onClick={skipPassage}
+            >
+              Skip Passage
+            </button>
+          )}
+          <button 
+            className="terminal-btn upload-btn" 
+            onClick={() => setShowUpload(!showUpload)}
+          >
+            {showUpload ? 'Close' : 'Upload Book PDF'}
+          </button>
+        </div>
       </div>
 
       {showUpload && (

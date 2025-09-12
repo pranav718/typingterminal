@@ -288,3 +288,42 @@ body {
 .stats:not(.final) .stat-value {
   animation: pulse 2s infinite;
 }
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.skip-btn {
+  background: transparent;
+  color: #ff9f40;
+  border: 1px solid #ff9f40;
+  padding: 8px 16px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.skip-btn:hover {
+  background: #ff9f40;
+  color: #0a0f0a;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .skip-btn,
+  .upload-btn {
+    flex: 1;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
