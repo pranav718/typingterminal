@@ -326,4 +326,131 @@ body {
     font-size: 12px;
     padding: 8px 12px;
   }
+
+  /* Add these styles to your existing terminal.css */
+
+/* Login Modal */
+.login-modal {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid #00ff88;
+  border-radius: 8px;
+  padding: 40px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.login-modal h2 {
+  color: #00ff88;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.terminal-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #00ff8833;
+  color: #00ff88;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.terminal-input:focus {
+  outline: none;
+  border-color: #00ff88;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #7ce38b;
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: transparent;
+  color: #ff5555;
+  border: 1px solid #ff5555;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.logout-btn:hover {
+  background: #ff5555;
+  color: #0a0f0a;
+}
+
+.book-library {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid #00ff8833;
+  border-radius: 8px;
+}
+
+.book-library h3 {
+  color: #00ff88;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.book-item {
+  background: transparent;
+  border: 1px solid #00ff8833;
+  color: #7ce38b;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.book-item:hover {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.book-item.active {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+}
+
+.book-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-progress {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-left: 12px;
+}
+
+@media (max-width: 768px) {
+  .book-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
 }

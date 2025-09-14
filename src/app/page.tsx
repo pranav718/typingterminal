@@ -2,14 +2,34 @@
 
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { Id } from '../../convex/_generated/dataModel'
 import { processPDFClient, ProcessedBook } from './utils/clientPdfProcessor'
+import { useSimpleAuth, LoginModal } from './components/SimpleAuth'
 import './terminal.css'
 
-const FileUpload = dynamic(() => import('./components/FileUpload'), { 
-  ssr: false 
+const FileUpload = dynamic(() => import('./components/FileUpload'), {
+  ssr: false
 })
 
 export default function Home() {
+  const { user, login, logout } = useSimpleAuth();
+  const [showLogin, setShowLogin] = useState(false);
+  
+  const dbUser = useQuery(api.users.getCurrentUser, user ? { email: user.email } : "skip");
+  const userBooks = useQuery(api.books.getUserBooks, dbUser ? { userId: dbUser._id } : "skip");
+  const getOrCreateUser = useMutation(api.users.getOrCreateUser);
+  const saveBook = useMutation(api.books.saveBook);
+  const updateLastPosition = useMutation(api.books.updateLastPosition);
+  const saveSession = useMutation(api.sessions.saveSession);
+  
+  const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
+  const currentBookData = useQuery(
+    api.books.getBookWithPassages,
+    currentBookId ? { bookId: currentBookId } : "skip"
+  );
+
   const defaultTexts = [
     'The only real test of intelligence is if you get what you want out of life',
     'I think, therefore I am.',
@@ -30,14 +50,37 @@ export default function Home() {
   const [showUpload, setShowUpload] = useState(false)
   const [liveWpm, setLiveWpm] = useState(0)
   const [liveAccuracy, setLiveAccuracy] = useState(100)
-  
+
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (user && !dbUser) {
+      getOrCreateUser({ email: user.email, name: user.name });
+    }
+  }, [user, dbUser, getOrCreateUser]);
+
+  useEffect(() => {
+    if (currentBookData) {
+      setBook({
+        title: currentBookData.title,
+        passages: currentBookData.passages.map(p => p.content),
+      });
+      setCurrentPassageIndex(currentBookData.lastReadPosition);
+      setText(currentBookData.passages[currentBookData.lastReadPosition].content);
+    }
+  }, [currentBookData]);
+
+  useEffect(() => {
+    if (currentBookId && currentPassageIndex > 0) {
+      updateLastPosition({ bookId: currentBookId, position: currentPassageIndex });
+    }
+  }, [currentPassageIndex, currentBookId, updateLastPosition]);
 
   useEffect(() => {
     if (startTime && userInput.length > 0) {
       const interval = setInterval(() => {
         const now = Date.now()
-        const timeElapsed = (now - startTime) / 60000 
+        const timeElapsed = (now - startTime) / 60000
         const wordsTyped = userInput.trim().split(/\s+/).filter(word => word.length > 0).length
         const currentWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
         setLiveWpm(currentWpm)
@@ -50,16 +93,24 @@ export default function Home() {
   }, [startTime, userInput])
 
   const handleFileUpload = async (file: File) => {
+    if (!dbUser) {
+      setShowLogin(true);
+      return;
+    }
+
     setIsProcessing(true)
     try {
       const processedBook = await processPDFClient(file)
-      
+
       if (processedBook.passages.length > 0 && processedBook.passages[0] !== 'No readable text found in this PDF.') {
-        setBook(processedBook)
-        setCurrentPassageIndex(0)
-        setText(processedBook.passages[0])
+        const bookId = await saveBook({
+          userId: dbUser._id,
+          title: processedBook.title,
+          passages: processedBook.passages,
+        });
+        
+        setCurrentBookId(bookId);
         setShowUpload(false)
-        resetTest(false)
       } else {
         alert('No suitable passages found in this PDF. Please try another book.')
       }
@@ -71,6 +122,11 @@ export default function Home() {
     }
   }
 
+  const handleLogin = async (email: string, name?: string) => {
+    login(email, name);
+    setShowLogin(false);
+  };
+
   const skipPassage = () => {
     if (book && book.passages.length > 0) {
       const nextIndex = (currentPassageIndex + 1) % book.passages.length
@@ -80,16 +136,16 @@ export default function Home() {
       const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
       setText(newText)
     }
-    
+
     setUserInput('')
     setStartTime(null)
     setErrors(0)
     setWpm(0)
     setAccuracy(100)
     setLiveWpm(0)
-    setLiveAccuracy(100)
+        setLiveAccuracy(100)
     setIsComplete(false)
-    
+
     setTimeout(() => {
       inputRef.current?.focus()
     }, 0)
@@ -106,7 +162,7 @@ export default function Home() {
         setText(newText)
       }
     }
-    
+
     setUserInput('')
     setStartTime(null)
     setErrors(0)
@@ -115,7 +171,7 @@ export default function Home() {
     setLiveWpm(0)
     setLiveAccuracy(100)
     setIsComplete(false)
-    
+
     setTimeout(() => {
       inputRef.current?.focus()
     }, 0)
@@ -127,20 +183,20 @@ export default function Home() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isComplete && e.key.length === 1 && !showUpload) {
+      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin) {
         inputRef.current?.focus()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isComplete, showUpload])
+  }, [isComplete, showUpload, showLogin])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete) return
 
     const input = e.target.value
-    
+
     if (input.length > text.length) return
 
     if (!startTime && input.length === 1) {
@@ -154,7 +210,7 @@ export default function Home() {
       if (input[i] !== text[i]) errorCount++
     }
     setErrors(errorCount)
-    
+
     if (input.length > 0) {
       const currentAccuracy = Math.round(((input.length - errorCount) / input.length) * 100)
       setLiveAccuracy(currentAccuracy)
@@ -170,6 +226,17 @@ export default function Home() {
       setWpm(finalWPM)
       setAccuracy(finalAccuracy)
       setIsComplete(true)
+
+      if (dbUser) {
+        saveSession({
+          userId: dbUser._id,
+          bookId: currentBookId ?? undefined,
+          passageIndex: currentPassageIndex,
+          wpm: finalWPM,
+          accuracy: finalAccuracy,
+          errors: errorCount,
+        })
+      }
     }
   }
 
@@ -192,21 +259,34 @@ export default function Home() {
   const displayWpm = isComplete ? wpm : liveWpm
   const displayAccuracy = isComplete ? accuracy : liveAccuracy
 
+  if (!user) {
+    return (
+      <div className="terminal-container">
+        <LoginModal onLogin={handleLogin} />
+      </div>
+    )
+  }
+
   return (
     <div className="terminal-container">
       <div className="header">
         <h1 className="title">Terminal Typing Test</h1>
         <div className="header-buttons">
+          {user && (
+            <div className="user-info">
+              <span>{user.email}</span>
+              <button className="terminal-btn logout-btn" onClick={logout}>
+                Logout
+              </button>
+            </div>
+          )}
           {!isComplete && !showUpload && (
-            <button 
-              className="terminal-btn skip-btn" 
-              onClick={skipPassage}
-            >
+            <button className="terminal-btn skip-btn" onClick={skipPassage}>
               Skip Passage
             </button>
           )}
-          <button 
-            className="terminal-btn upload-btn" 
+          <button
+            className="terminal-btn upload-btn"
             onClick={() => setShowUpload(!showUpload)}
           >
             {showUpload ? 'Close' : 'Upload Book PDF'}
@@ -216,6 +296,26 @@ export default function Home() {
 
       {showUpload && (
         <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
+      )}
+
+      {userBooks && userBooks.length > 0 && !showUpload && (
+        <div className="book-library">
+          <h3>Your Books</h3>
+          <div className="book-list">
+            {userBooks.map((book) => (
+              <button
+                key={book._id}
+                className={`book-item ${currentBookId === book._id ? 'active' : ''}`}
+                onClick={() => setCurrentBookId(book._id)}
+              >
+                <span className="book-title">{book.title}</span>
+                <span className="book-progress">
+                  {book.lastReadPosition + 1}/{book.totalPassages}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {book && (
@@ -233,7 +333,7 @@ export default function Home() {
         value={userInput}
         onChange={handleInputChange}
         className="hidden-input"
-        disabled={isComplete || showUpload}
+        disabled={isComplete || showUpload || showLogin}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
