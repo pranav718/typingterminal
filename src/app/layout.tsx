@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import {Providers} from './providers';
 import "./globals.css";
-
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export const metadata: Metadata = {
   title: "TerminalType",
@@ -17,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <ConvexProvider client={convex}>
+        <Providers>
           {children}
-        </ConvexProvider>
+        </Providers>
       </body>
     </html>
   );
