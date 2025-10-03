@@ -1,157 +1,176 @@
 'use client'
 
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 
 export interface SettingsType {
-    shakeIntensity: 'off' | 'subtle' | 'medium' | 'strong';
-    theme: 'matrix' | 'paper' | 'ocean' | 'sunset';
-    textOpacity: number;
+  shakeIntensity: 'off' | 'subtle' | 'medium' | 'strong';
+  theme: 'matrix' | 'paper' | 'ocean' | 'sunset';
+  textOpacity: number;
 }
 
 const defaultSettings: SettingsType = {
-    shakeIntensity: 'medium',
-    theme: 'matrix',
-    textOpacity: 0.65
-}
+  shakeIntensity: 'medium',
+  theme: 'matrix',
+  textOpacity: 0.65,
+};
 
 interface SettingsProps {
-    isOpen: boolean;
-    onClose:() => void;
-    settings: SettingsType;
-    onSettingsChange: (settings: SettingsType)=> void;
+  isOpen: boolean;
+  onClose: () => void;
+  settings: SettingsType;
+  onSettingsChange: (settings: SettingsType) => void;
 }
 
 export function useSettings() {
-    const [settings, setSettings] = useState<SettingsType>(defaultSettings);
+  const [settings, setSettings] = useState<SettingsType>(defaultSettings);
 
-    useEffect( ()=> {
-        const stored = localStorage.getItem('terminaltype_settings');
-        if(stored){
-            try{
-                setSettings(JSON.parse(stored));
-            }catch {
-                setSettings(defaultSettings);
-            }
-        }
-
-    }, []);
-
-    const updateSettings = (newSettings: SettingsType) => {
-        setSettings(newSettings);
-        localStorage.setItem('terminaltype_settings', JSON.stringify(newSettings));
+  useEffect(() => {
+    const stored = localStorage.getItem('terminaltype_settings');
+    if (stored) {
+      try {
+        setSettings(JSON.parse(stored));
+      } catch {
+        setSettings(defaultSettings);
+      }
     }
+  }, []);
 
-    return { settings, updateSettings };
+  const updateSettings = (newSettings: SettingsType) => {
+    setSettings(newSettings);
+    localStorage.setItem('terminaltype_settings', JSON.stringify(newSettings));
+  };
+
+  return { settings, updateSettings };
 }
 
-export default function Settings({ isOpen, onClose, settings, onSettingsChange}: SettingsProps) {
-    if(!isOpen) return null;
+const themes = [
+  { id: 'matrix', name: 'Matrix', bg: 'bg-[#0a0f0a]', text: 'text-[#00ff88]' },
+  { id: 'paper', name: 'Paper', bg: 'bg-[#f5f5f5]', text: 'text-[#2c3e50]' },
+  { id: 'ocean', name: 'Ocean', bg: 'bg-[#0a1929]', text: 'text-[#00d9ff]' },
+  { id: 'sunset', name: 'Sunset', bg: 'bg-[#1a0a2e]', text: 'text-[#ff9f40]' },
+];
 
-     const handleShakeChange = (intensity: SettingsType['shakeIntensity']) => {
-    onSettingsChange({ ...settings, shakeIntensity: intensity });
-  };
-
-  const handleThemeChange = (theme: SettingsType['theme']) => {
-    onSettingsChange({ ...settings, theme });
-  };
-
-  const handleOpacityChange = (opacity: number) => {
-    onSettingsChange({ ...settings, textOpacity: opacity });
-  };
+export default function Settings({ isOpen, onClose, settings, onSettingsChange }: SettingsProps) {
+  if (!isOpen) return null;
 
   return (
-    <div className="settings-overlay" onClick={onClose}>
-      <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
-        <div className="settings-header">
-          <h2>Settings</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+
+        <div className="sticky top-0 bg-matrix-bg-darker border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center z-10">
+          <h2 className="text-2xl font-bold text-matrix-primary drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">
+            Settings
+          </h2>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full border-2 border-error text-error hover:bg-error hover:text-matrix-bg transition-all hover:rotate-90 flex items-center justify-center text-xl"
+          >
+            ✕
+          </button>
         </div>
 
-        <div className="settings-content">
-          <div className="setting-group">
-            <h3 className="setting-title">Theme</h3>
-            <div className="theme-grid">
-              <button
-                className={`theme-option theme-matrix ${settings.theme === 'matrix' ? 'active' : ''}`}
-                onClick={() => handleThemeChange('matrix')}
-              >
-                <div className="theme-preview matrix-preview">
-                  <span>Aa</span>
-                </div>
-                <span>Matrix</span>
-              </button>
-
-              <button
-                className={`theme-option theme-paper ${settings.theme === 'paper' ? 'active' : ''}`}
-                onClick={() => handleThemeChange('paper')}
-              >
-                <div className="theme-preview paper-preview">
-                  <span>Aa</span>
-                </div>
-                <span>Paper</span>
-              </button>
-
-              <button
-                className={`theme-option theme-ocean ${settings.theme === 'ocean' ? 'active' : ''}`}
-                onClick={() => handleThemeChange('ocean')}
-              >
-                <div className="theme-preview ocean-preview">
-                  <span>Aa</span>
-                </div>
-                <span>Ocean</span>
-              </button>
-
-              <button
-                className={`theme-option theme-sunset ${settings.theme === 'sunset' ? 'active' : ''}`}
-                onClick={() => handleThemeChange('sunset')}
-              >
-                <div className="theme-preview sunset-preview">
-                  <span>Aa</span>
-                </div>
-                <span>Sunset</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="setting-group">
-            <h3 className="setting-title">Error Shake Effect</h3>
-            <div className="shake-options">
-              {(['off', 'subtle', 'medium', 'strong'] as const).map((intensity) => (
+        <div className="p-6 space-y-8">
+          <div className="pb-6 border-b border-matrix-primary/10">
+            <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
+              Theme
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {themes.map((theme) => (
                 <button
-                  key={intensity}
-                  className={`shake-option ${settings.shakeIntensity === intensity ? 'active' : ''}`}
-                  onClick={() => handleShakeChange(intensity)}
+                  key={theme.id}
+                  onClick={() => onSettingsChange({ ...settings, theme: theme.id as SettingsType['theme'] })}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all hover:-translate-y-1 ${
+                    settings.theme === theme.id
+                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
+                      : 'border-matrix-primary/20 hover:border-matrix-primary'
+                  }`}
                 >
-                  <div className={`shake-preview shake-${intensity}`}>
-                    <span className="shake-demo">A</span>
+                  <div className={`w-14 h-14 rounded-lg ${theme.bg} ${theme.text} flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-110`}>
+                    Aa
                   </div>
-                  <span>{intensity.charAt(0).toUpperCase() + intensity.slice(1)}</span>
+                  <span className="text-xs text-matrix-light">{theme.name}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="setting-group">
-            <h3 className="setting-title">Untyped Text Visibility</h3>
-            <div className="opacity-control">
+          <div className="pb-6 border-b border-matrix-primary/10">
+            <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
+              Error Shake Effect
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(['off', 'subtle', 'medium', 'strong'] as const).map((intensity) => (
+                <button
+                  key={intensity}
+                  onClick={() => onSettingsChange({ ...settings, shakeIntensity: intensity })}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all hover:-translate-y-1 group ${
+                    settings.shakeIntensity === intensity
+                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
+                      : 'border-matrix-primary/20 hover:border-matrix-primary'
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-lg bg-error/10 border border-error/30 flex items-center justify-center">
+                    <span className={`text-2xl font-bold text-error group-hover:animate-shake-${intensity === 'off' ? 'subtle' : intensity}`}>
+                      A
+                    </span>
+                  </div>
+                  <span className="text-xs text-matrix-light capitalize">{intensity}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
+              Untyped Text Visibility
+            </h3>
+            <div className="flex items-center gap-4 mb-3">
               <input
                 type="range"
                 min="0.3"
                 max="0.9"
                 step="0.05"
                 value={settings.textOpacity}
-                onChange={(e) => handleOpacityChange(parseFloat(e.target.value))}
-                className="opacity-slider"
+                onChange={(e) => onSettingsChange({ ...settings, textOpacity: parseFloat(e.target.value) })}
+                className="flex-1 h-2 bg-matrix-primary/20 rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none 
+                  [&::-webkit-slider-thumb]:w-5 
+                  [&::-webkit-slider-thumb]:h-5 
+                  [&::-webkit-slider-thumb]:rounded-full 
+                  [&::-webkit-slider-thumb]:bg-matrix-primary 
+                  [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,255,136,0.5)]
+                  [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-webkit-slider-thumb]:transition-transform
+                  [&::-webkit-slider-thumb]:hover:scale-125
+                  [&::-moz-range-thumb]:w-5
+                  [&::-moz-range-thumb]:h-5
+                  [&::-moz-range-thumb]:rounded-full
+                  [&::-moz-range-thumb]:bg-matrix-primary
+                  [&::-moz-range-thumb]:border-0
+                  [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(0,255,136,0.5)]
+                  [&::-moz-range-thumb]:cursor-pointer"
               />
-              <div className="opacity-value">{Math.round(settings.textOpacity * 100)}%</div>
+              <span className="text-matrix-primary font-semibold min-w-[50px] text-right">
+                {Math.round(settings.textOpacity * 100)}%
+              </span>
             </div>
-            <div className="opacity-preview">
-              <span style={{ opacity: settings.textOpacity }}>Preview text visibility</span>
+            <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
+              <span 
+                className="text-lg text-matrix-primary"
+                style={{ opacity: settings.textOpacity }}
+              >
+                Preview text visibility
+              </span>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-
 }

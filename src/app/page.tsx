@@ -7,6 +7,7 @@ import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import { processPDFClient, ProcessedBook } from './utils/clientPdfProcessor'
 import { useSimpleAuth, LoginModal } from './components/SimpleAuth'
+import Settings, { useSettings } from './components/Settings'
 import './terminal.css'
 
 const FileUpload = dynamic(() => import('./components/FileUpload'), {
@@ -16,6 +17,8 @@ const FileUpload = dynamic(() => import('./components/FileUpload'), {
 export default function Home() {
   const { user, login, logout } = useSimpleAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const { settings, updateSettings } = useSettings();
+  const [showSettings, setShowSettings] = useState(false);
   
   const dbUser = useQuery(api.users.getCurrentUser, user ? { email: user.email } : "skip");
   const userBooks = useQuery(api.books.getUserBooks, dbUser ? { userId: dbUser._id } : "skip");
@@ -52,6 +55,27 @@ export default function Home() {
   const [liveAccuracy, setLiveAccuracy] = useState(100)
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+
+    document.body.classList.remove('theme-matrix', 'theme-paper', 'theme-ocean', 'theme-sunset');
+    document.body.classList.add(`theme-${settings.theme}`);
+    
+    const root = document.documentElement;
+    
+    const themeColors = {
+      matrix: { primary: '#00ff88', bg: '#0a0f0a', bgDarker: '#050805' },
+      paper: { primary: '#2c3e50', bg: '#f5f5f5', bgDarker: '#ffffff' },
+      ocean: { primary: '#00d9ff', bg: '#0a1929', bgDarker: '#001e3c' },
+      sunset: { primary: '#ff9f40', bg: '#1a0a2e', bgDarker: '#0f0520' },
+    };
+    
+    const colors = themeColors[settings.theme];
+    root.style.setProperty('--color-primary', colors.primary);
+    root.style.setProperty('--color-bg', colors.bg);
+    root.style.setProperty('--color-bg-darker', colors.bgDarker);
+    
+  }, [settings.theme, settings.textOpacity]);
 
   useEffect(() => {
     if (user && !dbUser) {
@@ -143,7 +167,7 @@ export default function Home() {
     setWpm(0)
     setAccuracy(100)
     setLiveWpm(0)
-        setLiveAccuracy(100)
+    setLiveAccuracy(100)
     setIsComplete(false)
 
     setTimeout(() => {
@@ -183,14 +207,14 @@ export default function Home() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin) {
+      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin && !showSettings) {
         inputRef.current?.focus()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isComplete, showUpload, showLogin])
+  }, [isComplete, showUpload, showLogin, showSettings])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete) return
@@ -242,15 +266,23 @@ export default function Home() {
 
   const renderText = () => {
     return text.split('').map((char, index) => {
-      let className = 'char'
+      let className = 'inline-block transition-all duration-150'
+      
       if (index < userInput.length) {
-        className += userInput[index] === char ? ' correct' : ' incorrect'
+        if (userInput[index] === char) {
+          className += ' text-matrix-primary drop-shadow-[0_0_8px_rgba(0,255,136,0.3)]'
+        } else {
+          className += ` text-error bg-error/20 px-0.5 rounded drop-shadow-[0_0_8px_rgba(255,85,85,0.4)] animate-shake-${settings.shakeIntensity}`
+        }
       } else if (index === userInput.length) {
-        className += ' current'
+        className += ' bg-gradient-to-r from-matrix-primary/30 to-cyan-500/30 rounded px-1 -mx-0.5 scale-110 animate-blink'
       }
+      
+      const displayChar = char === ' ' ? '\u00A0' : char;
+      
       return (
-        <span key={index} className={className}>
-          {char}
+        <span key={index} className={className} style={{ whiteSpace: 'pre' }}>
+          {displayChar}
         </span>
       )
     })
@@ -261,117 +293,192 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="terminal-container">
+      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8">
         <LoginModal onLogin={handleLogin} />
       </div>
     )
   }
 
   return (
-    <div className="terminal-container">
-      <div className="header">
-        <h1 className="title">Terminal Typing Test</h1>
-        <div className="header-buttons">
-          {user && (
-            <div className="user-info">
-              <span>{user.email}</span>
-              <button className="terminal-btn logout-btn" onClick={logout}>
-                Logout
-              </button>
-            </div>
-          )}
-          {!isComplete && !showUpload && (
-            <button className="terminal-btn skip-btn" onClick={skipPassage}>
-              Skip Passage
+    <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[20%] left-[20%] w-96 h-96 bg-matrix-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] right-[20%] w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-4xl w-full relative z-10">
+        <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
+          <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+            Terminal Typing Test
+          </h1>
+          
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
+            {user && (
+              <div className="flex items-center justify-between gap-3 px-3 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light w-full md:w-auto">
+                <span className="truncate">{user.email}</span>
+                <button
+                  onClick={logout}
+                  className="px-3 py-1 text-xs border-2 border-error text-error rounded hover:bg-error hover:text-matrix-bg transition-all min-h-[36px]"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowSettings(true)}
+              className="w-full md:w-auto px-4 py-2.5 border-2 border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2"
+            >
+              ⚙️ Settings
             </button>
-          )}
-          <button
-            className="terminal-btn upload-btn"
-            onClick={() => setShowUpload(!showUpload)}
-          >
-            {showUpload ? 'Close' : 'Upload Book PDF'}
-          </button>
-        </div>
-      </div>
-
-      {showUpload && (
-        <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
-      )}
-
-      {userBooks && userBooks.length > 0 && !showUpload && (
-        <div className="book-library">
-          <h3>Your Books</h3>
-          <div className="book-list">
-            {userBooks.map((book) => (
+            
+            {!isComplete && !showUpload && (
               <button
-                key={book._id}
-                className={`book-item ${currentBookId === book._id ? 'active' : ''}`}
-                onClick={() => setCurrentBookId(book._id)}
+                onClick={skipPassage}
+                className="w-full md:w-auto px-4 py-2.5 border-2 border-warning text-warning rounded-md hover:bg-warning hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
               >
-                <span className="book-title">{book.title}</span>
-                <span className="book-progress">
-                  {book.lastReadPosition + 1}/{book.totalPassages}
-                </span>
+                Skip Passage
               </button>
-            ))}
+            )}
+            
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+                            className="w-full md:w-auto px-4 py-2.5 border-2 border-matrix-primary text-matrix-primary rounded-md hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
+            >
+              {showUpload ? 'Close' : 'Upload Book PDF'}
+            </button>
+          </div>
+        </header>
+
+        <Settings
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          settings={settings}
+          onSettingsChange={updateSettings}
+        />
+
+        {showUpload && (
+          <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
+        )}
+
+        {userBooks && userBooks.length > 0 && !showUpload && (
+          <div className="mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
+            <h3 className="text-lg font-semibold text-matrix-primary mb-4">Your Books</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2">
+              {userBooks.map((book) => (
+                <button
+                  key={book._id}
+                  onClick={() => setCurrentBookId(book._id)}
+                  className={`flex justify-between items-center p-3 rounded-lg border-2 transition-all text-left min-h-[52px] ${
+                    currentBookId === book._id
+                      ? 'border-matrix-primary bg-matrix-primary/20 shadow-[0_0_16px_rgba(0,255,136,0.3)] translate-x-1'
+                      : 'border-matrix-primary/20 hover:border-matrix-primary hover:bg-matrix-primary/10 hover:translate-x-1'
+                  }`}
+                >
+                  <span className="text-sm font-medium text-matrix-light truncate flex-1">
+                    {book.title}
+                  </span>
+                  <span className="text-xs ml-3 px-2 py-1 bg-matrix-primary/20 rounded font-semibold text-matrix-primary">
+                    {book.lastReadPosition + 1}/{book.totalPassages}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {book && (
+          <div className="flex flex-col md:flex-row justify-between gap-2 mb-4 px-4 py-3 text-sm font-medium text-matrix-light bg-matrix-primary/10 rounded-lg">
+            <span>Book: {book.title}</span>
+            <span>Passage {currentPassageIndex + 1} of {book.passages.length}</span>
+          </div>
+        )}
+
+                <div 
+          className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
+          style={{ 
+            color: `rgba(0, 255, 136, ${settings.textOpacity})`,
+            letterSpacing: '0.3px',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}
+        >
+
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
+          {renderText()}
+        </div>
+
+        <input
+          ref={inputRef}
+          type="text"
+          value={userInput}
+          onChange={handleInputChange}
+          className="hidden-input"
+          disabled={isComplete || showUpload || showLogin || showSettings}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl">
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">WPM</span>
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+              {displayWpm}
+            </span>
+          </div>
+          
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Accuracy</span>
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+              {displayAccuracy}%
+            </span>
+          </div>
+          
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Errors</span>
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+              {errors}
+            </span>
           </div>
         </div>
-      )}
 
-      {book && (
-        <div className="book-info">
-          <span>Book: {book.title}</span>
-          <span>Passage {currentPassageIndex + 1} of {book.passages.length}</span>
-        </div>
-      )}
+        {isComplete && (
+          <div className="mt-8 p-6 md:p-8 bg-gradient-to-br from-matrix-primary/20 to-cyan-500/20 border-2 border-matrix-primary rounded-2xl text-center animate-slide-up relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-radial from-matrix-primary/10 to-transparent opacity-50 animate-pulse-slow" />
+            
+            <h3 className="text-2xl md:text-3xl font-bold text-matrix-primary mb-6 drop-shadow-[0_0_20px_rgba(0,255,136,0.5)] relative z-10">
+              Passage Completed! 
+            </h3>
+            
+            <div className="flex flex-col md:flex-row justify-around gap-4 mb-6 relative z-10">
+              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
+                <span className="text-base text-matrix-light font-medium">Final WPM: {wpm}</span>
+              </div>
+              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
+                <span className="text-base text-matrix-light font-medium">Final Accuracy: {accuracy}%</span>
+              </div>
+              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
+                <span className="text-base text-matrix-light font-medium">Total Errors: {errors}</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => resetTest()}
+              className="px-8 py-3.5 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:-translate-y-1 hover:shadow-[0_6px_24px_rgba(0,255,136,0.5)] transition-all relative z-10"
+            >
+              Next Passage (or press Tab then Enter)
+            </button>
+          </div>
+        )}
 
-      <div className="text-display">{renderText()}</div>
-
-      <input
-        ref={inputRef}
-        type="text"
-        value={userInput}
-        onChange={handleInputChange}
-        className="hidden-input"
-        disabled={isComplete || showUpload || showLogin}
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-      />
-
-      <div className="stats">
-        <div className="stat-item">
-          <span className="stat-label">WPM</span>
-          <span className="stat-value">{displayWpm}</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Accuracy</span>
-          <span className="stat-value">{displayAccuracy}%</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Errors</span>
-          <span className="stat-value">{errors}</span>
-        </div>
+        {!isComplete && userInput.length === 0 && !showUpload && (
+          <div className="mt-6 text-center text-sm text-matrix-light/60 animate-pulse">
+            Start typing...
+          </div>
+        )}
       </div>
-
-      {isComplete && (
-        <div className="completion-stats">
-          <h3>Passage Complete!</h3>
-          <div className="final-stats">
-            <div>Final WPM: {wpm}</div>
-            <div>Final Accuracy: {accuracy}%</div>
-            <div>Total Errors: {errors}</div>
-          </div>
-          <button className="terminal-btn reset-btn" onClick={() => resetTest()}>
-            Next Passage (or press Tab then Enter)
-          </button>
-        </div>
-      )}
-      
-      {!isComplete && userInput.length === 0 && !showUpload && (
-        <div className="hint">Start typing...</div>
-      )}
     </div>
   )
 }
