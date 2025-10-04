@@ -309,7 +309,7 @@ export default function Home() {
       <div className="max-w-4xl w-full relative z-10">
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
           <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.3)]">
-            Terminal Typing Test
+            TerminalType
           </h1>
           
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
