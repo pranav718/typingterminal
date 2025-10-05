@@ -1,16 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
 export interface SettingsType {
   shakeIntensity: 'off' | 'subtle' | 'medium' | 'strong';
-  theme: 'matrix' | 'paper' | 'ocean' | 'sunset';
   textOpacity: number;
 }
 
 const defaultSettings: SettingsType = {
   shakeIntensity: 'medium',
-  theme: 'matrix',
   textOpacity: 0.65,
 };
 
@@ -51,7 +50,14 @@ const themes = [
 ];
 
 export default function Settings({ isOpen, onClose, settings, onSettingsChange }: SettingsProps) {
-  if (!isOpen) return null;
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   return (
     <div 
@@ -62,7 +68,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
         className="bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
-
+        
         <div className="sticky top-0 bg-matrix-bg-darker border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center z-10">
           <h2 className="text-2xl font-bold text-matrix-primary drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">
             Settings
@@ -81,20 +87,20 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
               Theme
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {themes.map((theme) => (
+              {themes.map((themeOption) => (
                 <button
-                  key={theme.id}
-                  onClick={() => onSettingsChange({ ...settings, theme: theme.id as SettingsType['theme'] })}
+                  key={themeOption.id}
+                  onClick={() => setTheme(themeOption.id)}
                   className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all hover:-translate-y-1 ${
-                    settings.theme === theme.id
+                    theme === themeOption.id
                       ? 'border-matrix-primary bg-matrix-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
                       : 'border-matrix-primary/20 hover:border-matrix-primary'
                   }`}
                 >
-                  <div className={`w-14 h-14 rounded-lg ${theme.bg} ${theme.text} flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-110`}>
+                  <div className={`w-14 h-14 rounded-lg ${themeOption.bg} ${themeOption.text} flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-110`}>
                     Aa
                   </div>
-                  <span className="text-xs text-matrix-light">{theme.name}</span>
+                  <span className="text-xs text-matrix-light">{themeOption.name}</span>
                 </button>
               ))}
             </div>

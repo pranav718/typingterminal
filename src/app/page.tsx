@@ -57,27 +57,6 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-
-    document.body.classList.remove('theme-matrix', 'theme-paper', 'theme-ocean', 'theme-sunset');
-    document.body.classList.add(`theme-${settings.theme}`);
-    
-    const root = document.documentElement;
-    
-    const themeColors = {
-      matrix: { primary: '#00ff88', bg: '#0a0f0a', bgDarker: '#050805' },
-      paper: { primary: '#2c3e50', bg: '#f5f5f5', bgDarker: '#ffffff' },
-      ocean: { primary: '#00d9ff', bg: '#0a1929', bgDarker: '#001e3c' },
-      sunset: { primary: '#ff9f40', bg: '#1a0a2e', bgDarker: '#0f0520' },
-    };
-    
-    const colors = themeColors[settings.theme];
-    root.style.setProperty('--color-primary', colors.primary);
-    root.style.setProperty('--color-bg', colors.bg);
-    root.style.setProperty('--color-bg-darker', colors.bgDarker);
-    
-  }, [settings.theme, settings.textOpacity]);
-
-  useEffect(() => {
     if (user && !dbUser) {
       getOrCreateUser({ email: user.email, name: user.name });
     }

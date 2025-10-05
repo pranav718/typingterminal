@@ -4,6 +4,47 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Matrix Theme (Default) */
+  :root {
+    --color-primary: 0 255 136;
+    --color-bg: 10 15 10;
+    --color-bg-darker: 5 8 5;
+    --color-light: 124 227 139;
+  }
+
+  /* Paper Theme */
+  .paper {
+    --color-primary: 44 62 80;
+    --color-bg: 245 245 245;
+    --color-bg-darker: 255 255 255;
+    --color-light: 84 110 122;
+  }
+
+  /* Ocean Theme */
+  .ocean {
+    --color-primary: 0 217 255;
+    --color-bg: 10 25 41;
+    --color-bg-darker: 0 30 60;
+    --color-light: 77 208 225;
+  }
+
+  /* Sunset Theme */
+  .sunset {
+    --color-primary: 255 159 64;
+    --color-bg: 26 10 46;
+    --color-bg-darker: 15 5 32;
+    --color-light: 255 183 77;
+  }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgb(var(--color-bg-darker));
+    color: rgb(var(--color-primary));
+    transition: all 0.3s ease;
+  }
+}
+
 .hidden-input {
   position: absolute;
   left: -9999px;
@@ -19,14 +60,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(var(--color-primary), 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 136, 0.3);
+  background: rgba(var(--color-primary), 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 136, 0.5);
+  background: rgba(var(--color-primary), 0.5);
 }
