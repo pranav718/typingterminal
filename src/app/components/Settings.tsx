@@ -70,7 +70,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
       >
         
         <div className="sticky top-0 bg-matrix-bg-darker border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center z-10">
-          <h2 className="text-2xl font-bold text-matrix-primary drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">
+          <h2 className="text-2xl font-bold text-matrix-primary drop-shadow-glow">
             Settings
           </h2>
           <button
@@ -93,7 +93,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                   onClick={() => setTheme(themeOption.id)}
                   className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all hover:-translate-y-1 ${
                     theme === themeOption.id
-                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
+                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-glow'
                       : 'border-matrix-primary/20 hover:border-matrix-primary'
                   }`}
                 >

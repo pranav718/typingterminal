@@ -19,14 +19,14 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const { settings, updateSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
-  
+
   const dbUser = useQuery(api.users.getCurrentUser, user ? { email: user.email } : "skip");
   const userBooks = useQuery(api.books.getUserBooks, dbUser ? { userId: dbUser._id } : "skip");
   const getOrCreateUser = useMutation(api.users.getOrCreateUser);
   const saveBook = useMutation(api.books.saveBook);
   const updateLastPosition = useMutation(api.books.updateLastPosition);
   const saveSession = useMutation(api.sessions.saveSession);
-  
+
   const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
   const currentBookData = useQuery(
     api.books.getBookWithPassages,
@@ -249,12 +249,12 @@ export default function Home() {
       
       if (index < userInput.length) {
         if (userInput[index] === char) {
-          className += ' text-matrix-primary drop-shadow-[0_0_8px_rgba(0,255,136,0.3)]'
+          className += ' text-matrix-primary drop-shadow-glow'
         } else {
-          className += ` text-error bg-error/20 px-0.5 rounded drop-shadow-[0_0_8px_rgba(255,85,85,0.4)] animate-shake-${settings.shakeIntensity}`
+          className += ` text-error bg-error/20 px-0.5 rounded drop-shadow-error-glow animate-shake-${settings.shakeIntensity}`
         }
       } else if (index === userInput.length) {
-        className += ' bg-gradient-to-r from-matrix-primary/30 to-cyan-500/30 rounded px-1 -mx-0.5 scale-110 animate-blink'
+        className += ' bg-gradient-to-r from-matrix-primary/30 to-matrix-primary/10 rounded px-1 -mx-0.5 scale-110 animate-blink'
       }
       
       const displayChar = char === ' ' ? '\u00A0' : char;
@@ -282,12 +282,12 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[20%] left-[20%] w-96 h-96 bg-matrix-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[20%] w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] right-[20%] w-96 h-96 bg-matrix-primary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-4xl w-full relative z-10">
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
-          <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+          <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-glow-lg">
             TerminalType
           </h1>
           
@@ -322,7 +322,7 @@ export default function Home() {
             
             <button
               onClick={() => setShowUpload(!showUpload)}
-                            className="w-full md:w-auto px-4 py-2.5 border-2 border-matrix-primary text-matrix-primary rounded-md hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
+              className="w-full md:w-auto px-4 py-2.5 border-2 border-matrix-primary text-matrix-primary rounded-md hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
             >
               {showUpload ? 'Close' : 'Upload Book PDF'}
             </button>
@@ -350,7 +350,7 @@ export default function Home() {
                   onClick={() => setCurrentBookId(book._id)}
                   className={`flex justify-between items-center p-3 rounded-lg border-2 transition-all text-left min-h-[52px] ${
                     currentBookId === book._id
-                      ? 'border-matrix-primary bg-matrix-primary/20 shadow-[0_0_16px_rgba(0,255,136,0.3)] translate-x-1'
+                      ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow translate-x-1'
                       : 'border-matrix-primary/20 hover:border-matrix-primary hover:bg-matrix-primary/10 hover:translate-x-1'
                   }`}
                 >
@@ -373,17 +373,16 @@ export default function Home() {
           </div>
         )}
 
-                <div 
+        <div 
           className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
           style={{ 
-            color: `rgba(0, 255, 136, ${settings.textOpacity})`,
+            color: `rgba(var(--color-primary), ${settings.textOpacity})`,
             letterSpacing: '0.3px',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word'
           }}
         >
-
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
           {renderText()}
         </div>
 
@@ -401,33 +400,33 @@ export default function Home() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl">
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">WPM</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {displayWpm}
             </span>
           </div>
           
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Accuracy</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {displayAccuracy}%
             </span>
           </div>
           
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-cyan-500/10 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,255,136,0.2)]">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Errors</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">
+            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {errors}
             </span>
           </div>
         </div>
 
         {isComplete && (
-          <div className="mt-8 p-6 md:p-8 bg-gradient-to-br from-matrix-primary/20 to-cyan-500/20 border-2 border-matrix-primary rounded-2xl text-center animate-slide-up relative overflow-hidden">
+          <div className="mt-8 p-6 md:p-8 bg-gradient-to-br from-matrix-primary/20 to-matrix-primary/10 border-2 border-matrix-primary rounded-2xl text-center animate-slide-up relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-radial from-matrix-primary/10 to-transparent opacity-50 animate-pulse-slow" />
             
-            <h3 className="text-2xl md:text-3xl font-bold text-matrix-primary mb-6 drop-shadow-[0_0_20px_rgba(0,255,136,0.5)] relative z-10">
+            <h3 className="text-2xl md:text-3xl font-bold text-matrix-primary mb-6 drop-shadow-glow-xl relative z-10">
               Passage Completed! 
             </h3>
             
@@ -445,7 +444,7 @@ export default function Home() {
             
             <button
               onClick={() => resetTest()}
-              className="px-8 py-3.5 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:-translate-y-1 hover:shadow-[0_6px_24px_rgba(0,255,136,0.5)] transition-all relative z-10"
+              className="px-8 py-3.5 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:-translate-y-1 hover:shadow-glow-hover transition-all relative z-10"
             >
               Next Passage (or press Tab then Enter)
             </button>
