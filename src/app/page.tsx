@@ -376,7 +376,7 @@ export default function Home() {
         <div 
           className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
           style={{ 
-            color: `rgba(var(--color-primary), ${settings.textOpacity})`,
+            color: `rgb(var(--color-primary) / ${settings.textOpacity})`,
             letterSpacing: '0.3px',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word'
