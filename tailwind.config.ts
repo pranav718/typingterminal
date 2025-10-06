@@ -20,6 +20,21 @@ const config: Config = {
       fontFamily: {
         mono: ['JetBrains Mono', 'monospace'],
       },
+      dropShadow: {
+        'glow-sm': '0 0 8px rgba(var(--color-primary), 0.2)',
+        'glow': '0 0 8px rgba(var(--color-primary), 0.3)',
+        'glow-md': '0 0 16px rgba(var(--color-primary), 0.3)',
+        'glow-lg': '0 0 20px rgba(var(--color-primary), 0.4)',
+        'glow-xl': '0 0 24px rgba(var(--color-primary), 0.5)',
+        'error-glow': '0 0 8px rgba(255, 85, 85, 0.4)',
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(var(--color-primary), 0.3)',
+        'glow-sm': '0 0 16px rgba(var(--color-primary), 0.2)',
+        'glow-md': '0 4px 20px rgba(var(--color-primary), 0.3)',
+        'glow-lg': '0 8px 24px rgba(var(--color-primary), 0.2)',
+        'glow-hover': '0 6px 24px rgba(var(--color-primary), 0.5)',
+      },
       animation: {
         'pulse-slow': 'pulse 2s ease-in-out infinite',
         'shake-subtle': 'shake-subtle 0.3s ease-in-out',
