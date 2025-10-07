@@ -28,6 +28,8 @@ export default function Home() {
   const saveSession = useMutation(api.sessions.saveSession);
 
   const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
+  const [isLoadingBook, setIsLoadingBook] = useState(false); 
+  
   const currentBookData = useQuery(
     api.books.getBookWithPassages,
     currentBookId ? { bookId: currentBookId } : "skip"
@@ -63,8 +65,25 @@ export default function Home() {
   }, [user, dbUser, getOrCreateUser]);
 
   useEffect(() => {
-    if (currentBookData) {
+    if (currentBookData && currentBookId) {
+      setBook({
+        title: currentBookData.title,
+        passages: currentBookData.passages.map(p => p.content),
+      });
+      setCurrentPassageIndex(currentBookData.lastReadPosition);
+      setText(currentBookData.passages[currentBookData.lastReadPosition].content);
+      
+      setIsLoadingBook(false);
+      
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 50)
+    }
+  }, [currentBookData, currentBookId]);
 
+  useEffect(() => {
+    if (currentBookId) {
+      setIsLoadingBook(true);
       setUserInput('')
       setStartTime(null)
       setErrors(0)
@@ -73,25 +92,14 @@ export default function Home() {
       setLiveWpm(0)
       setLiveAccuracy(100)
       setIsComplete(false)
-
-      setBook({
-        title: currentBookData.title,
-        passages: currentBookData.passages.map(p => p.content),
-      });
-      setCurrentPassageIndex(currentBookData.lastReadPosition);
-      setText(currentBookData.passages[currentBookData.lastReadPosition].content);
-
-      setTimeout( ()=> {
-        inputRef.current?.focus()
-      }, 100);
     }
-  }, [currentBookData]);
+  }, [currentBookId]);
 
   useEffect(() => {
-    if (currentBookId && currentPassageIndex > 0) {
+    if (currentBookId && currentPassageIndex > 0 && !isLoadingBook) {
       updateLastPosition({ bookId: currentBookId, position: currentPassageIndex });
     }
-  }, [currentPassageIndex, currentBookId, updateLastPosition]);
+  }, [currentPassageIndex, currentBookId, updateLastPosition, isLoadingBook]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -104,8 +112,7 @@ export default function Home() {
         const currentWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
         setLiveWpm(currentWpm)
       }, 100)
-    } 
-    else {
+    } else {
       setLiveWpm(0)
     }
     
@@ -113,23 +120,6 @@ export default function Home() {
       if (interval) clearInterval(interval)
     }
   }, [startTime, userInput])
-
-  useEffect( () => {
-    if(currentBookId){
-      setUserInput('')
-      setStartTime(null)
-      setErrors(0)
-      setWpm(0)
-      setAccuracy(100)
-      setLiveWpm(0)
-      setLiveAccuracy(100)
-      setIsComplete(false)
-
-      setTimeout( ()=> {
-        inputRef.current?.focus()
-      }, 100)
-    }
-  }, [currentBookId])
 
   const handleFileUpload = async (file: File) => {
     if (!dbUser) {
@@ -231,17 +221,17 @@ export default function Home() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin && !showSettings) {
+      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin && !showSettings && !isLoadingBook) {
         inputRef.current?.focus()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isComplete, showUpload, showLogin, showSettings])
+  }, [isComplete, showUpload, showLogin, showSettings, isLoadingBook])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isComplete) return
+    if (isComplete || isLoadingBook) return
 
     const input = e.target.value
 
@@ -356,7 +346,7 @@ export default function Home() {
               ⚙️ Settings
             </button>
             
-            {!isComplete && !showUpload && (
+            {!isComplete && !showUpload && !isLoadingBook && (
               <button
                 onClick={skipPassage}
                 className="w-full md:w-auto px-4 py-2.5 border-2 border-warning text-warning rounded-md hover:bg-warning hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
@@ -405,11 +395,12 @@ export default function Home() {
                 <button
                   key={book._id}
                   onClick={() => setCurrentBookId(book._id)}
+                  disabled={isLoadingBook}
                   className={`flex justify-between items-center p-3 rounded-lg border-2 transition-all text-left min-h-[52px] ${
                     currentBookId === book._id
                       ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow translate-x-1'
                       : 'border-matrix-primary/20 hover:border-matrix-primary hover:bg-matrix-primary/10 hover:translate-x-1'
-                  }`}
+                  } ${isLoadingBook ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span className="text-sm font-medium text-matrix-light truncate flex-1">
                     {book.title}
@@ -423,25 +414,34 @@ export default function Home() {
           </div>
         )}
 
-        {book && (
+        {book && !isLoadingBook && (
           <div className="flex flex-col md:flex-row justify-between gap-2 mb-4 px-4 py-3 text-sm font-medium text-matrix-light bg-matrix-primary/10 rounded-lg">
             <span>Book: {book.title}</span>
             <span>Passage {currentPassageIndex + 1} of {book.passages.length}</span>
           </div>
         )}
 
-        <div 
-          className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
-          style={{ 
-            color: `rgb(var(--color-primary) / ${settings.textOpacity})`,
-            letterSpacing: '0.3px',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word'
-          }}
-        >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
-          {renderText()}
-        </div>
+        {isLoadingBook && (
+          <div className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+            <div className="text-matrix-primary animate-pulse">Loading passage...</div>
+          </div>
+        )}
+
+        {!isLoadingBook && (
+          <div 
+            key={currentBookId || 'default'} // Force re-render when book changes
+            className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
+            style={{ 
+              color: `rgb(var(--color-primary) / ${settings.textOpacity})`,
+              letterSpacing: '0.3px',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
+            }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
+            {renderText()}
+          </div>
+        )}
 
         <input
           ref={inputRef}
@@ -449,7 +449,7 @@ export default function Home() {
           value={userInput}
           onChange={handleInputChange}
           className="hidden-input"
-          disabled={isComplete || showUpload || showLogin || showSettings}
+          disabled={isComplete || showUpload || showLogin || showSettings || isLoadingBook}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
@@ -457,21 +457,21 @@ export default function Home() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl">
-          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">WPM</span>
             <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {displayWpm}
             </span>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Accuracy</span>
             <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {displayAccuracy}%
             </span>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
+          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
             <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Errors</span>
             <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
               {errors}
@@ -479,7 +479,7 @@ export default function Home() {
           </div>
         </div>
 
-        {isComplete && (
+        {isComplete && !isLoadingBook && (
           <div className="mt-8 p-6 md:p-8 bg-gradient-to-br from-matrix-primary/20 to-matrix-primary/10 border-2 border-matrix-primary rounded-2xl text-center animate-slide-up relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-radial from-matrix-primary/10 to-transparent opacity-50 animate-pulse-slow" />
             
@@ -508,7 +508,7 @@ export default function Home() {
           </div>
         )}
 
-        {!isComplete && userInput.length === 0 && !showUpload && (
+        {!isComplete && userInput.length === 0 && !showUpload && !isLoadingBook && (
           <div className="mt-6 text-center text-sm text-matrix-light/60 animate-pulse">
             Start typing...
           </div>
