@@ -64,12 +64,26 @@ export default function Home() {
 
   useEffect(() => {
     if (currentBookData) {
+
+      setUserInput('')
+      setStartTime(null)
+      setErrors(0)
+      setWpm(0)
+      setAccuracy(100)
+      setLiveWpm(0)
+      setLiveAccuracy(100)
+      setIsComplete(false)
+
       setBook({
         title: currentBookData.title,
         passages: currentBookData.passages.map(p => p.content),
       });
       setCurrentPassageIndex(currentBookData.lastReadPosition);
       setText(currentBookData.passages[currentBookData.lastReadPosition].content);
+
+      setTimeout( ()=> {
+        inputRef.current?.focus()
+      }, 100);
     }
   }, [currentBookData]);
 
@@ -80,26 +94,57 @@ export default function Home() {
   }, [currentPassageIndex, currentBookId, updateLastPosition]);
 
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
     if (startTime && userInput.length > 0) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         const now = Date.now()
         const timeElapsed = (now - startTime) / 60000
         const wordsTyped = userInput.trim().split(/\s+/).filter(word => word.length > 0).length
         const currentWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
         setLiveWpm(currentWpm)
       }, 100)
-
-      return () => clearInterval(interval)
-    } else {
+    } 
+    else {
       setLiveWpm(0)
     }
+    
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [startTime, userInput])
+
+  useEffect( () => {
+    if(currentBookId){
+      setUserInput('')
+      setStartTime(null)
+      setErrors(0)
+      setWpm(0)
+      setAccuracy(100)
+      setLiveWpm(0)
+      setLiveAccuracy(100)
+      setIsComplete(false)
+
+      setTimeout( ()=> {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [currentBookId])
 
   const handleFileUpload = async (file: File) => {
     if (!dbUser) {
       setShowLogin(true);
       return;
     }
+
+    setUserInput('')
+    setStartTime(null)
+    setErrors(0)
+    setWpm(0)
+    setAccuracy(100)
+    setLiveWpm(0)
+    setLiveAccuracy(100)
+    setIsComplete(false)
 
     setIsProcessing(true)
     try {
@@ -321,7 +366,19 @@ export default function Home() {
             )}
             
             <button
-              onClick={() => setShowUpload(!showUpload)}
+              onClick={() => {
+                if (!showUpload) {
+                  setUserInput('')
+                  setStartTime(null)
+                  setErrors(0)
+                  setWpm(0)
+                  setAccuracy(100)
+                  setLiveWpm(0)
+                  setLiveAccuracy(100)
+                  setIsComplete(false)
+                }
+                setShowUpload(!showUpload)
+              }}
               className="w-full md:w-auto px-4 py-2.5 border-2 border-matrix-primary text-matrix-primary rounded-md hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
             >
               {showUpload ? 'Close' : 'Upload Book PDF'}
