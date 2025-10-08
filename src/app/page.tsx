@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -13,6 +13,35 @@ import './terminal.css'
 const FileUpload = dynamic(() => import('./components/FileUpload'), {
   ssr: false
 })
+
+function useDebounce<T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number
+) {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedCallback = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callback(...args);
+      }, delay);
+    },
+    [callback, delay]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return debouncedCallback;
+}
 
 export default function Home() {
   const { user, login, logout } = useSimpleAuth();
@@ -28,7 +57,8 @@ export default function Home() {
   const saveSession = useMutation(api.sessions.saveSession);
 
   const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
-  const [isLoadingBook, setIsLoadingBook] = useState(false); 
+  const [isLoadingBook, setIsLoadingBook] = useState(false);
+  const [lastSavedPosition, setLastSavedPosition] = useState<number>(-1);
   
   const currentBookData = useQuery(
     api.books.getBookWithPassages,
@@ -71,6 +101,7 @@ export default function Home() {
         passages: currentBookData.passages.map(p => p.content),
       });
       setCurrentPassageIndex(currentBookData.lastReadPosition);
+      setLastSavedPosition(currentBookData.lastReadPosition);
       setText(currentBookData.passages[currentBookData.lastReadPosition].content);
       
       setIsLoadingBook(false);
@@ -95,11 +126,19 @@ export default function Home() {
     }
   }, [currentBookId]);
 
+  const debouncedUpdatePosition = useDebounce((bookId: Id<"books">, position: number) => {
+    if (bookId && position !== lastSavedPosition) {
+      updateLastPosition({ bookId, position })
+        .then(() => setLastSavedPosition(position))
+        .catch(console.error);
+    }
+  }, 2000); 
+
   useEffect(() => {
     if (currentBookId && currentPassageIndex > 0 && !isLoadingBook) {
-      updateLastPosition({ bookId: currentBookId, position: currentPassageIndex });
+      debouncedUpdatePosition(currentBookId, currentPassageIndex);
     }
-  }, [currentPassageIndex, currentBookId, updateLastPosition, isLoadingBook]);
+  }, [currentPassageIndex, currentBookId, isLoadingBook]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -429,7 +468,7 @@ export default function Home() {
 
         {!isLoadingBook && (
           <div 
-            key={currentBookId || 'default'} // Force re-render when book changes
+            key={`${currentBookId}-${currentPassageIndex}`}
             className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
             style={{ 
               color: `rgb(var(--color-primary) / ${settings.textOpacity})`,

@@ -8,7 +8,6 @@ export const saveBook = mutation({
     passages: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-
     const bookId = await ctx.db.insert("books", {
       userId: args.userId,
       title: args.title,
@@ -65,8 +64,13 @@ export const updateLastPosition = mutation({
     position: v.number(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.bookId, {
-      lastReadPosition: args.position,
-    });
+    const book = await ctx.db.get(args.bookId);
+    if (!book) return;
+    
+    if (book.lastReadPosition !== args.position) {
+      await ctx.db.patch(args.bookId, {
+        lastReadPosition: args.position,
+      });
+    }
   },
 });
