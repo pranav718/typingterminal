@@ -6,6 +6,7 @@ export const saveBook = mutation({
     userId: v.id("users"),
     title: v.string(),
     passages: v.array(v.string()),
+    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const bookId = await ctx.db.insert("books", {
@@ -14,6 +15,7 @@ export const saveBook = mutation({
       uploadedAt: Date.now(),
       totalPassages: args.passages.length,
       lastReadPosition: 0,
+      isPublic: args.isPublic ?? false,
     });
 
     await Promise.all(
@@ -36,6 +38,16 @@ export const getUserBooks = query({
     return await ctx.db
       .query("books")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+  },
+});
+
+export const getPublicBooks = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("books")
+      .withIndex("by_public", (q) => q.eq("isPublic", true))
       .collect();
   },
 });

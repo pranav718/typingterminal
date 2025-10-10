@@ -5,6 +5,8 @@ export default defineSchema({
   users: defineTable({
     email: v.string(),
     name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    role: v.union(v.literal("guest"), v.literal("user")),
     createdAt: v.number(),
   }).index("by_email", ["email"]),
 
@@ -13,9 +15,10 @@ export default defineSchema({
     title: v.string(),
     uploadedAt: v.number(),
     totalPassages: v.number(),
-    lastReadPosition: v.number(), 
-    fileStorageId: v.optional(v.string()), 
-  }).index("by_user", ["userId"]),
+    lastReadPosition: v.number(),
+    isPublic: v.boolean(),
+  }).index("by_user", ["userId"])
+    .index("by_public", ["isPublic"]),
 
   passages: defineTable({
     bookId: v.id("books"),

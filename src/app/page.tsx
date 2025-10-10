@@ -6,8 +6,14 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import { processPDFClient, ProcessedBook } from './utils/clientPdfProcessor'
-import { useSimpleAuth, LoginModal } from './components/SimpleAuth'
-import Settings, { useSettings } from './components/Settings'
+import { useAuth } from './hooks/useAuth'
+import { useSettings } from './hooks/useSettings'
+import AuthModal from './components/Auth/AuthModal'
+import Settings from './components/Settings'
+import BookList from './components/Books/BookList'
+import TypingArea from './components/Typing/TypingArea'
+import StatsDisplay from './components/Typing/StatsDisplay'
+import CompletionCard from './components/Typing/CompletionCard'
 import './terminal.css'
 
 const FileUpload = dynamic(() => import('./components/FileUpload'), {
@@ -44,18 +50,22 @@ function useDebounce<T extends (...args: any[]) => any>(
 }
 
 export default function Home() {
-  const { user, login, logout } = useSimpleAuth();
-  const [showLogin, setShowLogin] = useState(false);
+  const { user, dbUser, isLoading: authLoading, isGuest, logout } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
-  const dbUser = useQuery(api.users.getCurrentUser, user ? { email: user.email } : "skip");
-  const userBooks = useQuery(api.books.getUserBooks, dbUser ? { userId: dbUser._id } : "skip");
-  const getOrCreateUser = useMutation(api.users.getOrCreateUser);
+  // Convex queries and mutations
+  const userBooks = useQuery(
+    api.books.getUserBooks, 
+    dbUser ? { userId: dbUser._id } : "skip"
+  );
+  const publicBooks = useQuery(api.books.getPublicBooks);
   const saveBook = useMutation(api.books.saveBook);
   const updateLastPosition = useMutation(api.books.updateLastPosition);
   const saveSession = useMutation(api.sessions.saveSession);
 
+  // State
   const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
   const [isLoadingBook, setIsLoadingBook] = useState(false);
   const [lastSavedPosition, setLastSavedPosition] = useState<number>(-1);
@@ -82,18 +92,12 @@ export default function Home() {
   const [accuracy, setAccuracy] = useState(100)
   const [isComplete, setIsComplete] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [showUpload, setShowUpload] = useState(false)
   const [liveWpm, setLiveWpm] = useState(0)
   const [liveAccuracy, setLiveAccuracy] = useState(100)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (user && !dbUser) {
-      getOrCreateUser({ email: user.email, name: user.name });
-    }
-  }, [user, dbUser, getOrCreateUser]);
-
+  // Load book data
   useEffect(() => {
     if (currentBookData && currentBookId) {
       setBook({
@@ -112,34 +116,30 @@ export default function Home() {
     }
   }, [currentBookData, currentBookId]);
 
+  // Reset on book change
   useEffect(() => {
     if (currentBookId) {
       setIsLoadingBook(true);
-      setUserInput('')
-      setStartTime(null)
-      setErrors(0)
-      setWpm(0)
-      setAccuracy(100)
-      setLiveWpm(0)
-      setLiveAccuracy(100)
-      setIsComplete(false)
+      resetTypingState();
     }
   }, [currentBookId]);
 
+  // Debounced position save
   const debouncedUpdatePosition = useDebounce((bookId: Id<"books">, position: number) => {
     if (bookId && position !== lastSavedPosition) {
       updateLastPosition({ bookId, position })
         .then(() => setLastSavedPosition(position))
         .catch(console.error);
     }
-  }, 2000); 
+  }, 2000);
 
   useEffect(() => {
-    if (currentBookId && currentPassageIndex > 0 && !isLoadingBook) {
+    if (currentBookId && currentPassageIndex > 0 && !isLoadingBook && !isGuest) {
       debouncedUpdatePosition(currentBookId, currentPassageIndex);
     }
-  }, [currentPassageIndex, currentBookId, isLoadingBook]);
+  }, [currentPassageIndex, currentBookId, isLoadingBook, isGuest]);
 
+  // Live WPM calculation
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     
@@ -160,12 +160,24 @@ export default function Home() {
     }
   }, [startTime, userInput])
 
-  const handleFileUpload = async (file: File) => {
-    if (!dbUser) {
-      setShowLogin(true);
-      return;
+  // Auto-focus on mount and key press
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isComplete && e.key.length === 1 && !showUpload && !showSettings && !isLoadingBook && user) {
+        inputRef.current?.focus()
+      }
     }
 
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isComplete, showUpload, showSettings, isLoadingBook, user])
+
+  // Helper functions
+  const resetTypingState = () => {
     setUserInput('')
     setStartTime(null)
     setErrors(0)
@@ -174,8 +186,23 @@ export default function Home() {
     setLiveWpm(0)
     setLiveAccuracy(100)
     setIsComplete(false)
+  }
 
+  const handleFileUpload = async (file: File) => {
+    if (isGuest) {
+      alert('Please sign up or log in to upload books. Guest users can only practice with sample books.');
+      setShowUpload(false);
+      return;
+    }
+
+    if (!dbUser) {
+      alert('Please wait for authentication to complete');
+      return;
+    }
+
+    resetTypingState();
     setIsProcessing(true)
+
     try {
       const processedBook = await processPDFClient(file)
 
@@ -184,6 +211,7 @@ export default function Home() {
           userId: dbUser._id,
           title: processedBook.title,
           passages: processedBook.passages,
+          isPublic: false,
         });
         
         setCurrentBookId(bookId);
@@ -199,11 +227,6 @@ export default function Home() {
     }
   }
 
-  const handleLogin = async (email: string, name?: string) => {
-    login(email, name);
-    setShowLogin(false);
-  };
-
   const skipPassage = () => {
     if (book && book.passages.length > 0) {
       const nextIndex = (currentPassageIndex + 1) % book.passages.length
@@ -214,60 +237,23 @@ export default function Home() {
       setText(newText)
     }
 
-    setUserInput('')
-    setStartTime(null)
-    setErrors(0)
-    setWpm(0)
-    setAccuracy(100)
-    setLiveWpm(0)
-    setLiveAccuracy(100)
-    setIsComplete(false)
-
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
+    resetTypingState()
+    setTimeout(() => inputRef.current?.focus(), 0)
   }
 
-  const resetTest = (changeText = true) => {
-    if (changeText) {
-      if (book && book.passages.length > 0) {
-        const nextIndex = (currentPassageIndex + 1) % book.passages.length
-        setCurrentPassageIndex(nextIndex)
-        setText(book.passages[nextIndex])
-      } else {
-        const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
-        setText(newText)
-      }
+  const handleNextPassage = () => {
+    if (book && book.passages.length > 0) {
+      const nextIndex = (currentPassageIndex + 1) % book.passages.length
+      setCurrentPassageIndex(nextIndex)
+      setText(book.passages[nextIndex])
+    } else {
+      const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
+      setText(newText)
     }
 
-    setUserInput('')
-    setStartTime(null)
-    setErrors(0)
-    setWpm(0)
-    setAccuracy(100)
-    setLiveWpm(0)
-    setLiveAccuracy(100)
-    setIsComplete(false)
-
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
+    resetTypingState()
+    setTimeout(() => inputRef.current?.focus(), 0)
   }
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isComplete && e.key.length === 1 && !showUpload && !showLogin && !showSettings && !isLoadingBook) {
-        inputRef.current?.focus()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isComplete, showUpload, showLogin, showSettings, isLoadingBook])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete || isLoadingBook) return
@@ -304,7 +290,7 @@ export default function Home() {
       setAccuracy(finalAccuracy)
       setIsComplete(true)
 
-      if (dbUser) {
+      if (dbUser && !isGuest) {
         saveSession({
           userId: dbUser._id,
           bookId: currentBookId ?? undefined,
@@ -317,37 +303,34 @@ export default function Home() {
     }
   }
 
-  const renderText = () => {
-    return text.split('').map((char, index) => {
-      let className = 'inline-block transition-all duration-150'
-      
-      if (index < userInput.length) {
-        if (userInput[index] === char) {
-          className += ' text-matrix-primary drop-shadow-glow'
-        } else {
-          className += ` text-error bg-error/20 px-0.5 rounded drop-shadow-error-glow animate-shake-${settings.shakeIntensity}`
-        }
-      } else if (index === userInput.length) {
-        className += ' bg-gradient-to-r from-matrix-primary/30 to-matrix-primary/10 rounded px-1 -mx-0.5 scale-110 animate-blink'
-      }
-      
-      const displayChar = char === ' ' ? '\u00A0' : char;
-      
-      return (
-        <span key={index} className={className} style={{ whiteSpace: 'pre' }}>
-          {displayChar}
-        </span>
-      )
-    })
-  }
-
   const displayWpm = isComplete ? wpm : liveWpm
   const displayAccuracy = isComplete ? accuracy : liveAccuracy
 
-  if (!user) {
+  // Show auth modal if not logged in
+  if (!user && !authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8">
-        <LoginModal onLogin={handleLogin} />
+      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+        {/* Background blur with sample books preview */}
+        <div className="fixed inset-0 pointer-events-none opacity-30 blur-sm">
+          <div className="max-w-4xl mx-auto mt-20 px-4">
+            <h1 className="text-3xl font-bold text-matrix-primary text-center mb-8">
+              TerminalType
+            </h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="p-4 bg-matrix-primary/10 border border-matrix-primary/20 rounded-lg"
+                >
+                  <div className="h-4 bg-matrix-primary/20 rounded mb-2"></div>
+                  <div className="h-3 bg-matrix-primary/10 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <AuthModal />
       </div>
     )
   }
@@ -360,6 +343,7 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl w-full relative z-10">
+        {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
           <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-glow-lg">
             TerminalType
@@ -368,7 +352,23 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
             {user && (
               <div className="flex items-center justify-between gap-3 px-3 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light w-full md:w-auto">
-                <span className="truncate">{user.email}</span>
+                <div className="flex items-center gap-2">
+                  {user.image && (
+                    <img 
+                      src={user.image} 
+                      alt={user.name || 'User'} 
+                      className="w-6 h-6 rounded-full"
+                    />
+                  )}
+                  <span className="truncate">
+                    {isGuest ? 'Guest User' : user.email}
+                  </span>
+                  {isGuest && (
+                    <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">
+                      Guest
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={logout}
                   className="px-3 py-1 text-xs border-2 border-error text-error rounded hover:bg-error hover:text-matrix-bg transition-all min-h-[36px]"
@@ -396,15 +396,12 @@ export default function Home() {
             
             <button
               onClick={() => {
+                if (isGuest && !showUpload) {
+                  alert('Please sign up or log in to upload books');
+                  return;
+                }
                 if (!showUpload) {
-                  setUserInput('')
-                  setStartTime(null)
-                  setErrors(0)
-                  setWpm(0)
-                  setAccuracy(100)
-                  setLiveWpm(0)
-                  setLiveAccuracy(100)
-                  setIsComplete(false)
+                  resetTypingState();
                 }
                 setShowUpload(!showUpload)
               }}
@@ -422,37 +419,33 @@ export default function Home() {
           onSettingsChange={updateSettings}
         />
 
-        {showUpload && (
+        {showUpload && !isGuest && (
           <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
         )}
 
-        {userBooks && userBooks.length > 0 && !showUpload && (
-          <div className="mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
-            <h3 className="text-lg font-semibold text-matrix-primary mb-4">Your Books</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2">
-              {userBooks.map((book) => (
-                <button
-                  key={book._id}
-                  onClick={() => setCurrentBookId(book._id)}
-                  disabled={isLoadingBook}
-                  className={`flex justify-between items-center p-3 rounded-lg border-2 transition-all text-left min-h-[52px] ${
-                    currentBookId === book._id
-                      ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow translate-x-1'
-                      : 'border-matrix-primary/20 hover:border-matrix-primary hover:bg-matrix-primary/10 hover:translate-x-1'
-                  } ${isLoadingBook ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className="text-sm font-medium text-matrix-light truncate flex-1">
-                    {book.title}
-                  </span>
-                  <span className="text-xs ml-3 px-2 py-1 bg-matrix-primary/20 rounded font-semibold text-matrix-primary">
-                    {book.lastReadPosition + 1}/{book.totalPassages}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Public/Sample Books */}
+        {publicBooks && publicBooks.length > 0 && !showUpload && (
+          <BookList
+            books={publicBooks}
+            currentBookId={currentBookId}
+            onBookSelect={setCurrentBookId}
+            isLoading={isLoadingBook}
+            title="Sample Books"
+          />
         )}
 
+        {/* User Books (only for non-guest users) */}
+        {!isGuest && userBooks && userBooks.length > 0 && !showUpload && (
+          <BookList
+            books={userBooks}
+            currentBookId={currentBookId}
+            onBookSelect={setCurrentBookId}
+            isLoading={isLoadingBook}
+            title="Your Books"
+          />
+        )}
+
+        {/* Current Book Info */}
         {book && !isLoadingBook && (
           <div className="flex flex-col md:flex-row justify-between gap-2 mb-4 px-4 py-3 text-sm font-medium text-matrix-light bg-matrix-primary/10 rounded-lg">
             <span>Book: {book.title}</span>
@@ -460,94 +453,47 @@ export default function Home() {
           </div>
         )}
 
-        {isLoadingBook && (
-          <div className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
-            <div className="text-matrix-primary animate-pulse">Loading passage...</div>
-          </div>
-        )}
+        {/* Typing Area */}
+        <TypingArea
+          text={text}
+          userInput={userInput}
+          isComplete={isComplete}
+          isDisabled={isLoadingBook}
+        />
 
-        {!isLoadingBook && (
-          <div 
-            key={`${currentBookId}-${currentPassageIndex}`}
-            className="relative text-xl md:text-2xl leading-relaxed min-h-[200px] md:min-h-[240px] mb-8 p-4 md:p-8 bg-matrix-primary/5 border-2 border-matrix-primary/20 rounded-2xl backdrop-blur-sm"
-            style={{ 
-              color: `rgb(var(--color-primary) / ${settings.textOpacity})`,
-              letterSpacing: '0.3px',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word'
-            }}
-          >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-matrix-primary to-transparent opacity-30 rounded-t-2xl" />
-            {renderText()}
-          </div>
-        )}
-
+        {/* Hidden Input */}
         <input
           ref={inputRef}
           type="text"
           value={userInput}
           onChange={handleInputChange}
           className="hidden-input"
-          disabled={isComplete || showUpload || showLogin || showSettings || isLoadingBook}
+          disabled={isComplete || showUpload || showSettings || isLoadingBook || !user}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl">
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
-            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">WPM</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
-              {displayWpm}
-            </span>
-          </div>
-          
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
-            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Accuracy</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
-              {displayAccuracy}%
-            </span>
-          </div>
-          
-          <div className="flex flex-col md:flex-row md:flex-col items-center justify-between md:justify-center gap-2 p-4 md:p-5 bg-gradient-to-br from-matrix-primary/10 to-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl transition-all hover:border-matrix-primary hover:-translate-y-1 hover:shadow-glow-lg">
-            <span className="text-xs uppercase tracking-wider text-matrix-light/80 font-semibold">Errors</span>
-            <span className="text-3xl md:text-4xl font-bold text-matrix-primary drop-shadow-glow-lg">
-              {errors}
-            </span>
-          </div>
-        </div>
+        {/* Stats Display */}
+        <StatsDisplay
+          wpm={displayWpm}
+          accuracy={displayAccuracy}
+          errors={errors}
+        />
 
+        {/* Completion Card */}
         {isComplete && !isLoadingBook && (
-          <div className="mt-8 p-6 md:p-8 bg-gradient-to-br from-matrix-primary/20 to-matrix-primary/10 border-2 border-matrix-primary rounded-2xl text-center animate-slide-up relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-radial from-matrix-primary/10 to-transparent opacity-50 animate-pulse-slow" />
-            
-            <h3 className="text-2xl md:text-3xl font-bold text-matrix-primary mb-6 drop-shadow-glow-xl relative z-10">
-              Passage Completed! 
-            </h3>
-            
-            <div className="flex flex-col md:flex-row justify-around gap-4 mb-6 relative z-10">
-              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
-                <span className="text-base text-matrix-light font-medium">Final WPM: {wpm}</span>
-              </div>
-              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
-                <span className="text-base text-matrix-light font-medium">Final Accuracy: {accuracy}%</span>
-              </div>
-              <div className="px-4 py-3 bg-matrix-primary/20 border border-matrix-primary/30 rounded-lg">
-                <span className="text-base text-matrix-light font-medium">Total Errors: {errors}</span>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => resetTest()}
-              className="px-8 py-3.5 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:-translate-y-1 hover:shadow-glow-hover transition-all relative z-10"
-            >
-              Next Passage (or press Tab then Enter)
-            </button>
-          </div>
+          <CompletionCard
+            wpm={wpm}
+            accuracy={accuracy}
+            errors={errors}
+            onNext={handleNextPassage}
+          />
         )}
 
-        {!isComplete && userInput.length === 0 && !showUpload && !isLoadingBook && (
+        {/* Start typing prompt */}
+        {!isComplete && userInput.length === 0 && !showUpload && !isLoadingBook && user && (
           <div className="mt-6 text-center text-sm text-matrix-light/60 animate-pulse">
             Start typing...
           </div>

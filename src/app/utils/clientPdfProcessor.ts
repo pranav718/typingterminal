@@ -107,7 +107,6 @@ function processExtractedText(text: string): string[] {
   return passages.filter(passage => {
     if (passage.length < 80 || passage.length > 500) return false;
     
-  
     const upperRatio = (passage.match(/[A-Z]/g) || []).length / passage.length;
     if (upperRatio > 0.5) return false;
     

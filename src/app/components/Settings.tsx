@@ -1,45 +1,12 @@
-'use client'
-
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-
-export interface SettingsType {
-  shakeIntensity: 'off' | 'subtle' | 'medium' | 'strong';
-  textOpacity: number;
-}
-
-const defaultSettings: SettingsType = {
-  shakeIntensity: 'medium',
-  textOpacity: 0.65,
-};
+import { SettingsType } from '../hooks/useSettings';
 
 interface SettingsProps {
   isOpen: boolean;
   onClose: () => void;
   settings: SettingsType;
   onSettingsChange: (settings: SettingsType) => void;
-}
-
-export function useSettings() {
-  const [settings, setSettings] = useState<SettingsType>(defaultSettings);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('terminaltype_settings');
-    if (stored) {
-      try {
-        setSettings(JSON.parse(stored));
-      } catch {
-        setSettings(defaultSettings);
-      }
-    }
-  }, []);
-
-  const updateSettings = (newSettings: SettingsType) => {
-    setSettings(newSettings);
-    localStorage.setItem('terminaltype_settings', JSON.stringify(newSettings));
-  };
-
-  return { settings, updateSettings };
 }
 
 const themes = [
@@ -60,15 +27,11 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
   if (!isOpen || !mounted) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div 
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div
         className="bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
-        
         <div className="sticky top-0 bg-matrix-bg-darker border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center z-10">
           <h2 className="text-2xl font-bold text-matrix-primary drop-shadow-glow">
             Settings
@@ -82,6 +45,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
         </div>
 
         <div className="p-6 space-y-8">
+          {/* Theme Selection */}
           <div className="pb-6 border-b border-matrix-primary/10">
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Theme
@@ -106,6 +70,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
+          {/* Shake Intensity */}
           <div className="pb-6 border-b border-matrix-primary/10">
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Error Shake Effect
@@ -117,7 +82,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                   onClick={() => onSettingsChange({ ...settings, shakeIntensity: intensity })}
                   className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all hover:-translate-y-1 group ${
                     settings.shakeIntensity === intensity
-                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
+                      ? 'border-matrix-primary bg-matrix-primary/10 shadow-glow'
                       : 'border-matrix-primary/20 hover:border-matrix-primary'
                   }`}
                 >
@@ -132,6 +97,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
+          {/* Text Opacity */}
           <div>
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Untyped Text Visibility
