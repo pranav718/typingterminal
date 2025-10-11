@@ -1,16 +1,19 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const saveBook = mutation({
   args: {
-    userId: v.id("users"),
     title: v.string(),
     passages: v.array(v.string()),
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
     const bookId = await ctx.db.insert("books", {
-      userId: args.userId,
+      userId,
       title: args.title,
       uploadedAt: Date.now(),
       totalPassages: args.passages.length,
@@ -33,11 +36,14 @@ export const saveBook = mutation({
 });
 
 export const getUserBooks = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
     return await ctx.db
       .query("books")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
   },
 });
@@ -76,8 +82,13 @@ export const updateLastPosition = mutation({
     position: v.number(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
     const book = await ctx.db.get(args.bookId);
-    if (!book) return;
+    if (!book || book.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
     
     if (book.lastReadPosition !== args.position) {
       await ctx.db.patch(args.bookId, {

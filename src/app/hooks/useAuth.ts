@@ -1,100 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { User } from '../types';
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useCallback } from "react";
 
 export function useAuth() {
-  const { data: session, status } = useSession();
-  const [user, setUser] = useState<User | null>(null);
-  
+  const { signIn, signOut } = useAuthActions();
+  const user = useQuery(api.users.getCurrentUser);
   const createGuestUser = useMutation(api.users.createGuestUser);
-  const getOrCreateUser = useMutation(api.users.getOrCreateUser);
-  
-  const dbUser = useQuery(
-    api.users.getCurrentUser,
-    user ? { email: user.email } : "skip"
-  );
 
-  useEffect(() => {
-    if (session?.user) {
-      setUser({
-        email: session.user.email!,
-        name: session.user.name || undefined,
-        image: session.user.image || undefined,
-        role: (session.user as any).role || 'user',
-      });
-    }
-  }, [session]);
+  const loginWithGoogle = useCallback(async () => {
+    await signIn("google");
+  }, [signIn]);
 
-  const loginWithGoogle = async () => {
-    await signIn('google', { callbackUrl: '/' });
-  };
+  const loginWithCredentials = useCallback(async (email: string, password: string) => {
+    await signIn("password", { email, password, flow: "signIn" });
+  }, [signIn]);
 
-  const loginWithCredentials = async (email: string, password: string) => {
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
+  const signup = useCallback(async (email: string, password: string, name?: string) => {
+    await signIn("password", { 
+      email, 
+      password, 
+      flow: "signUp",
+      ...(name && { name })
     });
-    
-    if (result?.error) {
-      throw new Error(result.error);
-    }
-  };
+  }, [signIn]);
 
-  const signup = async (email: string, password: string, name?: string) => {
-    const response = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name }),
-    });
+  const continueAsGuest = useCallback(async () => {
+    await createGuestUser();
+  }, [createGuestUser]);
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
-    }
-
-    await loginWithCredentials(email, password);
-  };
-
-  const continueAsGuest = async () => {
-    const guestUser = await createGuestUser();
-    setUser({
-      id: guestUser,
-      email: `guest_${Date.now()}@terminaltype.temp`,
-      name: 'Guest User',
-      role: 'guest',
-    });
-  };
-
-  const logout = async () => {
-    if (user?.role === 'guest') {
-      setUser(null);
-    } else {
-      await signOut({ callbackUrl: '/' });
-    }
-  };
-
-  useEffect(() => {
-    if (user && !dbUser && user.role !== 'guest') {
-      getOrCreateUser({
-        email: user.email,
-        name: user.name,
-        image: user.image,
-        role: user.role,
-      });
-    }
-  }, [user, dbUser, getOrCreateUser]);
+  const logout = useCallback(async () => {
+    await signOut();
+  }, [signOut]);
 
   return {
     user,
-    dbUser,
-    isLoading: status === 'loading',
+    dbUser: user,
+    isLoading: user === undefined,
     isAuthenticated: !!user,
-    isGuest: user?.role === 'guest',
+    isGuest: user?.role === 'guest' || user?.isAnonymous === true,
     loginWithGoogle,
     loginWithCredentials,
     signup,

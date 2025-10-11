@@ -50,16 +50,13 @@ function useDebounce<T extends (...args: any[]) => any>(
 }
 
 export default function Home() {
-  const { user, dbUser, isLoading: authLoading, isGuest, logout } = useAuth();
+  const { user, isLoading: authLoading, isGuest, logout } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
 
   // Convex queries and mutations
-  const userBooks = useQuery(
-    api.books.getUserBooks, 
-    dbUser ? { userId: dbUser._id } : "skip"
-  );
+  const userBooks = useQuery(api.books.getUserBooks);
   const publicBooks = useQuery(api.books.getPublicBooks);
   const saveBook = useMutation(api.books.saveBook);
   const updateLastPosition = useMutation(api.books.updateLastPosition);
@@ -195,11 +192,6 @@ export default function Home() {
       return;
     }
 
-    if (!dbUser) {
-      alert('Please wait for authentication to complete');
-      return;
-    }
-
     resetTypingState();
     setIsProcessing(true)
 
@@ -208,7 +200,6 @@ export default function Home() {
 
       if (processedBook.passages.length > 0 && processedBook.passages[0] !== 'No readable text found in this PDF.') {
         const bookId = await saveBook({
-          userId: dbUser._id,
           title: processedBook.title,
           passages: processedBook.passages,
           isPublic: false,
@@ -290,9 +281,8 @@ export default function Home() {
       setAccuracy(finalAccuracy)
       setIsComplete(true)
 
-      if (dbUser && !isGuest) {
+      if (user && !isGuest) {
         saveSession({
-          userId: dbUser._id,
           bookId: currentBookId ?? undefined,
           passageIndex: currentPassageIndex,
           wpm: finalWPM,
@@ -361,7 +351,7 @@ export default function Home() {
                     />
                   )}
                   <span className="truncate">
-                    {isGuest ? 'Guest User' : user.email}
+                    {isGuest ? 'Guest User' : (user.email || user.name)}
                   </span>
                   {isGuest && (
                     <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">

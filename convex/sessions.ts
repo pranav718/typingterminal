@@ -1,9 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const saveSession = mutation({
   args: {
-    userId: v.id("users"),
     bookId: v.optional(v.id("books")),
     passageIndex: v.number(),
     wpm: v.number(),
@@ -11,7 +11,11 @@ export const saveSession = mutation({
     errors: v.number(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
     return await ctx.db.insert("typingSessions", {
+      userId,
       ...args,
       completedAt: Date.now(),
     });
@@ -19,11 +23,14 @@ export const saveSession = mutation({
 });
 
 export const getUserStats = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+
     const sessions = await ctx.db
       .query("typingSessions")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     if (sessions.length === 0) {
@@ -42,7 +49,7 @@ export const getUserStats = query({
       totalSessions: sessions.length,
       averageWpm: Math.round(totalWpm / sessions.length),
       averageAccuracy: Math.round(totalAccuracy / sessions.length),
-      totalWordsTyped: sessions.length * 50, 
+      totalWordsTyped: sessions.length * 50,
     };
   },
 });
