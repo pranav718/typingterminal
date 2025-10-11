@@ -5,9 +5,14 @@ import { useAuth } from '../../hooks/useAuth';
 export default function GuestButton() {
   const { continueAsGuest } = useAuth();
 
+  const handleGuestClick = async () => {
+    await continueAsGuest();
+    window.location.reload();
+  };
+
   return (
     <button
-      onClick={continueAsGuest}
+      onClick={handleGuestClick}
       className="w-full px-6 py-3.5 border-2 border-matrix-primary/50 text-matrix-primary rounded-lg hover:bg-matrix-primary/10 hover:border-matrix-primary transition-all font-semibold"
     >
       Continue as Guest

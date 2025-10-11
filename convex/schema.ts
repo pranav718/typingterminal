@@ -2,29 +2,16 @@ import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-export default defineSchema({
+const schema = defineSchema({
   ...authTables,
   
-  users: defineTable({
-    email: v.string(),
-    name: v.optional(v.string()),
-    image: v.optional(v.string()),
-    role: v.union(v.literal("guest"), v.literal("user")),
-    emailVerificationTime: v.optional(v.number()),
-    phone: v.optional(v.string()),
-    phoneVerificationTime: v.optional(v.number()),
-    isAnonymous: v.optional(v.boolean()),
-    createdAt: v.number(),
-  })
-    .index("by_email", ["email"]),
-
   books: defineTable({
     userId: v.id("users"),
     title: v.string(),
     uploadedAt: v.number(),
     totalPassages: v.number(),
     lastReadPosition: v.number(),
-    isPublic: v.boolean(),
+    isPublic: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_public", ["isPublic"]),
@@ -47,3 +34,5 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_book", ["bookId"]),
 });
+
+export default schema;

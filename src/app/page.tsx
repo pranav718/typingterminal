@@ -55,14 +55,12 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
 
-  // Convex queries and mutations
   const userBooks = useQuery(api.books.getUserBooks);
   const publicBooks = useQuery(api.books.getPublicBooks);
   const saveBook = useMutation(api.books.saveBook);
   const updateLastPosition = useMutation(api.books.updateLastPosition);
   const saveSession = useMutation(api.sessions.saveSession);
 
-  // State
   const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
   const [isLoadingBook, setIsLoadingBook] = useState(false);
   const [lastSavedPosition, setLastSavedPosition] = useState<number>(-1);
@@ -94,7 +92,6 @@ export default function Home() {
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Load book data
   useEffect(() => {
     if (currentBookData && currentBookId) {
       setBook({
@@ -113,7 +110,6 @@ export default function Home() {
     }
   }, [currentBookData, currentBookId]);
 
-  // Reset on book change
   useEffect(() => {
     if (currentBookId) {
       setIsLoadingBook(true);
@@ -121,7 +117,6 @@ export default function Home() {
     }
   }, [currentBookId]);
 
-  // Debounced position save
   const debouncedUpdatePosition = useDebounce((bookId: Id<"books">, position: number) => {
     if (bookId && position !== lastSavedPosition) {
       updateLastPosition({ bookId, position })
@@ -136,7 +131,6 @@ export default function Home() {
     }
   }, [currentPassageIndex, currentBookId, isLoadingBook, isGuest]);
 
-  // Live WPM calculation
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     
@@ -157,7 +151,6 @@ export default function Home() {
     }
   }, [startTime, userInput])
 
-  // Auto-focus on mount and key press
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
@@ -173,7 +166,6 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isComplete, showUpload, showSettings, isLoadingBook, user])
 
-  // Helper functions
   const resetTypingState = () => {
     setUserInput('')
     setStartTime(null)
@@ -296,11 +288,9 @@ export default function Home() {
   const displayWpm = isComplete ? wpm : liveWpm
   const displayAccuracy = isComplete ? accuracy : liveAccuracy
 
-  // Show auth modal if not logged in
   if (!user && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
-        {/* Background blur with sample books preview */}
         <div className="fixed inset-0 pointer-events-none opacity-30 blur-sm">
           <div className="max-w-4xl mx-auto mt-20 px-4">
             <h1 className="text-3xl font-bold text-matrix-primary text-center mb-8">
@@ -333,7 +323,6 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl w-full relative z-10">
-        {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
           <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-glow-lg">
             TerminalType
@@ -343,7 +332,7 @@ export default function Home() {
             {user && (
               <div className="flex items-center justify-between gap-3 px-3 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light w-full md:w-auto">
                 <div className="flex items-center gap-2">
-                  {user.image && (
+                  {user.image && !isGuest && (
                     <img 
                       src={user.image} 
                       alt={user.name || 'User'} 
@@ -413,7 +402,6 @@ export default function Home() {
           <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
         )}
 
-        {/* Public/Sample Books */}
         {publicBooks && publicBooks.length > 0 && !showUpload && (
           <BookList
             books={publicBooks}
@@ -424,7 +412,6 @@ export default function Home() {
           />
         )}
 
-        {/* User Books (only for non-guest users) */}
         {!isGuest && userBooks && userBooks.length > 0 && !showUpload && (
           <BookList
             books={userBooks}
@@ -435,7 +422,6 @@ export default function Home() {
           />
         )}
 
-        {/* Current Book Info */}
         {book && !isLoadingBook && (
           <div className="flex flex-col md:flex-row justify-between gap-2 mb-4 px-4 py-3 text-sm font-medium text-matrix-light bg-matrix-primary/10 rounded-lg">
             <span>Book: {book.title}</span>
@@ -443,7 +429,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Typing Area */}
         <TypingArea
           text={text}
           userInput={userInput}
@@ -451,7 +436,6 @@ export default function Home() {
           isDisabled={isLoadingBook}
         />
 
-        {/* Hidden Input */}
         <input
           ref={inputRef}
           type="text"
@@ -465,14 +449,12 @@ export default function Home() {
           spellCheck={false}
         />
 
-        {/* Stats Display */}
         <StatsDisplay
           wpm={displayWpm}
           accuracy={displayAccuracy}
           errors={errors}
         />
 
-        {/* Completion Card */}
         {isComplete && !isLoadingBook && (
           <CompletionCard
             wpm={wpm}
@@ -482,7 +464,6 @@ export default function Home() {
           />
         )}
 
-        {/* Start typing prompt */}
         {!isComplete && userInput.length === 0 && !showUpload && !isLoadingBook && user && (
           <div className="mt-6 text-center text-sm text-matrix-light/60 animate-pulse">
             Start typing...

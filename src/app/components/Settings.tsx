@@ -45,7 +45,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
         </div>
 
         <div className="p-6 space-y-8">
-          {/* Theme Selection */}
           <div className="pb-6 border-b border-matrix-primary/10">
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Theme
@@ -70,7 +69,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
-          {/* Shake Intensity */}
           <div className="pb-6 border-b border-matrix-primary/10">
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Error Shake Effect
@@ -97,7 +95,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
-          {/* Text Opacity */}
           <div>
             <h3 className="text-sm font-semibold text-matrix-primary uppercase tracking-wider mb-4">
               Untyped Text Visibility

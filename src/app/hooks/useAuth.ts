@@ -1,24 +1,47 @@
 'use client'
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
+
+type AppUser = {
+  _id?: string;
+  email?: string;
+  name?: string;
+  image?: string;
+  isGuest?: boolean;
+};
 
 export function useAuth() {
   const { signIn, signOut } = useAuthActions();
-  const user = useQuery(api.users.getCurrentUser);
-  const createGuestUser = useMutation(api.users.createGuestUser);
+  const dbUser = useQuery(api.users.getCurrentUser);
+  const [isGuest, setIsGuest] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    const guestMode = localStorage.getItem('terminaltype_guest');
+    if (guestMode === 'true') {
+      setIsGuest(true);
+    }
+    setIsInitialized(true);
+  }, []);
 
   const loginWithGoogle = useCallback(async () => {
+    localStorage.removeItem('terminaltype_guest');
+    setIsGuest(false);
     await signIn("google");
   }, [signIn]);
 
   const loginWithCredentials = useCallback(async (email: string, password: string) => {
+    localStorage.removeItem('terminaltype_guest');
+    setIsGuest(false);
     await signIn("password", { email, password, flow: "signIn" });
   }, [signIn]);
 
   const signup = useCallback(async (email: string, password: string, name?: string) => {
+    localStorage.removeItem('terminaltype_guest');
+    setIsGuest(false);
     await signIn("password", { 
       email, 
       password, 
@@ -27,20 +50,40 @@ export function useAuth() {
     });
   }, [signIn]);
 
-  const continueAsGuest = useCallback(async () => {
-    await createGuestUser();
-  }, [createGuestUser]);
+  const continueAsGuest = useCallback(() => {
+    localStorage.setItem('terminaltype_guest', 'true');
+    setIsGuest(true);
+  }, []);
 
   const logout = useCallback(async () => {
-    await signOut();
-  }, [signOut]);
+    if (isGuest) {
+      localStorage.removeItem('terminaltype_guest');
+      setIsGuest(false);
+    } else {
+      await signOut();
+    }
+  }, [signOut, isGuest]);
+
+  const user: AppUser | null = isGuest 
+    ? { 
+        email: 'guest@terminaltype.temp', 
+        name: 'Guest User',
+        image: undefined,
+        isGuest: true 
+      }
+    : dbUser 
+    ? {
+        ...dbUser,
+        isGuest: false
+      }
+    : null;
 
   return {
     user,
-    dbUser: user,
-    isLoading: user === undefined,
+    dbUser: isGuest ? null : dbUser,
+    isLoading: !isInitialized || (dbUser === undefined && !isGuest),
     isAuthenticated: !!user,
-    isGuest: user?.role === 'guest' || user?.isAnonymous === true,
+    isGuest,
     loginWithGoogle,
     loginWithCredentials,
     signup,
