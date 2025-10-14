@@ -434,6 +434,7 @@ export default function Home() {
           userInput={userInput}
           isComplete={isComplete}
           isDisabled={isLoadingBook}
+          settings={settings} 
         />
 
         <input

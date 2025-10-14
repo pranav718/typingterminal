@@ -1,33 +1,41 @@
 'use client'
 
-import { useRef, useEffect } from 'react';
+import { SettingsType } from '../../hooks/useSettings';
 
 interface TypingAreaProps {
   text: string;
   userInput: string;
   isComplete: boolean;
   isDisabled: boolean;
+  settings?: SettingsType;  
 }
 
-export default function TypingArea({ text, userInput, isComplete, isDisabled }: TypingAreaProps) {
+export default function TypingArea({ text, userInput, isComplete, isDisabled, settings }: TypingAreaProps) {
   const renderText = () => {
     return text.split('').map((char, index) => {
       let className = 'inline-block transition-all duration-150';
+      let style: React.CSSProperties = { whiteSpace: 'pre' };
       
       if (index < userInput.length) {
         if (userInput[index] === char) {
           className += ' text-matrix-primary drop-shadow-glow';
         } else {
-          className += ' text-error bg-error/20 px-0.5 rounded drop-shadow-error-glow animate-shake-medium';
+          const shakeClass = settings?.shakeIntensity !== 'off' 
+            ? ` animate-shake-${settings?.shakeIntensity || 'medium'}` 
+            : '';
+          className += ` text-error bg-error/20 px-0.5 rounded drop-shadow-error-glow${shakeClass}`;
         }
       } else if (index === userInput.length) {
         className += ' bg-gradient-to-r from-matrix-primary/30 to-matrix-primary/10 rounded px-1 -mx-0.5 scale-110 animate-blink';
+      } else {
+        className += ' text-matrix-light';
+        style.opacity = settings?.textOpacity ?? 0.3;
       }
       
       const displayChar = char === ' ' ? '\u00A0' : char;
       
       return (
-        <span key={index} className={className} style={{ whiteSpace: 'pre' }}>
+        <span key={index} className={className} style={style}>
           {displayChar}
         </span>
       );
