@@ -22,7 +22,13 @@ export default function LoginForm({ onSwitchToSignup }: LoginFormProps) {
     try {
       await loginWithCredentials(email, password);
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      if (err.message?.includes('InvalidAccountId')) {
+        setError('No account found with this email. Please sign up first.');
+      } else if (err.message?.includes('InvalidPassword')) {
+        setError('Incorrect password. Please try again.');
+      } else {
+        setError(err.message || 'Failed to login. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -30,6 +36,7 @@ export default function LoginForm({ onSwitchToSignup }: LoginFormProps) {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    setError('');
     try {
       await loginWithGoogle();
     } catch (err: any) {
