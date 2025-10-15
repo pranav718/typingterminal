@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -55,7 +54,6 @@ export default function Home() {
     displayAccuracy,
   } = useTypingSession(text, currentBookId, currentPassageIndex, isGuest);
 
-  // Auto-focus on key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isComplete && e.key.length === 1 && !showUpload && !showSettings && !isLoadingBook && user) {
@@ -119,7 +117,6 @@ export default function Home() {
     setShowUpload(!showUpload);
   };
 
-  // Show auth modal if not logged in
   if (!user && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
