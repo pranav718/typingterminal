@@ -1,293 +1,125 @@
-'use client'
+// src/app/page.tsx
+'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import dynamic from 'next/dynamic'
-import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../convex/_generated/api'
-import { Id } from '../../convex/_generated/dataModel'
-import { processPDFClient, ProcessedBook } from './utils/clientPdfProcessor'
-import { useAuth } from './hooks/useAuth'
-import { useSettings } from './hooks/useSettings'
-import AuthModal from './components/Auth/AuthModal'
-import Settings from './components/Settings'
-import BookList from './components/Books/BookList'
-import TypingArea from './components/Typing/TypingArea'
-import StatsDisplay from './components/Typing/StatsDisplay'
-import CompletionCard from './components/Typing/CompletionCard'
-import './terminal.css'
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { processPDFClient } from './utils/clientPdfProcessor';
+import { useAuth } from './hooks/useAuth';
+import { useSettings } from './hooks/useSettings';
+import { useTypingSession } from './hooks/useTypingSession';
+import { useBookManager } from './hooks/useBookManager';
 
-const FileUpload = dynamic(() => import('./components/FileUpload'), {
-  ssr: false
-})
+import AuthModal from './components/Auth/AuthModal';
+import Settings from './components/Settings';
+import Header from './components/Header';
+import BookList from './components/Books/BookList';
+import TypingArea from './components/Typing/TypingArea';
+import StatsDisplay from './components/Typing/StatsDisplay';
+import CompletionCard from './components/Typing/CompletionCard';
+import './terminal.css';
 
-function useDebounce<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const debouncedCallback = useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    },
-    [callback, delay]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  return debouncedCallback;
-}
+const FileUpload = dynamic(() => import('./components/FileUpload'), { ssr: false });
 
 export default function Home() {
   const { user, isLoading: authLoading, isGuest, logout } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const userBooks = useQuery(api.books.getUserBooks);
-  const publicBooks = useQuery(api.books.getPublicBooks);
   const saveBook = useMutation(api.books.saveBook);
-  const updateLastPosition = useMutation(api.books.updateLastPosition);
-  const saveSession = useMutation(api.sessions.saveSession);
 
-  const [currentBookId, setCurrentBookId] = useState<Id<"books"> | null>(null);
-  const [isLoadingBook, setIsLoadingBook] = useState(false);
-  const [lastSavedPosition, setLastSavedPosition] = useState<number>(-1);
-  
-  const currentBookData = useQuery(
-    api.books.getBookWithPassages,
-    currentBookId ? { bookId: currentBookId } : "skip"
-  );
+  const {
+    currentBookId,
+    currentPassageIndex,
+    text,
+    isLoadingBook,
+    userBooks,
+    publicBooks,
+    currentBookData,
+    selectBook,
+    nextPassage,
+    skipPassage,
+  } = useBookManager(isGuest);
 
-  const defaultTexts = [
-    'The only real test of intelligence is if you get what you want out of life',
-    'I think, therefore I am.',
-    'You can skip all the parties, all the conferences, all the press, all the tweets. Build a great product and get users and win.',
-    'The quick brown fox jumps over the lazy dog.'
-  ]
+  const {
+    userInput,
+    errors,
+    isComplete,
+    inputRef,
+    handleInputChange,
+    resetSession,
+    displayWpm,
+    displayAccuracy,
+  } = useTypingSession(text, currentBookId, currentPassageIndex, isGuest);
 
-  const [book, setBook] = useState<ProcessedBook | null>(null)
-  const [currentPassageIndex, setCurrentPassageIndex] = useState(0)
-  const [text, setText] = useState(defaultTexts[0])
-  const [userInput, setUserInput] = useState('')
-  const [startTime, setStartTime] = useState<number | null>(null)
-  const [errors, setErrors] = useState(0)
-  const [wpm, setWpm] = useState(0)
-  const [accuracy, setAccuracy] = useState(100)
-  const [isComplete, setIsComplete] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [liveWpm, setLiveWpm] = useState(0)
-  const [liveAccuracy, setLiveAccuracy] = useState(100)
-
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (currentBookData && currentBookId) {
-      setBook({
-        title: currentBookData.title,
-        passages: currentBookData.passages.map(p => p.content),
-      });
-      setCurrentPassageIndex(currentBookData.lastReadPosition);
-      setLastSavedPosition(currentBookData.lastReadPosition);
-      setText(currentBookData.passages[currentBookData.lastReadPosition].content);
-      
-      setIsLoadingBook(false);
-      
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 50)
-    }
-  }, [currentBookData, currentBookId]);
-
-  useEffect(() => {
-    if (currentBookId) {
-      setIsLoadingBook(true);
-      resetTypingState();
-    }
-  }, [currentBookId]);
-
-  const debouncedUpdatePosition = useDebounce((bookId: Id<"books">, position: number) => {
-    if (bookId && position !== lastSavedPosition) {
-      updateLastPosition({ bookId, position })
-        .then(() => setLastSavedPosition(position))
-        .catch(console.error);
-    }
-  }, 2000);
-
-  useEffect(() => {
-    if (currentBookId && currentPassageIndex > 0 && !isLoadingBook && !isGuest) {
-      debouncedUpdatePosition(currentBookId, currentPassageIndex);
-    }
-  }, [currentPassageIndex, currentBookId, isLoadingBook, isGuest]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    
-    if (startTime && userInput.length > 0) {
-      interval = setInterval(() => {
-        const now = Date.now()
-        const timeElapsed = (now - startTime) / 60000
-        const wordsTyped = userInput.trim().split(/\s+/).filter(word => word.length > 0).length
-        const currentWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
-        setLiveWpm(currentWpm)
-      }, 100)
-    } else {
-      setLiveWpm(0)
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [startTime, userInput])
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
-
+  // Auto-focus on key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isComplete && e.key.length === 1 && !showUpload && !showSettings && !isLoadingBook && user) {
-        inputRef.current?.focus()
+        inputRef.current?.focus();
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isComplete, showUpload, showSettings, isLoadingBook, user])
-
-  const resetTypingState = () => {
-    setUserInput('')
-    setStartTime(null)
-    setErrors(0)
-    setWpm(0)
-    setAccuracy(100)
-    setLiveWpm(0)
-    setLiveAccuracy(100)
-    setIsComplete(false)
-  }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isComplete, showUpload, showSettings, isLoadingBook, user, inputRef]);
 
   const handleFileUpload = async (file: File) => {
     if (isGuest) {
-      alert('Please sign up or log in to upload books. Guest users can only practice with sample books.');
+      alert('Please sign up or log in to upload books.');
       setShowUpload(false);
       return;
     }
 
-    resetTypingState();
-    setIsProcessing(true)
+    resetSession();
+    setIsProcessing(true);
 
     try {
-      const processedBook = await processPDFClient(file)
-
-      if (processedBook.passages.length > 0 && processedBook.passages[0] !== 'No readable text found in this PDF.') {
+      const processedBook = await processPDFClient(file);
+      if (processedBook.passages[0] !== 'No readable text found in this PDF.') {
         const bookId = await saveBook({
           title: processedBook.title,
           passages: processedBook.passages,
           isPublic: false,
         });
-        
-        setCurrentBookId(bookId);
-        setShowUpload(false)
+        selectBook(bookId);
+        setShowUpload(false);
       } else {
-        alert('No suitable passages found in this PDF. Please try another book.')
+        alert('No suitable passages found in this PDF. Please try another book.');
       }
     } catch (error: any) {
-      console.error('Error processing PDF:', error)
-      alert(error.message || 'Error processing PDF. Please try another file.')
+      console.error('Error processing PDF:', error);
+      alert(error.message || 'Error processing PDF. Please try another file.');
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
-
-  const skipPassage = () => {
-    if (book && book.passages.length > 0) {
-      const nextIndex = (currentPassageIndex + 1) % book.passages.length
-      setCurrentPassageIndex(nextIndex)
-      setText(book.passages[nextIndex])
-    } else {
-      const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
-      setText(newText)
-    }
-
-    resetTypingState()
-    setTimeout(() => inputRef.current?.focus(), 0)
-  }
+  };
 
   const handleNextPassage = () => {
-    if (book && book.passages.length > 0) {
-      const nextIndex = (currentPassageIndex + 1) % book.passages.length
-      setCurrentPassageIndex(nextIndex)
-      setText(book.passages[nextIndex])
-    } else {
-      const newText = defaultTexts[Math.floor(Math.random() * defaultTexts.length)]
-      setText(newText)
+    nextPassage();
+    resetSession();
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const handleSkipPassage = () => {
+    skipPassage();
+    resetSession();
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const handleUploadToggle = () => {
+    if (isGuest && !showUpload) {
+      alert('Please sign up or log in to upload books');
+      return;
     }
+    if (!showUpload) resetSession();
+    setShowUpload(!showUpload);
+  };
 
-    resetTypingState()
-    setTimeout(() => inputRef.current?.focus(), 0)
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isComplete || isLoadingBook) return
-
-    const input = e.target.value
-
-    if (input.length > text.length) return
-
-    if (!startTime && input.length === 1) {
-      setStartTime(Date.now())
-    }
-
-    setUserInput(input)
-
-    let errorCount = 0
-    for (let i = 0; i < input.length; i++) {
-      if (input[i] !== text[i]) errorCount++
-    }
-    setErrors(errorCount)
-
-    if (input.length > 0) {
-      const currentAccuracy = Math.round(((input.length - errorCount) / input.length) * 100)
-      setLiveAccuracy(currentAccuracy)
-    }
-
-    if (input.length === text.length && startTime) {
-      const now = Date.now()
-      const timeTaken = (now - startTime) / 60000
-      const words = text.trim().split(/\s+/).length
-      const finalWPM = Math.round(words / timeTaken)
-      const finalAccuracy = Math.round(((text.length - errorCount) / text.length) * 100)
-
-      setWpm(finalWPM)
-      setAccuracy(finalAccuracy)
-      setIsComplete(true)
-
-      if (user && !isGuest) {
-        saveSession({
-          bookId: currentBookId ?? undefined,
-          passageIndex: currentPassageIndex,
-          wpm: finalWPM,
-          accuracy: finalAccuracy,
-          errors: errorCount,
-        })
-      }
-    }
-  }
-
-  const displayWpm = isComplete ? wpm : liveWpm
-  const displayAccuracy = isComplete ? accuracy : liveAccuracy
-
+  // Show auth modal if not logged in
   if (!user && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
@@ -309,10 +141,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         <AuthModal />
       </div>
-    )
+    );
   }
 
   return (
@@ -323,73 +154,17 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl w-full relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
-          <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-glow-lg">
-            TerminalType
-          </h1>
-          
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
-            {user && (
-              <div className="flex items-center justify-between gap-3 px-3 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light w-full md:w-auto">
-                <div className="flex items-center gap-2">
-                  {user.image && !isGuest && (
-                    <img 
-                      src={user.image} 
-                      alt={user.name || 'User'} 
-                      className="w-6 h-6 rounded-full"
-                    />
-                  )}
-                  <span className="truncate">
-                    {isGuest ? 'Guest User' : (user.email || user.name)}
-                  </span>
-                  {isGuest && (
-                    <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">
-                      Guest
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={logout}
-                  className="px-3 py-1 text-xs border-2 border-error text-error rounded hover:bg-error hover:text-matrix-bg transition-all min-h-[36px]"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-            
-            <button
-              onClick={() => setShowSettings(true)}
-              className="w-full md:w-auto px-4 py-2.5 border-2 border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2"
-            >
-              ⚙️ Settings
-            </button>
-            
-            {!isComplete && !showUpload && !isLoadingBook && (
-              <button
-                onClick={skipPassage}
-                className="w-full md:w-auto px-4 py-2.5 border-2 border-warning text-warning rounded-md hover:bg-warning hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
-              >
-                Skip Passage
-              </button>
-            )}
-            
-            <button
-              onClick={() => {
-                if (isGuest && !showUpload) {
-                  alert('Please sign up or log in to upload books');
-                  return;
-                }
-                if (!showUpload) {
-                  resetTypingState();
-                }
-                setShowUpload(!showUpload)
-              }}
-              className="w-full md:w-auto px-4 py-2.5 border-2 border-matrix-primary text-matrix-primary rounded-md hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
-            >
-              {showUpload ? 'Close' : 'Upload Book PDF'}
-            </button>
-          </div>
-        </header>
+        <Header
+          user={user}
+          isGuest={isGuest}
+          logout={logout}
+          onSettingsClick={() => setShowSettings(true)}
+          onSkipClick={handleSkipPassage}
+          onUploadClick={handleUploadToggle}
+          showUpload={showUpload}
+          isComplete={isComplete}
+          isLoadingBook={isLoadingBook}
+        />
 
         <Settings
           isOpen={showSettings}
@@ -406,7 +181,7 @@ export default function Home() {
           <BookList
             books={publicBooks}
             currentBookId={currentBookId}
-            onBookSelect={setCurrentBookId}
+            onBookSelect={selectBook}
             isLoading={isLoadingBook}
             title="Sample Books"
           />
@@ -416,16 +191,16 @@ export default function Home() {
           <BookList
             books={userBooks}
             currentBookId={currentBookId}
-            onBookSelect={setCurrentBookId}
+            onBookSelect={selectBook}
             isLoading={isLoadingBook}
             title="Your Books"
           />
         )}
 
-        {book && !isLoadingBook && (
+        {currentBookData && !isLoadingBook && (
           <div className="flex flex-col md:flex-row justify-between gap-2 mb-4 px-4 py-3 text-sm font-medium text-matrix-light bg-matrix-primary/10 rounded-lg">
-            <span>Book: {book.title}</span>
-            <span>Passage {currentPassageIndex + 1} of {book.passages.length}</span>
+            <span>Book: {currentBookData.title}</span>
+            <span>Passage {currentPassageIndex + 1} of {currentBookData.totalPassages}</span>
           </div>
         )}
 
@@ -434,7 +209,7 @@ export default function Home() {
           userInput={userInput}
           isComplete={isComplete}
           isDisabled={isLoadingBook}
-          settings={settings} 
+          settings={settings}
         />
 
         <input
@@ -458,8 +233,8 @@ export default function Home() {
 
         {isComplete && !isLoadingBook && (
           <CompletionCard
-            wpm={wpm}
-            accuracy={accuracy}
+            wpm={displayWpm}
+            accuracy={displayAccuracy}
             errors={errors}
             onNext={handleNextPassage}
           />
@@ -472,5 +247,5 @@ export default function Home() {
         )}
       </div>
     </div>
-  )
+  );
 }
