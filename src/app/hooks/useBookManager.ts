@@ -25,7 +25,6 @@ export function useBookManager(isGuest: boolean) {
   );
   const updateLastPosition = useMutation(api.books.updateLastPosition);
 
-  // Debounced position update
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const debouncedUpdatePosition = useCallback((bookId: Id<"books">, position: number) => {
@@ -37,7 +36,7 @@ export function useBookManager(isGuest: boolean) {
           .then(() => setLastSavedPosition(position))
           .catch(console.error);
       }
-    }, 2000);
+    }, 2000) ;
   }, [lastSavedPosition, updateLastPosition]);
 
   useEffect(() => {

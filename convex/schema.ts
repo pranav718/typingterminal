@@ -33,6 +33,15 @@ const schema = defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_book", ["bookId"]),
+
+  sampleBookProgress: defineTable({
+    userId: v.id("users"),
+    bookId: v.string(), 
+    passageIndex: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_book", ["userId", "bookId"]),
 });
 
 export default schema;

@@ -97,3 +97,55 @@ export const updateLastPosition = mutation({
     }
   },
 });
+
+export const getSampleBookProgress = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return {};
+
+    const progress = await ctx.db
+      .query("sampleBookProgress")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const progressMap: Record<string, number> = {};
+    progress.forEach((p) => {
+      progressMap[p.bookId] = p.passageIndex;
+    });
+
+    return progressMap;
+  },
+});
+
+export const updateSampleBookProgress = mutation({
+  args: {
+    bookId: v.string(),
+    passageIndex: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("sampleBookProgress")
+      .withIndex("by_user_and_book", (q) => 
+        q.eq("userId", userId).eq("bookId", args.bookId)
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        passageIndex: args.passageIndex,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("sampleBookProgress", {
+        userId,
+        bookId: args.bookId,
+        passageIndex: args.passageIndex,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
