@@ -17,7 +17,7 @@ export function ThemeProvider( {children}: {children: React.ReactNode}) {
     return (
         <NextThemesProvider attribute="class" 
         defaultTheme='matrix' 
-        themes={['matrix', 'paper', 'ocean', 'sunset']}
+        themes={['matrix', 'paper', 'ocean', 'sunset', 'sakura']}
         enableSystem = {false}
         storageKey='terminaltype-theme'
         >
