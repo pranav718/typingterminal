@@ -4,7 +4,7 @@ import { v } from "convex/values";
 
 const schema = defineSchema({
   ...authTables,
-  
+
   books: defineTable({
     userId: v.id("users"),
     title: v.string(),
@@ -32,16 +32,34 @@ const schema = defineSchema({
     completedAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_book", ["bookId"]),
+    .index("by_book", ["bookId"])
+    .index("by_wpm", ["wpm"])
+    .index("by_accuracy", ["accuracy"]),
 
   sampleBookProgress: defineTable({
     userId: v.id("users"),
-    bookId: v.string(), 
+    bookId: v.string(),
     passageIndex: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_book", ["userId", "bookId"]),
+
+  userStats: defineTable({
+    userId: v.id("users"),
+    bestWpm: v.number(),
+    averageWpm: v.number(),
+    bestAccuracy: v.number(),
+    averageAccuracy: v.number(),
+    totalSessions: v.number(),
+    totalWordsTyped: v.number(),
+    compositeScore: v.number(), 
+    lastUpdated: v.number(),
+  })
+  .index("by_user", ["userId"])
+  .index("by_best_wpm", ["bestWpm"])
+  .index("by_average_wpm", ["averageWpm"])
+  .index("by_composite_score", ["compositeScore"]),
 });
 
 export default schema;

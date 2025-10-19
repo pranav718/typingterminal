@@ -33,6 +33,12 @@ export function useAuth() {
     await signIn("google");
   }, [signIn]);
 
+  const loginWithTwitter = useCallback(async () => {
+    localStorage.removeItem('terminaltype_guest');
+    setIsGuest(false);
+    await signIn("twitter");
+  }, [signIn]);
+
   const loginWithCredentials = useCallback(async (email: string, password: string) => {
     localStorage.removeItem('terminaltype_guest');
     setIsGuest(false);
@@ -85,6 +91,7 @@ export function useAuth() {
     isAuthenticated: !!user,
     isGuest,
     loginWithGoogle,
+    loginWithTwitter,
     loginWithCredentials,
     signup,
     continueAsGuest,
