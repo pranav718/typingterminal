@@ -24,7 +24,7 @@ const FileUpload = dynamic(() => import("../components/FileUpload"), {
 })
 
 function PracticeContent() {
-  const { user, isGuest, logout } = useAuth()
+  const { user, isGuest, logout, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { settings, updateSettings } = useSettings()
@@ -63,8 +63,11 @@ function PracticeContent() {
 
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isInitialMount = useRef(true)
 
   useEffect(() => {
+    if (isLoading) return;
+    
     if (bookIdFromUrl && !currentSampleBook && !uploadedBookIdFromUrl) {
       const book = SAMPLE_BOOKS.find((b) => b.id === bookIdFromUrl)
       if (book) {
@@ -76,7 +79,7 @@ function PracticeContent() {
         setTimeout(() => inputRef.current?.focus(), 100)
       }
     }
-  }, [bookIdFromUrl, getProgress, uploadedBookIdFromUrl])
+  }, [bookIdFromUrl, getProgress, uploadedBookIdFromUrl, isLoading, isGuest])
 
   useEffect(() => {
     if (uploadedBookIdFromUrl && !currentBookId) {
@@ -104,24 +107,16 @@ function PracticeContent() {
   }, [currentBookData, currentBookId])
 
   useEffect(() => {
-    if (currentSampleBook && !isComplete) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+    if (currentSampleBook && currentPassageIndex !== undefined) {
+      if (isInitialMount.current) {
+        isInitialMount.current = false
+        return
       }
-
-      timeoutRef.current = setTimeout(() => {
-        setProgress(currentSampleBook.id, currentPassageIndex)
-      }, 2000)
-
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-        }
-      }
+      
+      setProgress(currentSampleBook.id, currentPassageIndex)
     }
-  }, [currentPassageIndex, currentSampleBook, isComplete, setProgress])
+  }, [currentPassageIndex, currentSampleBook, setProgress])
 
-  // debounced position update for uploaded books
   useEffect(() => {
     if (currentBookId && currentPassageIndex !== lastSavedPosition && !isLoadingBook && !isGuest) {
       if (timeoutRef.current) {
@@ -165,7 +160,6 @@ function PracticeContent() {
     }
   }, [startTime, userInput])
 
-  // auto focus on mount
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
@@ -282,13 +276,15 @@ function PracticeContent() {
       setAccuracy(finalAccuracy)
       setIsComplete(true)
 
-      if (user && !isGuest) {
+      if (user) {
         saveSession({
           bookId: currentBookId ?? undefined,
           passageIndex: currentPassageIndex,
           wpm: finalWPM,
           accuracy: finalAccuracy,
           errors: errorCount,
+        }).catch(err => {
+          console.error('Failed to save session:', err)
         })
       }
     }

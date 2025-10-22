@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 
@@ -10,8 +10,13 @@ interface SampleBookProgress {
 
 export function useSampleBookProgress(isGuest: boolean) {
   const [localProgress, setLocalProgress] = useState<SampleBookProgress>({})
+  const localProgressRef = useRef<SampleBookProgress>({})
+
+  useEffect(() => {
+    const guestFlag = localStorage.getItem('terminaltype_guest');
+    const savedProgress = localStorage.getItem('terminaltype_sample_progress');
+  }, [isGuest]);
   
-  // for logged in users, fetch from database
   const dbProgress = useQuery(
     api.books.getSampleBookProgress,
     isGuest ? "skip" : {}
@@ -19,30 +24,40 @@ export function useSampleBookProgress(isGuest: boolean) {
   
   const updateDbProgress = useMutation(api.books.updateSampleBookProgress)
 
-  // load from localStorage on mount for guests and as fallback
   useEffect(() => {
     const stored = localStorage.getItem('terminaltype_sample_progress')
     if (stored) {
       try {
-        setLocalProgress(JSON.parse(stored))
+        const parsed = JSON.parse(stored)
+        setLocalProgress(parsed)
+        localProgressRef.current = parsed
       } catch {
         setLocalProgress({})
+        localProgressRef.current = {}
       }
     }
   }, [])
+  useEffect(() => {
+    localProgressRef.current = localProgress
+  }, [localProgress])
 
-  const getProgress = (bookId: string): number => {
-    if (isGuest) {
-      return localProgress[bookId] || 0
-    }
-    return dbProgress?.[bookId] || 0
-  }
+  const getProgress = useCallback((bookId: string): number => {
+    const progress = isGuest ? (localProgress[bookId] || 0) : (dbProgress?.[bookId] || 0)
+    return progress
+  }, [isGuest, localProgress, dbProgress])
 
-  const setProgress = async (bookId: string, passageIndex: number) => {
+  const setProgress = useCallback(async (bookId: string, passageIndex: number) => {
+
     if (isGuest) {
-      const newProgress = { ...localProgress, [bookId]: passageIndex }
-      setLocalProgress(newProgress)
-      localStorage.setItem('terminaltype_sample_progress', JSON.stringify(newProgress))
+      if (localProgressRef.current[bookId] === passageIndex) {
+        return;
+      }
+      
+      setLocalProgress(prev => {
+        const newProgress = { ...prev, [bookId]: passageIndex }
+        localStorage.setItem('terminaltype_sample_progress', JSON.stringify(newProgress))
+        return newProgress;
+      })
     } else {
       try {
         await updateDbProgress({ bookId, passageIndex })
@@ -50,7 +65,7 @@ export function useSampleBookProgress(isGuest: boolean) {
         console.error('Failed to save progress:', error)
       }
     }
-  }
+  }, [isGuest, updateDbProgress])
 
   return {
     getProgress,

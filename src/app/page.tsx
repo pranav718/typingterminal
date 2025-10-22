@@ -57,7 +57,6 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Leaderboard Button */}
             <button
               onClick={() => router.push("/leaderboard")}
               className="px-4 py-2.5 border-2 border-yellow-500 text-yellow-500 rounded-md hover:bg-yellow-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"

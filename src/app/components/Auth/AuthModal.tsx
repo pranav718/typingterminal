@@ -1,43 +1,66 @@
-'use client'
-
-import { useState } from 'react';
-import LoginForm from './LoginForm';
-import SignupForm from './SignupForm';
+"use client"
+import { useState } from "react"
+import { useAuthActions } from "../../hooks/useAuth"
+import LoginForm from "./LoginForm"
+import SignupForm from "./SignupForm"
 import GuestButton from "./GuestButton"
 
-interface AuthModalProps {
-  onClose?: () => void;
-}
-
-export default function AuthModal({ onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+export default function AuthModal() {
+  const [isLogin, setIsLogin] = useState(true)
+  const { signInWithGoogle, signInWithTwitter } = useAuthActions()
 
   return (
-     <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-md bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl p-8 shadow-2xl animate-slide-up relative">
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full border-2 border-error text-error hover:bg-error hover:text-matrix-bg transition-all"
-          >
-            ✕
-          </button>
-        )}
-        
-        <h1 className="text-3xl font-bold text-matrix-primary text-center mb-8 drop-shadow-glow">
-          TerminalType
-        </h1>
+    <div className="w-full max-w-md mx-auto">
+      <div className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-2xl p-8 backdrop-blur-sm shadow-glow-lg">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-matrix-primary drop-shadow-glow-lg mb-2">
+            TerminalType
+          </h1>
+          <p className="text-matrix-light">Master typing with classic literature</p>
+        </div>
 
-        {mode === 'login' ? (
-          <LoginForm onSwitchToSignup={() => setMode('signup')} />
-        ) : (
-          <SignupForm onSwitchToLogin={() => setMode('login')} />
-        )}
+        <div className="flex gap-2 mb-6 p-1 bg-matrix-primary/10 rounded-lg">
+          <button
+            onClick={() => setIsLogin(true)}
+            className={`flex-1 py-2 px-4 rounded-md font-semibold transition-all ${
+              isLogin
+                ? "bg-matrix-primary text-matrix-bg shadow-glow"
+                : "text-matrix-light hover:text-matrix-primary"
+            }`}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => setIsLogin(false)}
+            className={`flex-1 py-2 px-4 rounded-md font-semibold transition-all ${
+              !isLogin
+                ? "bg-matrix-primary text-matrix-bg shadow-glow"
+                : "text-matrix-light hover:text-matrix-primary"
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {isLogin ? <LoginForm /> : <SignupForm />}
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-matrix-primary/20"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-matrix-bg text-matrix-light">or</span>
+          </div>
+        </div>
 
         <div className="mt-6">
           <GuestButton />
         </div>
+
+        <p className="text-xs text-matrix-light/60 text-center mt-6">
+          By continuing, you agree to being our oomf 
+        </p>
       </div>
     </div>
-  );
+  )
 }

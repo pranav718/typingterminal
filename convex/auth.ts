@@ -2,6 +2,7 @@ import { convexAuth } from "@convex-dev/auth/server";
 import Google from "@auth/core/providers/google";
 import Twitter from "@auth/core/providers/twitter";
 import { Password } from "@convex-dev/auth/providers/Password";
+import { Anonymous } from "@convex-dev/auth/providers/Anonymous";
 
 export const { auth, signIn, signOut, store } = convexAuth({
   providers: [
@@ -14,5 +15,6 @@ export const { auth, signIn, signOut, store } = convexAuth({
       clientSecret: process.env.AUTH_TWITTER_SECRET,
     }),
     Password,
+    Anonymous,
   ],
 });

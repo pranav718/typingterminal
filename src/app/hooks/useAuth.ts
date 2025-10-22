@@ -1,100 +1,59 @@
 'use client'
 
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuthActions as useConvexAuthActions } from "@convex-dev/auth/react";
+import { useConvexAuth } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useCallback, useState, useEffect } from "react";
-
-type AppUser = {
-  _id?: string;
-  email?: string;
-  name?: string;
-  image?: string;
-  isGuest?: boolean;
-};
+import { useEffect, useState } from "react";
 
 export function useAuth() {
-  const { signIn, signOut } = useAuthActions();
-  const dbUser = useQuery(api.users.getCurrentUser);
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const user = useQuery(api.users.getCurrentUser);
+  const { signOut } = useConvexAuthActions();
   const [isGuest, setIsGuest] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const guestMode = localStorage.getItem('terminaltype_guest');
-    if (guestMode === 'true') {
-      setIsGuest(true);
-    }
-    setIsInitialized(true);
-  }, []);
+    const localStorageGuest = localStorage.getItem('terminaltype_guest') === 'true';
+    const userIsAnonymous = user?.isAnonymous === true;
+    
+    setIsGuest(userIsAnonymous || (isAuthenticated && localStorageGuest));
+    
+  }, [user, isAuthenticated]);
 
-  const loginWithGoogle = useCallback(async () => {
+  const logout = async () => {
+    await signOut();
     localStorage.removeItem('terminaltype_guest');
-    setIsGuest(false);
-    await signIn("google");
-  }, [signIn]);
-
-  const loginWithTwitter = useCallback(async () => {
-    localStorage.removeItem('terminaltype_guest');
-    setIsGuest(false);
-    await signIn("twitter");
-  }, [signIn]);
-
-  const loginWithCredentials = useCallback(async (email: string, password: string) => {
-    localStorage.removeItem('terminaltype_guest');
-    setIsGuest(false);
-    await signIn("password", { email, password, flow: "signIn" });
-  }, [signIn]);
-
-  const signup = useCallback(async (email: string, password: string, name?: string) => {
-    localStorage.removeItem('terminaltype_guest');
-    setIsGuest(false);
-    await signIn("password", { 
-      email, 
-      password, 
-      flow: "signUp",
-      ...(name && { name })
-    });
-  }, [signIn]);
-
-  const continueAsGuest = useCallback(() => {
-    localStorage.setItem('terminaltype_guest', 'true');
-    setIsGuest(true);
-  }, []);
-
-  const logout = useCallback(async () => {
-    if (isGuest) {
-      localStorage.removeItem('terminaltype_guest');
-      setIsGuest(false);
-    } else {
-      await signOut();
-    }
-  }, [signOut, isGuest]);
-
-  const user: AppUser | null = isGuest 
-    ? { 
-        email: 'guest@terminaltype.temp', 
-        name: 'Guest User',
-        image: undefined,
-        isGuest: true 
-      }
-    : dbUser 
-    ? {
-        ...dbUser,
-        isGuest: false
-      }
-    : null;
+    window.location.href = '/';
+  };
 
   return {
     user,
-    dbUser: isGuest ? null : dbUser,
-    isLoading: !isInitialized || (dbUser === undefined && !isGuest),
-    isAuthenticated: !!user,
+    isLoading,
+    isAuthenticated,
     isGuest,
-    loginWithGoogle,
-    loginWithTwitter,
-    loginWithCredentials,
-    signup,
-    continueAsGuest,
     logout,
+  };
+}
+
+export function useAuthActions() {
+  const { signIn } = useConvexAuthActions();
+
+  return {
+    signInWithGoogle: () => signIn("google"),
+    signInWithTwitter: () => signIn("twitter"),
+    signInWithCredentials: async (email: string, password: string) => {
+      await signIn("password", { email, password, flow: "signIn" });
+    },
+    signUp: async (email: string, password: string, name?: string) => {
+      const options: Record<string, any> = { email, password, flow: "signUp" };
+      if (name !== undefined) {
+        options.name = name;
+      }
+      await signIn("password", options);
+    },
+    continueAsGuest: async () => {
+      await signIn("anonymous");
+      localStorage.setItem('terminaltype_guest', 'true');
+    },
   };
 }
