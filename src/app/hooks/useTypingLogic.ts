@@ -24,6 +24,21 @@ export function useTypingLogic(
   const inputRef = useRef<HTMLInputElement>(null)
   const saveSession = useMutation(api.sessions.saveSession)
 
+  const countCorrectWords = (input: string, reference: string): number => {
+    if (!input || !reference) return 0
+    
+    let correctChars = 0
+    const minLength = Math.min(input.length, reference.length)
+    
+    for (let i = 0; i < minLength; i++) {
+      if (input[i] === reference[i]) {
+        correctChars++
+      }
+    }
+    
+    return correctChars / 5
+  }
+
   useEffect(() => {
     if (!startTime || userInput.length === 0) {
       setLiveWpm(0)
@@ -31,13 +46,16 @@ export function useTypingLogic(
     }
 
     const interval = setInterval(() => {
-      const timeElapsed = (Date.now() - startTime) / 60000
-      const wordsTyped = userInput.trim().split(/\s+/).filter(w => w.length > 0).length
-      setLiveWpm(timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0)
+      const timeElapsed = (Date.now() - startTime) / 60000 
+      
+      if (timeElapsed > 0) {
+        const correctWords = countCorrectWords(userInput, text)
+        setLiveWpm(Math.round(correctWords / timeElapsed))
+      }
     }, 100)
 
     return () => clearInterval(interval)
-  }, [startTime, userInput])
+  }, [startTime, userInput, text])
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -77,9 +95,11 @@ export function useTypingLogic(
     }
 
     if (input.length === text.length && startTime) {
-      const timeTaken = (Date.now() - startTime) / 60000
-      const words = text.trim().split(/\s+/).length
-      const finalWPM = Math.round(words / timeTaken)
+      const timeTaken = (Date.now() - startTime) / 60000 
+      
+      const correctWords = countCorrectWords(input, text)
+      const finalWPM = timeTaken > 0 ? Math.round(correctWords / timeTaken) : 0
+      
       const finalAccuracy = Math.round(((text.length - errorCount) / text.length) * 100)
 
       setWpm(finalWPM)
