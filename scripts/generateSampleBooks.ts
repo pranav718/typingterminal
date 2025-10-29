@@ -41,6 +41,66 @@ const BOOKS_TO_PROCESS: BookMetadata[] = [
     author: 'Lewis Carroll',
     filename: 'alice-in-wonderland.epub',
   },
+  {
+    id: 'metamorphosis',
+    title: 'The Metamorphosis',
+    author: 'Franz Kafka',
+    filename: 'metamorphosis.epub',
+  },
+  {
+    id: 'frankenstein',
+    title: 'Frankenstein',
+    author: 'Mary Shelley',
+    filename: 'frankenstein.epub',
+  },
+  {
+    id: 'dracula',
+    title: 'Dracula',
+    author: 'Bram Stoker',
+    filename: 'dracula.epub',
+  },
+  {
+    id: 'sherlock-holmes',
+    title: 'The Adventures of Sherlock Holmes',
+    author: 'Arthur Conan Doyle',
+    filename: 'sherlock-holmes.epub',
+  },
+  {
+    id: 'count-of-monte-cristo',
+    title: 'The Count of Monte Cristo',
+    author: 'Alexandre Dumas',
+    filename: 'count-of-monte-cristo.epub',
+  },
+  {
+    id: 'picture-of-dorian-gray',
+    title: 'The Picture of Dorian Gray',
+    author: 'Oscar Wilde',
+    filename: 'dorian-gray.epub',
+  },
+  {
+    id: 'jane-eyre',
+    title: 'Jane Eyre',
+    author: 'Charlotte Brontë',
+    filename: 'jane-eyre.epub',
+  },
+  {
+    id: 'wuthering-heights',
+    title: 'Wuthering Heights',
+    author: 'Emily Brontë',
+    filename: 'wuthering-heights.epub',
+  },
+  {
+    id: 'little-women',
+    title: 'Little Women',
+    author: 'Louisa May Alcott',
+    filename: 'little-women.epub',
+  },
+  {
+    id: 'odyssey',
+    title: 'The Odyssey',
+    author: 'Homer',
+    filename: 'odyssey.epub',
+  },
 ];
 
 function processEPUB(filePath: string): Promise<string[]> {

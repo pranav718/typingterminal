@@ -3,16 +3,21 @@ import { useRouter } from "next/navigation"
 import { useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { useAuth } from "./hooks/useAuth"
+import { useSettings } from "./hooks/useSettings"
 import { useSampleBookProgress } from "./hooks/useSampleBookProgress"
 import AuthModal from "./components/Auth/AuthModal"
+import Settings from "./components/Settings"
 import TopPerformers from "./components/TopPerformers"
 import { SAMPLE_BOOKS } from "./data/sampleBooks"
+import { useState } from "react"
 import "./terminal.css"
 
 export default function HomePage() {
   const { user, isLoading: authLoading, isGuest, logout } = useAuth()
   const router = useRouter()
   const { getProgress } = useSampleBookProgress(isGuest)
+  const { settings, updateSettings } = useSettings()
+  const [showSettings, setShowSettings] = useState(false)
 
   const userBooks = useQuery(api.books.getUserBooks)
 
@@ -58,6 +63,13 @@ export default function HomePage() {
             )}
 
             <button
+              onClick={() => setShowSettings(true)}
+              className="px-4 py-2.5 border-2 border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"
+            >
+              ⚙️ Settings
+            </button>
+
+            <button
               onClick={() => router.push("/leaderboard")}
               className="px-4 py-2.5 border-2 border-yellow-500 text-yellow-500 rounded-md hover:bg-yellow-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"
             >
@@ -65,6 +77,13 @@ export default function HomePage() {
             </button>
           </div>
         </header>
+
+        <Settings
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          settings={settings}
+          onSettingsChange={updateSettings}
+        />
 
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-matrix-primary mb-4">Choose a Book to Practice</h2>
@@ -257,11 +276,9 @@ export default function HomePage() {
                           d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                         />
                       </svg>
-                         {book.passages.length} passages
+                      {book.passages.length} passages
                     </span>
-                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">
-                      Free
-                    </span>
+                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">Free</span>
                   </div>
 
                   <button className="w-full mt-4 px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold opacity-0 group-hover:opacity-100">
