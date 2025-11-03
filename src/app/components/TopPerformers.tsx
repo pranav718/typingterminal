@@ -1,13 +1,14 @@
-// src/app/components/TopPerformers.tsx
 "use client"
 
 import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useRouter } from "next/navigation"
+import { useAuth } from "../hooks/useAuth"
 
 export default function TopPerformers() {
   const topPerformers = useQuery(api.leaderboard.getTopPerformers)
   const router = useRouter()
+  const { isGuest, user } = useAuth()
 
   if (!topPerformers) {
     return (
@@ -24,7 +25,7 @@ export default function TopPerformers() {
       <h3 className="text-xl font-bold text-matrix-primary mb-4 flex items-center gap-2">
         {title}
       </h3>
-      
+
       {performers.length === 0 ? (
         <p className="text-matrix-light/60 text-sm text-center py-4">No data yet</p>
       ) : (
@@ -72,11 +73,18 @@ export default function TopPerformers() {
 
   return (
     <div className="mt-16">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-matrix-primary flex items-center gap-2">
-          <span>🌟</span>
-          Top Performers
-        </h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-matrix-primary flex items-center gap-2">
+            <span>🌟</span>
+            Top Performers
+          </h2>
+          {isGuest && (
+            <p className="text-sm text-matrix-light/60 mt-1">
+              Sign up to compete for a spot on the leaderboard!
+            </p>
+          )}
+        </div>
         <button
           onClick={() => router.push("/leaderboard")}
           className="px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold text-sm"
@@ -85,11 +93,26 @@ export default function TopPerformers() {
         </button>
       </div>
 
+      {/* Guest Info Banner */}
+      {isGuest && (
+        <div className="mb-6 p-4 bg-cyan-500/10 border-2 border-cyan-500/30 rounded-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🏆</span>
+            <div>
+              <div className="font-semibold text-cyan-400 mb-1">Compete for Glory!</div>
+              <div className="text-sm text-matrix-light">
+                Create an account to track your stats and appear on the leaderboard. Challenge yourself to reach the top!
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {renderTopThree("Fastest Typists", topPerformers.fastestTypers, "wpm")}
-        {renderTopThree("Most Accurate", topPerformers.mostAccurate, "accuracy")}
-        {renderTopThree("Overall Best", topPerformers.topOverall, "score")}
-        {renderTopThree("Most Dedicated", topPerformers.mostDedicated, "sessions")}
+        {renderTopThree("⚡ Fastest Typists", topPerformers.fastestTypers, "wpm")}
+        {renderTopThree("🎯 Most Accurate", topPerformers.mostAccurate, "accuracy")}
+        {renderTopThree("🏆 Overall Best", topPerformers.topOverall, "score")}
+        {renderTopThree("💪 Most Dedicated", topPerformers.mostDedicated, "sessions")}
       </div>
     </div>
   )
