@@ -335,7 +335,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {!isGuest && <TopPerformers />}
+        <TopPerformers />
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-6 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl">
