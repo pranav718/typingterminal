@@ -1,19 +1,24 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useQuery } from "convex/react"
+import { api } from "../../../convex/_generated/api"
 import { useAuth } from "../hooks/useAuth"
 import Leaderboard from "../components/Leaderboard"
-import AuthModal from "../components/Auth/AuthModal"
 import "../terminal.css"
 
 export default function LeaderboardPage() {
   const { user, isLoading, isGuest, logout } = useAuth()
   const router = useRouter()
 
-  if (!user && !isLoading) {
+  // only show loading state while checking auth
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center p-4 md:p-8">
-        <AuthModal />
+      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-matrix-primary border-t-transparent mb-4"></div>
+          <p className="text-matrix-primary text-xl animate-pulse">Loading...</p>
+        </div>
       </div>
     )
   }
@@ -26,7 +31,6 @@ export default function LeaderboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-6 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <button
@@ -64,22 +68,40 @@ export default function LeaderboardPage() {
           </div>
         </header>
 
-        {/* Guest Warning */}
         {isGuest && (
-          <div className="mb-6 p-4 bg-warning/10 border-2 border-warning rounded-xl">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
+          <div className="mb-6 p-4 bg-cyan-500/10 border-2 border-cyan-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">👀</span>
               <div>
-                <div className="font-semibold text-warning mb-1">Guest Mode</div>
+                <div className="font-semibold text-cyan-400 mb-1">Viewing as Guest</div>
                 <div className="text-sm text-matrix-light">
-                  Sign up to appear on the leaderboard and track your progress!
+                  You can view the leaderboard, but you won't appear here until you sign up and start typing!
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Leaderboard Component */}
+        {!user && (
+          <div className="mb-6 p-4 bg-cyan-500/10 border-2 border-cyan-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">👀</span>
+              <div className="flex-1">
+                <div className="font-semibold text-cyan-400 mb-1">Viewing as Visitor</div>
+                <div className="text-sm text-matrix-light mb-3">
+                  Sign up to compete on the leaderboard and track your progress!
+                </div>
+                <button
+                  onClick={() => router.push("/")}
+                  className="px-4 py-2 bg-matrix-primary text-matrix-bg font-semibold rounded-lg hover:shadow-glow-hover transition-all text-sm"
+                >
+                  Sign Up Now →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Leaderboard />
       </div>
     </div>
