@@ -11,18 +11,22 @@ export default function Leaderboard() {
   const [category, setCategory] = useState<LeaderboardCategory>("composite")
   const [showAll, setShowAll] = useState(false)
   const { user } = useAuth()
-  
-  const leaderboard = useQuery(api.leaderboard.getLeaderboard, { 
-    limit: showAll ? 100 : 50, 
-    sortBy: category 
+
+  const leaderboard = useQuery(api.leaderboard.getLeaderboard, {
+    limit: showAll ? 100 : 50,
+    sortBy: category
   })
-  const userRank = useQuery(api.leaderboard.getUserRank)
+  
+  const userRank = useQuery(
+    api.leaderboard.getUserRank,
+    user ? {} : "skip"
+  )
 
   const getCategoryIcon = (cat: LeaderboardCategory) => {
     switch (cat) {
-      case "composite": return "Composite"
-      case "wpm": return "WPM"
-      case "accuracy": return "Accuracy"
+      case "composite": return "🏆"
+      case "wpm": return "⚡️"
+      case "accuracy": return "🎯"
     }
   }
 
@@ -42,13 +46,13 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
+    <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-4xl font-bold text-matrix-primary mb-2 drop-shadow-glow">
-          🏆 Leaderboard
+          📊 Leaderboard
         </h2>
         <p className="text-matrix-light">
-          Compete with typists 
+          {user ? "Compete with typists worldwide" : "See the best typists worldwide"}
         </p>
       </div>
 
@@ -75,9 +79,9 @@ export default function Leaderboard() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
               {user.image && (
-                <img 
-                  src={user.image} 
-                  alt="Your profile" 
+                <img
+                  src={user.image}
+                  alt="Your profile"
                   className="w-12 h-12 rounded-full border-2 border-matrix-primary"
                 />
               )}
@@ -88,7 +92,7 @@ export default function Leaderboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-6 text-center">
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-matrix-primary">
@@ -98,7 +102,7 @@ export default function Leaderboard() {
                   of {userRank.totalUsers}
                 </div>
               </div>
-              
+
               <div className="border-l border-matrix-primary/30 pl-6">
                 <div className="text-2xl md:text-3xl font-bold text-matrix-primary">
                   {userRank.percentile}%
@@ -132,13 +136,13 @@ export default function Leaderboard() {
               {leaderboard?.map((entry, idx) => {
                 const isCurrentUser = user && entry.email === user.email
                 const medal = getMedalEmoji(entry.rank)
-                
+
                 return (
                   <tr
                     key={entry.userId}
                     className={`border-t border-matrix-primary/10 transition-colors ${
-                      isCurrentUser 
-                        ? "bg-matrix-primary/20 hover:bg-matrix-primary/25" 
+                      isCurrentUser
+                        ? "bg-matrix-primary/20 hover:bg-matrix-primary/25"
                         : "hover:bg-matrix-primary/5"
                     }`}
                   >
@@ -152,13 +156,13 @@ export default function Leaderboard() {
                         </span>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {entry.image && (
-                          <img 
-                            src={entry.image} 
-                            alt={entry.displayName} 
+                          <img
+                            src={entry.image}
+                            alt={entry.displayName}
                             className="w-8 h-8 rounded-full border border-matrix-primary/30"
                           />
                         )}
@@ -176,19 +180,19 @@ export default function Leaderboard() {
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 text-right">
                       <span className="text-matrix-primary font-mono font-semibold">
                         {entry.bestWpm}
                       </span>
                     </td>
-                    
+
                     <td className="px-6 py-4 text-right">
                       <span className="text-matrix-light font-mono">
                         {entry.bestAccuracy}%
                       </span>
                     </td>
-                    
+
                     {category === "composite" && (
                       <td className="px-6 py-4 text-right">
                         <span className="text-matrix-primary font-bold font-mono">
@@ -196,13 +200,13 @@ export default function Leaderboard() {
                         </span>
                       </td>
                     )}
-                    
+
                     <td className="px-6 py-4 text-right">
                       <span className="text-matrix-light/70 font-mono text-sm">
                         {entry.averageWpm}
                       </span>
                     </td>
-                    
+
                     <td className="px-6 py-4 text-right">
                       <span className="text-matrix-light/50 text-sm">
                         {entry.totalSessions}
@@ -219,13 +223,13 @@ export default function Leaderboard() {
           {leaderboard?.map((entry) => {
             const isCurrentUser = user && entry.email === user.email
             const medal = getMedalEmoji(entry.rank)
-            
+
             return (
               <div
                 key={entry.userId}
                 className={`p-4 border-b border-matrix-primary/10 ${
-                  isCurrentUser 
-                    ? "bg-matrix-primary/20" 
+                  isCurrentUser
+                    ? "bg-matrix-primary/20"
                     : "hover:bg-matrix-primary/5"
                 } transition-colors`}
               >
@@ -238,15 +242,15 @@ export default function Leaderboard() {
                         #{entry.rank}
                       </span>
                     )}
-                    
+
                     {entry.image && (
-                      <img 
-                        src={entry.image} 
-                        alt={entry.displayName} 
+                      <img
+                        src={entry.image}
+                        alt={entry.displayName}
                         className="w-10 h-10 rounded-full border border-matrix-primary/30"
                       />
                     )}
-                    
+
                     <div>
                       <div className={`font-medium ${
                         isCurrentUser ? "text-matrix-primary font-bold" : "text-matrix-light"
@@ -269,14 +273,14 @@ export default function Leaderboard() {
                       {entry.bestWpm}
                     </div>
                   </div>
-                  
+
                   <div className="bg-matrix-primary/5 rounded-lg p-2">
                     <div className="text-xs text-matrix-light/60 mb-1">Accuracy</div>
                     <div className="text-lg font-bold text-matrix-light font-mono">
                       {entry.bestAccuracy}%
                     </div>
                   </div>
-                  
+
                   {category === "composite" && (
                     <div className="bg-matrix-primary/5 rounded-lg p-2">
                       <div className="text-xs text-matrix-light/60 mb-1">Score</div>
@@ -285,14 +289,14 @@ export default function Leaderboard() {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="bg-matrix-primary/5 rounded-lg p-2">
                     <div className="text-xs text-matrix-light/60 mb-1">Avg WPM</div>
                     <div className="text-lg font-bold text-matrix-light/70 font-mono">
                       {entry.averageWpm}
                     </div>
                   </div>
-                  
+
                   <div className="bg-matrix-primary/5 rounded-lg p-2">
                     <div className="text-xs text-matrix-light/60 mb-1">Sessions</div>
                     <div className="text-lg font-bold text-matrix-light/50">
@@ -307,7 +311,7 @@ export default function Leaderboard() {
 
         {leaderboard && leaderboard.length === 0 && (
           <div className="p-12 text-center text-matrix-light/60">
-            <div className="text-4xl mb-4">📊</div>
+            <div className="text-4xl mb-4">👾</div>
             <p>No rankings yet. Be the first to compete!</p>
           </div>
         )}
@@ -348,35 +352,35 @@ function GlobalStatsFooter() {
         </div>
         <div className="text-xs text-matrix-light">Total Typists</div>
       </div>
-      
+
       <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
         <div className="text-2xl font-bold text-matrix-primary mb-1">
           {globalStats.totalSessions.toLocaleString()}
         </div>
         <div className="text-xs text-matrix-light">Total Sessions</div>
       </div>
-      
+
       <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
         <div className="text-2xl font-bold text-matrix-primary mb-1">
           {globalStats.averageWpm}
         </div>
         <div className="text-xs text-matrix-light">Average WPM</div>
       </div>
-      
+
       <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
         <div className="text-2xl font-bold text-matrix-primary mb-1">
           {globalStats.averageAccuracy}%
         </div>
         <div className="text-xs text-matrix-light">Average Accuracy</div>
       </div>
-      
+
       <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
         <div className="text-2xl font-bold text-matrix-primary mb-1">
           {globalStats.highestWpm}
         </div>
         <div className="text-xs text-matrix-light">Highest WPM</div>
       </div>
-      
+
       <div className="p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg text-center">
         <div className="text-2xl font-bold text-matrix-primary mb-1">
           {globalStats.highestAccuracy}%
