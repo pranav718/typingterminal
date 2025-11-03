@@ -140,6 +140,65 @@ export const submitMatchResult = mutation({
       isFinished: true,
     });
 
+    //save to typing sessions (for stats n leaderboard)
+    await ctx.db.insert("typingSessions", {
+      userId,
+      passageIndex: 0, 
+      wpm: args.wpm,
+      accuracy: args.accuracy,
+      errors: args.errors,
+      completedAt: Date.now(),
+    });
+
+    const existingStats = await ctx.db
+      .query("userStats")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    const wordsTyped = Math.round(args.wpm * 1); 
+
+    if (existingStats) {
+      const newTotalSessions = existingStats.totalSessions + 1;
+      const newTotalWords = existingStats.totalWordsTyped + wordsTyped;
+      
+      const newAvgWpm = Math.round(
+        (existingStats.averageWpm * existingStats.totalSessions + args.wpm) / newTotalSessions
+      );
+      const newAvgAccuracy = Math.round(
+        (existingStats.averageAccuracy * existingStats.totalSessions + args.accuracy) / newTotalSessions
+      );
+      
+      const newBestWpm = Math.max(existingStats.bestWpm, args.wpm);
+      const newBestAccuracy = Math.max(existingStats.bestAccuracy, args.accuracy);
+      
+      const compositeScore = newBestWpm * (newBestAccuracy / 100);
+
+      await ctx.db.patch(existingStats._id, {
+        bestWpm: newBestWpm,
+        averageWpm: newAvgWpm,
+        bestAccuracy: newBestAccuracy,
+        averageAccuracy: newAvgAccuracy,
+        totalSessions: newTotalSessions,
+        totalWordsTyped: newTotalWords,
+        compositeScore,
+        lastUpdated: Date.now(),
+      });
+    } else {
+      const compositeScore = args.wpm * (args.accuracy / 100);
+      
+      await ctx.db.insert("userStats", {
+        userId,
+        bestWpm: args.wpm,
+        averageWpm: args.wpm,
+        bestAccuracy: args.accuracy,
+        averageAccuracy: args.accuracy,
+        totalSessions: 1,
+        totalWordsTyped: wordsTyped,
+        compositeScore,
+        lastUpdated: Date.now(),
+      });
+    }
+
     const allResults = await ctx.db
       .query("matchResults")
       .withIndex("by_match", (q) => q.eq("matchId", args.matchId))
