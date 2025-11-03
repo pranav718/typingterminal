@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as books from "../books.js";
 import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
+import type * as matches from "../matches.js";
 import type * as sessions from "../sessions.js";
 import type * as users from "../users.js";
 
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   books: typeof books;
   http: typeof http;
   leaderboard: typeof leaderboard;
+  matches: typeof matches;
   sessions: typeof sessions;
   users: typeof users;
 }>;
