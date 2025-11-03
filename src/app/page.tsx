@@ -8,6 +8,8 @@ import { useSampleBookProgress } from "./hooks/useSampleBookProgress"
 import AuthModal from "./components/Auth/AuthModal"
 import Settings from "./components/Settings"
 import TopPerformers from "./components/TopPerformers"
+import CreateMatchModal from "./components/Match/CreateMatchModal"
+import JoinMatchModal from "./components/Match/JoinMatchModal"
 import { SAMPLE_BOOKS } from "./data/sampleBooks"
 import { useState } from "react"
 import "./terminal.css"
@@ -17,9 +19,16 @@ export default function HomePage() {
   const router = useRouter()
   const { getProgress } = useSampleBookProgress(isGuest)
   const { settings, updateSettings } = useSettings()
+  
   const [showSettings, setShowSettings] = useState(false)
+  const [showCreateMatch, setShowCreateMatch] = useState(false)
+  const [showJoinMatch, setShowJoinMatch] = useState(false)
 
   const userBooks = useQuery(api.books.getUserBooks)
+
+  const handleMatchCreated = (matchId: string, inviteCode: string) => {
+    router.push(`/match/${matchId}`)
+  }
 
   if (!user && !authLoading) {
     return (
@@ -43,14 +52,14 @@ export default function HomePage() {
             <p className="text-matrix-light text-sm mt-2">Master typing with classic literature</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
             {user && (
               <div className="flex items-center gap-3 px-4 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light">
                 <div className="flex items-center gap-2">
                   {user.image && !isGuest && (
                     <img src={user.image} alt={user.name || "User"} className="w-8 h-8 rounded-full" />
                   )}
-                  <span className="truncate">{isGuest ? "Guest User" : user.email || user.name}</span>
+                  <span className="truncate max-w-[120px]">{isGuest ? "Guest User" : user.email || user.name}</span>
                   {isGuest && <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">Guest</span>}
                 </div>
                 <button
@@ -75,6 +84,31 @@ export default function HomePage() {
             >
               🏆 Leaderboard
             </button>
+
+            {!isGuest && (
+              <>
+                <button
+                  onClick={() => setShowCreateMatch(true)}
+                  className="px-4 py-2.5 border-2 border-purple-500 text-purple-500 rounded-md hover:bg-purple-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"
+                >
+                  ⚔️ Create Match
+                </button>
+
+                <button
+                  onClick={() => setShowJoinMatch(true)}
+                  className="px-4 py-2.5 border-2 border-green-500 text-green-500 rounded-md hover:bg-green-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"
+                >
+                  🎮 Join Match
+                </button>
+
+                <button
+                  onClick={() => router.push("/matches")}
+                  className="px-4 py-2.5 border-2 border-pink-500 text-pink-500 rounded-md hover:bg-pink-500 hover:text-matrix-bg transition-all font-semibold text-sm flex items-center gap-2"
+                >
+                  📜 My Matches
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -83,6 +117,17 @@ export default function HomePage() {
           onClose={() => setShowSettings(false)}
           settings={settings}
           onSettingsChange={updateSettings}
+        />
+
+        <CreateMatchModal
+          isOpen={showCreateMatch}
+          onClose={() => setShowCreateMatch(false)}
+          onMatchCreated={handleMatchCreated}
+        />
+
+        <JoinMatchModal
+          isOpen={showJoinMatch}
+          onClose={() => setShowJoinMatch(false)}
         />
 
         <div className="text-center mb-12">
@@ -207,7 +252,7 @@ export default function HomePage() {
             </h3>
             {isGuest && (
               <span className="text-sm text-matrix-light px-3 py-1 bg-matrix-primary/10 rounded-full">
-                Already available books
+                Free for all users
               </span>
             )}
           </div>
@@ -278,7 +323,7 @@ export default function HomePage() {
                       </svg>
                       {book.passages.length} passages
                     </span>
-                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">Available</span>
+                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">Free</span>
                   </div>
 
                   <button className="w-full mt-4 px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold opacity-0 group-hover:opacity-100">
@@ -305,12 +350,12 @@ export default function HomePage() {
 
           <div className="text-center p-6 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl">
             <h3 className="text-lg font-bold text-matrix-primary mb-2">
-              {isGuest ? "Sign Up for More" : "Your Progress Saved"}
+              {isGuest ? "Sign Up for More" : "Compete with Friends"}
             </h3>
             <p className="text-sm text-matrix-light">
               {isGuest
                 ? "Create an account to upload your own PDFs and save progress"
-                : "Continue from where you left off anytime"}
+                : "Challenge friends in real-time typing matches"}
             </p>
           </div>
         </div>
