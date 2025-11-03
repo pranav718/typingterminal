@@ -60,6 +60,41 @@ const schema = defineSchema({
   .index("by_best_wpm", ["bestWpm"])
   .index("by_average_wpm", ["averageWpm"])
   .index("by_composite_score", ["compositeScore"]),
+
+  matches: defineTable({
+    hostId: v.id("users"),
+    opponentId: v.optional(v.id("users")),
+    passageText: v.string(),
+    passageSource: v.string(),
+    status: v.union(
+      v.literal("waiting"),
+      v.literal("in_progress"),
+      v.literal("completed"),
+      v.literal("cancelled")
+    ),
+    winnerId: v.optional(v.id("users")),
+    createdAt: v.number(),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    inviteCode: v.string()
+  })
+    .index("by_host", ["hostId"])
+    .index("by_opponent", ["opponentId"])
+    .index("by_status", ["status"])
+    .index("by_invite_code", ["inviteCode"]),
+
+  matchResults: defineTable({
+    matchId: v.id("matches"),
+    userId: v.id("users"),
+    wpm: v.number(),
+    accuracy: v.number(),
+    errors: v.number(),
+    completedAt: v.optional(v.number()),
+    isFinished: v.boolean(),
+  })
+    .index("by_match", ["matchId"])
+    .index("by_user", ["userId"])
+    .index("by_match_and_user", ["matchId", "userId"]),
 });
 
 export default schema;
