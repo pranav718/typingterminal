@@ -207,7 +207,7 @@ export default function HomePage() {
             </h3>
             {isGuest && (
               <span className="text-sm text-matrix-light px-3 py-1 bg-matrix-primary/10 rounded-full">
-                Free for all users
+                Already available books
               </span>
             )}
           </div>
@@ -278,7 +278,7 @@ export default function HomePage() {
                       </svg>
                       {book.passages.length} passages
                     </span>
-                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">Free</span>
+                    <span className="px-2 py-1 bg-matrix-primary/20 rounded text-matrix-primary font-semibold">Available</span>
                   </div>
 
                   <button className="w-full mt-4 px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold opacity-0 group-hover:opacity-100">
