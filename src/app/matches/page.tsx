@@ -1,10 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useQuery } from 'convex/react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../hooks/useAuth'
 import AuthModal from '../components/Auth/AuthModal'
+import { Id } from '../../../convex/_generated/dataModel'
 import '../terminal.css'
 
 export default function MatchesPage() {
@@ -13,6 +14,18 @@ export default function MatchesPage() {
 
   const myMatches = useQuery(api.matches.getMyMatches)
   const matchHistory = useQuery(api.matches.getMatchHistory, { limit: 50 })
+  const cancelMatch = useMutation(api.matches.cancelMatch)
+
+  const handleCancelMatch = async (matchId: Id<"matches">) => {
+    if (!confirm('Are you sure you want to cancel this match?')) return
+
+    try {
+      await cancelMatch({ matchId })
+    } catch (error) {
+      console.error('Failed to cancel match:', error)
+      alert('Failed to cancel match')
+    }
+  }
 
   if (!user && !isLoading) {
     return (
@@ -70,16 +83,28 @@ export default function MatchesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeMatches.map(match => {
                 const isHost = user && match.hostId === user._id
-                const won = user && match.winnerId === user._id
                 const opponent = isHost ? match.opponent : match.host
+                const canCancel = isHost && match.status === 'waiting'
 
                 return (
                   <div
                     key={match._id}
-                    className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl p-6 hover:border-matrix-primary hover:bg-matrix-primary/10 transition-all cursor-pointer"
-                    onClick={() => router.push(`/match/${match._id}`)}
+                    className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-xl p-6 hover:border-matrix-primary transition-all relative"
                   >
-                    <div className="flex justify-between items-start mb-4">
+                    {canCancel && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCancelMatch(match._id)
+                        }}
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                        title="Cancel match"
+                      >
+                        ✕
+                      </button>
+                    )}
+
+                    <div className="flex justify-between items-start mb-4 pr-8">
                       <div>
                         <div className="text-sm text-matrix-light mb-1">
                           {match.status === 'waiting' ? '⏳ Waiting' : '🏁 In Progress'}
@@ -87,13 +112,13 @@ export default function MatchesPage() {
                         <div className="font-bold text-matrix-primary">{match.passageSource}</div>
                       </div>
                       {match.status === 'waiting' && isHost && (
-                        <div className="px-3 py-1 bg-matrix-primary/20 rounded font-mono text-matrix-primary font-bold">
+                        <div className="px-3 py-1 bg-matrix-primary/20 rounded font-mono text-matrix-primary font-bold text-sm">
                           {match.inviteCode}
                         </div>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3 mb-4">
                       <div className="flex items-center gap-2">
                         {match.host.image && (
                           <img src={match.host.image} alt={match.host.name} className="w-8 h-8 rounded-full" />
@@ -113,8 +138,13 @@ export default function MatchesPage() {
                       )}
                     </div>
 
-                    <button className="w-full px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold">
-                      {match.status === 'waiting' ? 'View Invite' : 'Join Match →'}
+                    <button
+                      onClick={() => router.push(`/match/${match._id}`)}
+                      className="w-full px-4 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all font-semibold"
+                    >
+                      {match.status === 'waiting' 
+                        ? (canCancel ? 'View Invite' : 'Waiting to Start') 
+                        : 'Join Match →'}
                     </button>
                   </div>
                 )
@@ -144,8 +174,8 @@ export default function MatchesPage() {
           ) : (
             <div className="space-y-4">
               {completedMatches.map(match => {
-                const isHost = match.hostId === user?._id
-                const won = match.winnerId === user?._id
+                const isHost = user && match.hostId === user._id
+                const won = user && match.winnerId === user._id
                 const hostResult = match.results?.find(r => r.userId === match.hostId)
                 const opponentResult = match.results?.find(r => r.userId === match.opponentId)
 
@@ -165,8 +195,8 @@ export default function MatchesPage() {
                           <span className="font-bold text-matrix-primary">
                             {won ? 'Victory' : 'Defeat'}
                           </span>
-                          <div className="text-sm text-matrix-light">{match.passageSource}</div>
                         </div>
+                        <div className="text-sm text-matrix-light">{match.passageSource}</div>
                         <div className="text-xs text-matrix-light/60">
                           {new Date(match.completedAt || 0).toLocaleDateString()} at{' '}
                           {new Date(match.completedAt || 0).toLocaleTimeString()}
@@ -174,7 +204,7 @@ export default function MatchesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className={`p-4 rounded-lg ${match.winnerId === match.hostId ? 'bg-green-500/10 border border-green-500/30' : 'bg-matrix-primary/5'}`}>
                         <div className="flex items-center gap-2 mb-3">
                           {match.host.image && (

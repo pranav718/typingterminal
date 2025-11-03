@@ -16,6 +16,7 @@ interface MatchPageProps {
 }
 
 export default function MatchPage({ params }: MatchPageProps) {
+  const cancelMatch = useMutation(api.matches.cancelMatch)
   const resolvedParams = use(params)
   const matchId = resolvedParams.matchId as Id<"matches">
   const router = useRouter()
@@ -151,51 +152,72 @@ export default function MatchPage({ params }: MatchPageProps) {
     return null
   }
 
-  if (matchData.status === 'waiting') {
+    if (matchData.status === 'waiting') {
+    const isHost = user._id === matchData.hostId
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg p-4 md:p-8">
+        <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg p-4 md:p-8">
         <div className="max-w-2xl mx-auto">
-          <button
+            <button
             onClick={() => router.push('/')}
             className="mb-6 px-4 py-2 border-2 border-matrix-primary/30 text-matrix-primary rounded-md hover:border-matrix-primary transition-all"
-          >
+            >
             ← Back to Home
-          </button>
+            </button>
 
-          <div className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-2xl p-8 text-center">
+            <div className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-2xl p-8 text-center relative">
+            {isHost && (
+                <button
+                onClick={async () => {
+                    if (confirm('Are you sure you want to cancel this match?')) {
+                    try {
+                        await cancelMatch({ matchId })
+                        router.push('/matches')
+                    } catch (error) {
+                        console.error('Failed to cancel:', error)
+                        alert('Failed to cancel match')
+                    }
+                    }
+                }}
+                className="absolute top-4 right-4 px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all font-semibold text-sm"
+                >
+                ✕ Cancel Match
+                </button>
+            )}
+
             <h2 className="text-3xl font-bold text-matrix-primary mb-6">Waiting for Opponent...</h2>
             
             <div className="mb-8 p-6 bg-matrix-primary/10 border border-matrix-primary/20 rounded-xl">
-              <p className="text-sm text-matrix-light mb-2">Share this invite code:</p>
-              <div className="text-4xl font-bold text-matrix-primary tracking-widest font-mono">
+                <p className="text-sm text-matrix-light mb-2">Share this invite code:</p>
+                <div className="text-4xl font-bold text-matrix-primary tracking-widest font-mono">
                 {matchData.inviteCode}
-              </div>
-              <button
+                </div>
+                <button
                 onClick={() => {
-                  navigator.clipboard.writeText(matchData.inviteCode)
-                  alert('Invite code copied!')
+                    navigator.clipboard.writeText(matchData.inviteCode)
+                    alert('Invite code copied!')
                 }}
                 className="mt-4 px-6 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all"
-              >
+                >
                 📋 Copy Code
-              </button>
+                </button>
             </div>
 
             <div className="text-matrix-light mb-6">
-              <p className="mb-2">Passage: <span className="font-semibold">{matchData.passageSource}</span></p>
-              <div className="p-4 bg-matrix-bg/50 rounded-lg text-sm max-h-32 overflow-y-auto text-left">
+                <p className="mb-2">Passage: <span className="font-semibold">{matchData.passageSource}</span></p>
+                <div className="p-4 bg-matrix-bg/50 rounded-lg text-sm max-h-32 overflow-y-auto text-left">
                 {matchData.passageText.substring(0, 150)}...
-              </div>
+                </div>
             </div>
 
             <div className="animate-pulse text-matrix-primary mb-4">
-              Waiting for someone to join...
+                Waiting for someone to join...
             </div>
-          </div>
+            </div>
         </div>
-      </div>
+        </div>
     )
-  }
+    }
 
   if (matchData.status === 'completed') {
     const winner = matchData.winnerId === user._id
