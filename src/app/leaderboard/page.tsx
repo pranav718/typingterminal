@@ -6,6 +6,7 @@ import { api } from "../../../convex/_generated/api"
 import { useAuth } from "../hooks/useAuth"
 import Leaderboard from "../components/Leaderboard"
 import "../terminal.css"
+import ProfileImage from '../components/ProfileImage'
 
 export default function LeaderboardPage() {
   const { user, isLoading, isGuest, logout } = useAuth()
@@ -51,9 +52,12 @@ export default function LeaderboardPage() {
             {user && (
               <div className="flex items-center gap-3 px-4 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light">
                 <div className="flex items-center gap-2">
-                  {user.image && !isGuest && (
-                    <img src={user.image} alt={user.name || "User"} className="w-8 h-8 rounded-full" />
-                  )}
+                  <ProfileImage 
+                    src={user.image} 
+                    alt={user.name || "User"}
+                    fallbackText={user.name || user.email}
+                    className="w-8 h-8 rounded-full"
+                  />
                   <span className="truncate">{isGuest ? "Guest User" : user.email || user.name}</span>
                   {isGuest && <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">Guest</span>}
                 </div>

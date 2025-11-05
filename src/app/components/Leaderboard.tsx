@@ -4,6 +4,7 @@ import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useState } from "react"
 import { useAuth } from "../hooks/useAuth"
+import ProfileImage from "./ProfileImage"
 
 type LeaderboardCategory = "composite" | "wpm" | "accuracy"
 
@@ -78,13 +79,12 @@ export default function Leaderboard() {
         <div className="mb-6 p-4 md:p-6 bg-gradient-to-br from-matrix-primary/20 to-matrix-primary/10 border-2 border-matrix-primary rounded-xl animate-slide-up">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
-              {user.image && (
-                <img
-                  src={user.image}
-                  alt="Your profile"
-                  className="w-12 h-12 rounded-full border-2 border-matrix-primary"
+                <ProfileImage 
+                  src={user.image} 
+                  alt={user.name || user.email || "You"}
+                  fallbackText={user.name || user.email}
+                  className="w-12 h-12 rounded-full"
                 />
-              )}
               <div>
                 <div className="text-sm text-matrix-light">Your Rank</div>
                 <div className="text-xl font-bold text-matrix-primary">
@@ -159,13 +159,11 @@ export default function Leaderboard() {
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {entry.image && (
-                          <img
-                            src={entry.image}
-                            alt={entry.displayName}
-                            className="w-8 h-8 rounded-full border border-matrix-primary/30"
-                          />
-                        )}
+                        <ProfileImage 
+                          src={entry.image} 
+                          alt={entry.displayName}
+                          fallbackText={entry.displayName}
+                        />
                         <div>
                           <div className={`font-medium ${
                             isCurrentUser ? "text-matrix-primary font-bold" : "text-matrix-light"
@@ -243,13 +241,12 @@ export default function Leaderboard() {
                       </span>
                     )}
 
-                    {entry.image && (
-                      <img
-                        src={entry.image}
-                        alt={entry.displayName}
-                        className="w-10 h-10 rounded-full border border-matrix-primary/30"
-                      />
-                    )}
+                    <ProfileImage 
+                      src={entry.image} 
+                      alt={entry.displayName}
+                      fallbackText={entry.displayName}
+                      className="w-10 h-10 rounded-full"
+                    />
 
                     <div>
                       <div className={`font-medium ${

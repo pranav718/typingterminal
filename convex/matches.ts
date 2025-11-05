@@ -280,6 +280,15 @@ export const cancelMatch = mutation({
 
     const match = await ctx.db.get(args.matchId);
     if (!match) throw new Error("Match not found");
+    
+    console.log('Cancel attempt:', {
+      matchId: args.matchId,
+      userId,
+      hostId: match.hostId,
+      status: match.status,
+      passageSource: match.passageSource
+    });
+
     if (match.hostId !== userId) throw new Error("Only host can cancel");
     if (match.status !== "waiting") throw new Error("Can only cancel waiting matches");
 

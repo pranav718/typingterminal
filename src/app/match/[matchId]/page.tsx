@@ -10,6 +10,7 @@ import { useSettings } from '../../hooks/useSettings'
 import TypingArea from '../../components/Typing/TypingArea'
 import StatsDisplay from '../../components/Typing/StatsDisplay'
 import '../../terminal.css'
+import ProfileImage from '../../components/ProfileImage'
 
 interface MatchPageProps {
   params: Promise<{ matchId: string }>
@@ -245,9 +246,12 @@ export default function MatchPage({ params }: MatchPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className={`p-6 rounded-xl border-2 ${matchData.winnerId === matchData.hostId ? 'bg-green-500/10 border-green-500' : 'bg-matrix-primary/5 border-matrix-primary/20'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  {matchData.host.image && (
-                    <img src={matchData.host.image} alt={matchData.host.name} className="w-12 h-12 rounded-full" />
-                  )}
+                  <ProfileImage 
+                    src={matchData.host.image} 
+                    alt={matchData.host.name}
+                    fallbackText={matchData.host.name}
+                    className="w-12 h-12 rounded-full"
+                  />
                   <div>
                     <div className="font-bold text-matrix-primary">{matchData.host.name}</div>
                     <div className="text-xs text-matrix-light">Host</div>
@@ -272,9 +276,12 @@ export default function MatchPage({ params }: MatchPageProps) {
 
               <div className={`p-6 rounded-xl border-2 ${matchData.winnerId === matchData.opponentId ? 'bg-green-500/10 border-green-500' : 'bg-matrix-primary/5 border-matrix-primary/20'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  {matchData.opponent?.image && (
-                    <img src={matchData.opponent.image} alt={matchData.opponent.name} className="w-12 h-12 rounded-full" />
-                  )}
+                  <ProfileImage 
+                    src={matchData.opponent?.image} 
+                    alt={matchData.opponent?.name || 'Opponent'}
+                    fallbackText={matchData.opponent?.name}
+                    className="w-12 h-12 rounded-full"
+                  />
                   <div>
                     <div className="font-bold text-matrix-primary">{matchData.opponent?.name || 'Opponent'}</div>
                     <div className="text-xs text-matrix-light">Challenger</div>

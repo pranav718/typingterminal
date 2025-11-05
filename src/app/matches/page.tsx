@@ -5,7 +5,9 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../hooks/useAuth'
 import AuthModal from '../components/Auth/AuthModal'
+import ProfileImage from '../components/ProfileImage'
 import { Id } from '../../../convex/_generated/dataModel'
+import { useState } from 'react'
 import '../terminal.css'
 
 export default function MatchesPage() {
@@ -16,14 +18,20 @@ export default function MatchesPage() {
   const matchHistory = useQuery(api.matches.getMatchHistory, { limit: 50 })
   const cancelMatch = useMutation(api.matches.cancelMatch)
 
+  const [cancellingMatchId, setCancellingMatchId] = useState<Id<"matches"> | null>(null)
+
   const handleCancelMatch = async (matchId: Id<"matches">) => {
     if (!confirm('Are you sure you want to cancel this match?')) return
 
+    setCancellingMatchId(matchId)
+
     try {
       await cancelMatch({ matchId })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to cancel match:', error)
-      alert('Failed to cancel match')
+      alert(error.message || 'Failed to cancel match')
+    } finally {
+      setCancellingMatchId(null)
     }
   }
 
@@ -85,6 +93,7 @@ export default function MatchesPage() {
                 const isHost = user && match.hostId === user._id
                 const opponent = isHost ? match.opponent : match.host
                 const canCancel = isHost && match.status === 'waiting'
+                const isCancelling = cancellingMatchId === match._id
 
                 return (
                   <div
@@ -97,19 +106,20 @@ export default function MatchesPage() {
                           e.stopPropagation()
                           handleCancelMatch(match._id)
                         }}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                        disabled={isCancelling}
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Cancel match"
                       >
-                        ✕
+                        {isCancelling ? '...' : '✕'}
                       </button>
                     )}
 
-                    <div className="flex justify-between items-start mb-4 pr-8">
+                    <div className="flex justify-between items-start mb-4 pr-10">
                       <div>
                         <div className="text-sm text-matrix-light mb-1">
                           {match.status === 'waiting' ? '⏳ Waiting' : '🏁 In Progress'}
                         </div>
-                        <div className="font-bold text-matrix-primary">{match.passageSource}</div>
+                        <div className="font-bold text-matrix-primary text-sm">{match.passageSource}</div>
                       </div>
                       {match.status === 'waiting' && isHost && (
                         <div className="px-3 py-1 bg-matrix-primary/20 rounded font-mono text-matrix-primary font-bold text-sm">
@@ -120,17 +130,21 @@ export default function MatchesPage() {
 
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex items-center gap-2">
-                        {match.host.image && (
-                          <img src={match.host.image} alt={match.host.name} className="w-8 h-8 rounded-full" />
-                        )}
+                        <ProfileImage 
+                          src={match.host.image} 
+                          alt={match.host.name} 
+                          fallbackText={match.host.name}
+                        />
                         <span className="text-sm text-matrix-light">{match.host.name}</span>
                       </div>
                       <span className="text-matrix-light">vs</span>
                       {opponent ? (
                         <div className="flex items-center gap-2">
-                          {opponent.image && (
-                            <img src={opponent.image} alt={opponent.name} className="w-8 h-8 rounded-full" />
-                          )}
+                          <ProfileImage 
+                            src={opponent.image} 
+                            alt={opponent.name}
+                            fallbackText={opponent.name}
+                          />
                           <span className="text-sm text-matrix-light">{opponent.name}</span>
                         </div>
                       ) : (
@@ -174,7 +188,6 @@ export default function MatchesPage() {
           ) : (
             <div className="space-y-4">
               {completedMatches.map(match => {
-                const isHost = user && match.hostId === user._id
                 const won = user && match.winnerId === user._id
                 const hostResult = match.results?.find(r => r.userId === match.hostId)
                 const opponentResult = match.results?.find(r => r.userId === match.opponentId)
@@ -207,9 +220,11 @@ export default function MatchesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className={`p-4 rounded-lg ${match.winnerId === match.hostId ? 'bg-green-500/10 border border-green-500/30' : 'bg-matrix-primary/5'}`}>
                         <div className="flex items-center gap-2 mb-3">
-                          {match.host.image && (
-                            <img src={match.host.image} alt={match.host.name} className="w-8 h-8 rounded-full" />
-                          )}
+                          <ProfileImage 
+                            src={match.host.image} 
+                            alt={match.host.name}
+                            fallbackText={match.host.name}
+                          />
                           <div>
                             <div className="font-semibold text-matrix-primary text-sm">{match.host.name}</div>
                             <div className="text-xs text-matrix-light">Host</div>
@@ -230,9 +245,11 @@ export default function MatchesPage() {
 
                       <div className={`p-4 rounded-lg ${match.winnerId === match.opponentId ? 'bg-green-500/10 border border-green-500/30' : 'bg-matrix-primary/5'}`}>
                         <div className="flex items-center gap-2 mb-3">
-                          {match.opponent?.image && (
-                            <img src={match.opponent.image} alt={match.opponent.name} className="w-8 h-8 rounded-full" />
-                          )}
+                          <ProfileImage 
+                            src={match.opponent?.image} 
+                            alt={match.opponent?.name || 'Opponent'}
+                            fallbackText={match.opponent?.name}
+                          />
                           <div>
                             <div className="font-semibold text-matrix-primary text-sm">{match.opponent?.name}</div>
                             <div className="text-xs text-matrix-light">Challenger</div>

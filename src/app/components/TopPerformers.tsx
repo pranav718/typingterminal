@@ -4,6 +4,7 @@ import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../hooks/useAuth"
+import ProfileImage from "./ProfileImage"
 
 export default function TopPerformers() {
   const topPerformers = useQuery(api.leaderboard.getTopPerformers)
@@ -39,13 +40,11 @@ export default function TopPerformers() {
                 <span className="text-xl">
                   {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
                 </span>
-                {performer.image && (
-                  <img
-                    src={performer.image}
-                    alt={performer.displayName}
-                    className="w-8 h-8 rounded-full border border-matrix-primary/30"
-                  />
-                )}
+                <ProfileImage 
+                  src={performer.image} 
+                  alt={performer.displayName}
+                  fallbackText={performer.displayName}
+                />
                 <span className="text-matrix-light font-medium truncate max-w-[120px]">
                   {performer.displayName}
                 </span>
@@ -92,8 +91,7 @@ export default function TopPerformers() {
           View Full Leaderboard →
         </button>
       </div>
-
-      {/* Guest Info Banner */}
+      
       {isGuest && (
         <div className="mb-6 p-4 bg-cyan-500/10 border-2 border-cyan-500/30 rounded-xl">
           <div className="flex items-center gap-3">
