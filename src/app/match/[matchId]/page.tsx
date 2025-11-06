@@ -7,17 +7,14 @@ import { api } from '../../../../convex/_generated/api'
 import { Id } from '../../../../convex/_generated/dataModel'
 import { useAuth } from '../../hooks/useAuth'
 import { useSettings } from '../../hooks/useSettings'
-import TypingArea from '../../components/Typing/TypingArea'
-import StatsDisplay from '../../components/Typing/StatsDisplay'
-import '../../terminal.css'
 import ProfileImage from '../../components/ProfileImage'
+import '../../terminal.css'
 
 interface MatchPageProps {
   params: Promise<{ matchId: string }>
 }
 
 export default function MatchPage({ params }: MatchPageProps) {
-  const cancelMatch = useMutation(api.matches.cancelMatch)
   const resolvedParams = use(params)
   const matchId = resolvedParams.matchId as Id<"matches">
   const router = useRouter()
@@ -36,32 +33,36 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   const matchData = useQuery(api.matches.getMatch, { matchId })
   const submitResult = useMutation(api.matches.submitMatchResult)
+  const cancelMatch = useMutation(api.matches.cancelMatch)
 
   const text = matchData?.passageText || ''
-  
   const isHost = user?._id === matchData?.hostId
   const isOpponent = user?._id === matchData?.opponentId
 
+  // Redirect guests
   useEffect(() => {
     if (!isLoading && (isGuest || !user)) {
-      alert('Please log in to participate in matches')
+      alert('AUTHENTICATION REQUIRED FOR MATCHES')
       router.push('/')
     }
   }, [isGuest, user, isLoading, router])
 
+  // Redirect non-participants
   useEffect(() => {
     if (!isLoading && matchData && user && matchData.hostId !== user._id && matchData.opponentId !== user._id) {
-      alert('You are not a participant in this match')
+      alert('ACCESS DENIED: NOT A PARTICIPANT')
       router.push('/')
     }
   }, [matchData, user, isLoading, router])
 
+  // Auto-focus
   useEffect(() => {
     if (matchData?.status === 'in_progress' && !isComplete) {
       inputRef.current?.focus()
     }
   }, [matchData?.status, isComplete])
 
+  // Count correct words
   const countCorrectWords = (input: string, reference: string): number => {
     if (!input || !reference) return 0
     let correctChars = 0
@@ -72,6 +73,7 @@ export default function MatchPage({ params }: MatchPageProps) {
     return correctChars / 5
   }
 
+  // Calculate live WPM
   useEffect(() => {
     if (!startTime || userInput.length === 0) {
       setLiveWpm(0)
@@ -89,6 +91,7 @@ export default function MatchPage({ params }: MatchPageProps) {
     return () => clearInterval(interval)
   }, [startTime, userInput, text])
 
+  // Handle typing
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete || hasSubmitted) return
 
@@ -111,6 +114,7 @@ export default function MatchPage({ params }: MatchPageProps) {
       setLiveAccuracy(Math.round(((input.length - errorCount) / input.length) * 100))
     }
 
+    // Completion
     if (input.length === text.length && startTime) {
       const timeTaken = (Date.now() - startTime) / 60000
       const correctWords = countCorrectWords(input, text)
@@ -121,6 +125,7 @@ export default function MatchPage({ params }: MatchPageProps) {
       setLiveAccuracy(finalAccuracy)
       setIsComplete(true)
 
+      // Submit result
       try {
         await submitResult({
           matchId,
@@ -135,171 +140,216 @@ export default function MatchPage({ params }: MatchPageProps) {
     }
   }
 
-  const opponentResult = matchData?.results?.find(r => user && r.userId !== user._id)
-  const myResult = matchData?.results?.find(r => user && r.userId === user._id)
+  // Render text
+  const renderText = () => {
+    return text.split("").map((char, index) => {
+      let className = "inline-block transition-all duration-150"
+      let style: React.CSSProperties = { whiteSpace: "pre" }
 
+      if (index < userInput.length) {
+        if (userInput[index] === char) {
+          className += " text-[#41ff5f] drop-shadow-[0_0_8px_rgba(65,255,95,0.6)]"
+        } else {
+          const shakeClass = settings?.shakeIntensity !== "off" ? ` animate-shake-${settings?.shakeIntensity || "medium"}` : ""
+          className += ` text-[#ff5f41] bg-[#ff5f4120] px-0.5 rounded drop-shadow-[0_0_8px_rgba(255,95,65,0.6)]${shakeClass}`
+        }
+      } else if (index === userInput.length) {
+        className += " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
+      } else {
+        className += " text-[#7bff9a]"
+        style.opacity = settings?.textOpacity ?? 0.3
+      }
+
+      const displayChar = char === " " ? "\u00A0" : char
+
+      return (
+        <span key={index} className={className} style={style}>
+          {displayChar}
+        </span>
+      )
+    })
+  }
+
+  const opponentResult = matchData?.results?.find(r => r.userId !== user?._id)
+  const myResult = matchData?.results?.find(r => r.userId === user?._id)
+
+  // Loading
   if (isLoading || !matchData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[#00120b] flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-matrix-primary border-t-transparent mb-4"></div>
-          <p className="text-matrix-primary text-xl">Loading match...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41ff5f] border-t-transparent mb-4"></div>
+          <p className="text-[#41ff5f] text-xl animate-pulse">LOADING MATCH DATA...</p>
         </div>
       </div>
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
-    if (matchData.status === 'waiting') {
+  // Waiting for opponent
+  if (matchData.status === 'waiting') {
     const isHost = user._id === matchData.hostId
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg p-4 md:p-8">
-        <div className="max-w-2xl mx-auto">
-            <button
-            onClick={() => router.push('/')}
-            className="mb-6 px-4 py-2 border-2 border-matrix-primary/30 text-matrix-primary rounded-md hover:border-matrix-primary transition-all"
-            >
-            ← Back to Home
-            </button>
+      <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
+        <div className="scanline" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="grid-lines absolute inset-0" />
+        </div>
 
-            <div className="bg-matrix-primary/5 border-2 border-matrix-primary/30 rounded-2xl p-8 text-center relative">
+        <div className="max-w-2xl mx-auto p-6 relative z-10">
+          <button
+            onClick={() => router.push('/')}
+            className="mb-6 terminal-btn text-sm"
+          >
+            ← ABORT MATCH
+          </button>
+
+          <div className="terminal-window p-8 text-center relative">
             {isHost && (
-                <button
+              <button
                 onClick={async () => {
-                    if (confirm('Are you sure you want to cancel this match?')) {
+                  if (confirm('TERMINATE MATCH SESSION?')) {
                     try {
-                        await cancelMatch({ matchId })
-                        router.push('/matches')
+                      await cancelMatch({ matchId })
+                      router.push('/matches')
                     } catch (error) {
-                        console.error('Failed to cancel:', error)
-                        alert('Failed to cancel match')
+                      console.error('Failed to cancel:', error)
+                      alert('ERROR: FAILED TO CANCEL MATCH')
                     }
-                    }
+                  }
                 }}
-                className="absolute top-4 right-4 px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all font-semibold text-sm"
-                >
-                ✕ Cancel Match
-                </button>
+                className="absolute top-4 right-4 px-4 py-2 border border-[#ff5f4180] text-[#ff5f41] rounded hover:bg-[#ff5f4120] transition-all font-semibold text-sm"
+              >
+                ✕ CANCEL
+              </button>
             )}
 
-            <h2 className="text-3xl font-bold text-matrix-primary mb-6">Waiting for Opponent...</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#41ff5f] mb-6 text-shadow-glow">
+              WAITING FOR OPPONENT...
+            </h2>
             
-            <div className="mb-8 p-6 bg-matrix-primary/10 border border-matrix-primary/20 rounded-xl">
-                <p className="text-sm text-matrix-light mb-2">Share this invite code:</p>
-                <div className="text-4xl font-bold text-matrix-primary tracking-widest font-mono">
+            <div className="mb-8 p-6 bg-[#003018]/30 border-2 border-[#41ff5f30] rounded">
+              <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">INVITE CODE:</p>
+              <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow">
                 {matchData.inviteCode}
-                </div>
-                <button
+              </div>
+              <button
                 onClick={() => {
-                    navigator.clipboard.writeText(matchData.inviteCode)
-                    alert('Invite code copied!')
+                  navigator.clipboard.writeText(matchData.inviteCode)
+                  alert('INVITE CODE COPIED TO CLIPBOARD')
                 }}
-                className="mt-4 px-6 py-2 border-2 border-matrix-primary text-matrix-primary rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all"
-                >
-                📋 Copy Code
-                </button>
+                className="mt-4 terminal-btn"
+              >
+                📋 COPY CODE
+              </button>
             </div>
 
-            <div className="text-matrix-light mb-6">
-                <p className="mb-2">Passage: <span className="font-semibold">{matchData.passageSource}</span></p>
-                <div className="p-4 bg-matrix-bg/50 rounded-lg text-sm max-h-32 overflow-y-auto text-left">
+            <div className="text-[#7bff9a]/80 mb-6">
+              <p className="mb-2 text-xs uppercase tracking-wider">PASSAGE: <span className="font-semibold text-[#41ff5f]">{matchData.passageSource}</span></p>
+              <div className="p-4 bg-[#00120b] border border-[#41ff5f20] rounded text-sm max-h-32 overflow-y-auto text-left font-mono">
                 {matchData.passageText.substring(0, 150)}...
-                </div>
+              </div>
             </div>
 
-            <div className="animate-pulse text-matrix-primary mb-4">
-                Waiting for someone to join...
+            <div className="animate-pulse text-[#41ff5f] mb-4 text-sm">
+              SCANNING FOR OPPONENT CONNECTION...
             </div>
-            </div>
+          </div>
         </div>
-        </div>
+      </div>
     )
-    }
+  }
 
+  // Match completed
   if (matchData.status === 'completed') {
     const winner = matchData.winnerId === user._id
     const hostResult = matchData.results?.find(r => r.userId === matchData.hostId)
     const opponentResultFinal = matchData.results?.find(r => r.userId === matchData.opponentId)
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
+        <div className="scanline" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="grid-lines absolute inset-0" />
+        </div>
+
+        <div className="max-w-4xl mx-auto p-6 relative z-10">
           <button
             onClick={() => router.push('/')}
-            className="mb-6 px-4 py-2 border-2 border-matrix-primary/30 text-matrix-primary rounded-md hover:border-matrix-primary transition-all"
+            className="mb-6 terminal-btn text-sm"
           >
-            ← Back to Home
+            ← RETURN HOME
           </button>
 
-          <div className="bg-gradient-to-br from-matrix-primary/20 to-matrix-primary/10 border-2 border-matrix-primary rounded-2xl p-8">
+          <div className={`terminal-window p-8 ${winner ? 'border-[#41ff5f80]' : 'border-[#ff5f4180]'}`}>
             <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold text-matrix-primary mb-4">
-                {winner ? '🏆 You Won! 🏆' : '😔 You Lost'}
+              <h2 className={`text-3xl md:text-4xl font-bold mb-4 text-shadow-glow ${winner ? 'text-[#41ff5f]' : 'text-[#ff5f41]'}`}>
+                {winner ? 'VICTORY' : 'DEFEAT'}
               </h2>
-              <p className="text-matrix-light">Match Completed</p>
+              <p className="text-[#7bff9a]/80 text-sm font-mono uppercase tracking-wider">MATCH TERMINATED</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className={`p-6 rounded-xl border-2 ${matchData.winnerId === matchData.hostId ? 'bg-green-500/10 border-green-500' : 'bg-matrix-primary/5 border-matrix-primary/20'}`}>
+              {/* Host Result */}
+              <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.hostId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
                   <ProfileImage 
                     src={matchData.host.image} 
                     alt={matchData.host.name}
                     fallbackText={matchData.host.name}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full border-2 border-[#41ff5f60]"
                   />
-                  <div>
-                    <div className="font-bold text-matrix-primary">{matchData.host.name}</div>
-                    <div className="text-xs text-matrix-light">Host</div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[#41ff5f]">{matchData.host.name}</div>
+                    <div className="text-xs text-[#7bff9a]/60 uppercase">HOST</div>
                   </div>
-                  {matchData.winnerId === matchData.hostId && <span className="ml-auto text-2xl">👑</span>}
+                  {matchData.winnerId === matchData.hostId && <span className="text-3xl">👑</span>}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 font-mono">
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">WPM:</span>
-                    <span className="font-bold text-matrix-primary">{hostResult?.wpm || 0}</span>
+                    <span className="text-[#7bff9a]/70">WPM:</span>
+                    <span className="font-bold text-[#41ff5f] text-lg">{hostResult?.wpm || 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">Accuracy:</span>
-                    <span className="font-bold text-matrix-primary">{hostResult?.accuracy || 0}%</span>
+                    <span className="text-[#7bff9a]/70">ACCURACY:</span>
+                    <span className="font-bold text-[#41ff5f] text-lg">{hostResult?.accuracy || 0}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">Errors:</span>
-                    <span className="font-bold text-error">{hostResult?.errors || 0}</span>
+                    <span className="text-[#7bff9a]/70">ERRORS:</span>
+                    <span className="font-bold text-[#ff5f41]">{hostResult?.errors || 0}</span>
                   </div>
                 </div>
               </div>
 
-              <div className={`p-6 rounded-xl border-2 ${matchData.winnerId === matchData.opponentId ? 'bg-green-500/10 border-green-500' : 'bg-matrix-primary/5 border-matrix-primary/20'}`}>
+              {/* Opponent Result */}
+              <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.opponentId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
                   <ProfileImage 
                     src={matchData.opponent?.image} 
                     alt={matchData.opponent?.name || 'Opponent'}
                     fallbackText={matchData.opponent?.name}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full border-2 border-[#41ff5f60]"
                   />
-                  <div>
-                    <div className="font-bold text-matrix-primary">{matchData.opponent?.name || 'Opponent'}</div>
-                    <div className="text-xs text-matrix-light">Challenger</div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[#41ff5f]">{matchData.opponent?.name || 'Opponent'}</div>
+                    <div className="text-xs text-[#7bff9a]/60 uppercase">CHALLENGER</div>
                   </div>
-                  {matchData.winnerId === matchData.opponentId && <span className="ml-auto text-2xl">👑</span>}
+                  {matchData.winnerId === matchData.opponentId && <span className="text-3xl">👑</span>}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 font-mono">
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">WPM:</span>
-                    <span className="font-bold text-matrix-primary">{opponentResultFinal?.wpm || 0}</span>
+                    <span className="text-[#7bff9a]/70">WPM:</span>
+                    <span className="font-bold text-[#41ff5f] text-lg">{opponentResultFinal?.wpm || 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">Accuracy:</span>
-                    <span className="font-bold text-matrix-primary">{opponentResultFinal?.accuracy || 0}%</span>
+                    <span className="text-[#7bff9a]/70">ACCURACY:</span>
+                    <span className="font-bold text-[#41ff5f] text-lg">{opponentResultFinal?.accuracy || 0}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-matrix-light">Errors:</span>
-                    <span className="font-bold text-error">{opponentResultFinal?.errors || 0}</span>
+                    <span className="text-[#7bff9a]/70">ERRORS:</span>
+                    <span className="font-bold text-[#ff5f41]">{opponentResultFinal?.errors || 0}</span>
                   </div>
                 </div>
               </div>
@@ -308,15 +358,15 @@ export default function MatchPage({ params }: MatchPageProps) {
             <div className="text-center space-y-4">
               <button
                 onClick={() => router.push('/')}
-                className="px-8 py-3 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:shadow-glow-hover transition-all"
+                className="terminal-btn mr-4"
               >
-                Back to Home
+                RETURN HOME
               </button>
               <button
                 onClick={() => router.push('/matches')}
-                className="ml-4 px-8 py-3 border-2 border-matrix-primary text-matrix-primary font-bold rounded-lg hover:bg-matrix-primary hover:text-matrix-bg transition-all"
+                className="terminal-btn"
               >
-                View Match History
+                VIEW HISTORY
               </button>
             </div>
           </div>
@@ -325,45 +375,55 @@ export default function MatchPage({ params }: MatchPageProps) {
     )
   }
 
+  // Match in progress
   return (
-    <div className="min-h-screen bg-gradient-to-br from-matrix-bg-darker to-matrix-bg p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 p-4 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl">
+    <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
+      <div className="scanline" />
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="grid-lines absolute inset-0" />
+      </div>
+
+      <div className="max-w-6xl mx-auto p-4 md:p-6 relative z-10">
+        {/* Header */}
+        <div className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              <h2 className="text-xl font-bold text-matrix-primary">Live Match</h2>
-              <p className="text-sm text-matrix-light">{matchData.passageSource}</p>
+              <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow uppercase tracking-wider">LIVE BATTLE</h2>
+              <p className="text-sm text-[#7bff9a]/70 font-mono">{matchData.passageSource}</p>
             </div>
 
             <div className="flex gap-6">
-              <div className="text-center p-3 bg-matrix-primary/10 rounded-lg border-2 border-matrix-primary">
-                <div className="text-xs text-matrix-light mb-1">You</div>
-                <div className="font-bold text-matrix-primary">
-                  {isComplete ? `${liveWpm} WPM` : myResult?.isFinished ? `${myResult.wpm} WPM` : 'Typing...'}
+              {/* You */}
+              <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f]">
+                <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">YOU</div>
+                <div className="font-bold text-[#41ff5f] font-mono text-lg">
+                  {isComplete ? `${liveWpm} WPM` : myResult?.isFinished ? `${myResult.wpm} WPM` : 'TYPING...'}
                 </div>
               </div>
 
-              <div className="flex items-center text-2xl font-bold text-matrix-light">VS</div>
+              {/* VS */}
+              <div className="flex items-center text-2xl font-bold text-[#7bff9a]/40">VS</div>
 
-              <div className="text-center p-3 bg-matrix-primary/10 rounded-lg border-2 border-matrix-primary/30">
-                <div className="text-xs text-matrix-light mb-1">
+              {/* Opponent */}
+              <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f30]">
+                <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">
                   {isHost ? matchData.opponent?.name : matchData.host.name}
                 </div>
-                <div className="font-bold text-matrix-primary">
-                  {opponentResult?.isFinished ? `${opponentResult.wpm} WPM` : 'Typing...'}
+                <div className="font-bold text-[#41ff5f] font-mono text-lg">
+                  {opponentResult?.isFinished ? `${opponentResult.wpm} WPM` : 'TYPING...'}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <TypingArea
-          text={text}
-          userInput={userInput}
-          isComplete={isComplete}
-          isDisabled={false}
-          settings={settings}
-        />
+        {/* Typing Area */}
+        <div className="terminal-window p-6 mb-6 min-h-[300px]">
+          <div className="text-xs text-[#7bff9a]/60 mb-3 uppercase tracking-wider">TEXT BUFFER:</div>
+          <div className="text-lg md:text-xl leading-relaxed font-mono">
+            {renderText()}
+          </div>
+        </div>
 
         <input
           ref={inputRef}
@@ -378,23 +438,40 @@ export default function MatchPage({ params }: MatchPageProps) {
           spellCheck={false}
         />
 
-        <StatsDisplay wpm={liveWpm} accuracy={liveAccuracy} errors={errors} />
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="terminal-window p-4 text-center">
+            <div className="text-xs text-[#7bff9a]/60 mb-1">WPM</div>
+            <div className="text-3xl font-bold text-[#41ff5f] text-shadow-glow font-mono">{liveWpm}</div>
+          </div>
 
+          <div className="terminal-window p-4 text-center">
+            <div className="text-xs text-[#7bff9a]/60 mb-1">ACCURACY</div>
+            <div className="text-3xl font-bold text-[#41ff5f] text-shadow-glow font-mono">{liveAccuracy}%</div>
+          </div>
+
+          <div className="terminal-window p-4 text-center">
+            <div className="text-xs text-[#7bff9a]/60 mb-1">ERRORS</div>
+            <div className="text-3xl font-bold text-[#41ff5f] text-shadow-glow font-mono">{errors}</div>
+          </div>
+        </div>
+
+        {/* Completion Messages */}
         {isComplete && !hasSubmitted && (
-          <div className="mt-6 p-4 bg-matrix-primary/10 border border-matrix-primary rounded-lg text-center">
-            <p className="text-matrix-primary animate-pulse">Submitting your result...</p>
+          <div className="terminal-window p-4 text-center border-[#41ff5f80]">
+            <p className="text-[#41ff5f] animate-pulse font-mono">SUBMITTING RESULTS...</p>
           </div>
         )}
 
         {hasSubmitted && !opponentResult?.isFinished && (
-          <div className="mt-6 p-4 bg-green-500/10 border border-green-500 rounded-lg text-center">
-            <p className="text-green-500 font-semibold">✓ Result submitted! Waiting for opponent...</p>
+          <div className="terminal-window p-4 text-center border-[#41ff5f80]">
+            <p className="text-[#41ff5f] font-semibold font-mono">✓ COMPLETE! WAITING FOR OPPONENT...</p>
           </div>
         )}
 
         {!isComplete && (
-          <div className="mt-6 text-center text-sm text-matrix-light/60 animate-pulse">
-            Type to start the race...
+          <div className="text-center text-sm text-[#7bff9a]/60 animate-pulse font-mono uppercase">
+            TYPE TO BEGIN BATTLE...
           </div>
         )}
       </div>

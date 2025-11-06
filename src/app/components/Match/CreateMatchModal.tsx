@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { SAMPLE_BOOKS } from '../../data/sampleBooks'
-import { generateRandomWords, generateRandomLetters, getRandomPassageSource } from '../../utils/randomWords'
+import { 
+  generateRandomWords, 
+  generateRandomLetters, 
+  getRandomPassageSource 
+} from '../../utils/randomWords'
 
 interface CreateMatchModalProps {
   isOpen: boolean
@@ -34,7 +38,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
 
       if (passageType === 'book') {
         if (!selectedBook) {
-          alert('Please select a book')
+          alert('SELECT A BOOK FIRST')
           setIsCreating(false)
           return
         }
@@ -60,7 +64,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
       onClose()
     } catch (error) {
       console.error('Failed to create match:', error)
-      alert('Failed to create match')
+      alert('ERROR: FAILED TO CREATE MATCH')
     } finally {
       setIsCreating(false)
     }
@@ -70,72 +74,64 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-[#00120b]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="terminal-window max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-matrix-bg-darker border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-matrix-primary">Create Match</h2>
+        <div className="sticky top-0 bg-[#001a0f] border-b border-[#41ff5f40] px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow tracking-wider">
+            CREATE NEW MATCH
+          </h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-matrix-bg transition-all"
+            className="w-8 h-8 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center"
           >
             ✕
           </button>
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Passage Type Selection */}
           <div>
-            <label className="block text-sm font-semibold text-matrix-primary mb-2">
-              Passage Type
+            <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-3 uppercase tracking-wider">
+              SELECT PASSAGE TYPE:
             </label>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setPassageType('book')}
-                className={`px-4 py-4 rounded-lg border-2 transition-all ${
-                  passageType === 'book'
-                    ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow'
-                    : 'border-matrix-primary/30 hover:border-matrix-primary'
-                }`}
+                className={`terminal-tab ${passageType === 'book' ? 'active' : ''}`}
               >
-                <div className="text-3xl mb-2">📖</div>
-                <div className="text-sm font-semibold text-matrix-light">Book Passage</div>
+                <div className="text-2xl mb-1">📖</div>
+                <div className="text-xs">BOOK</div>
               </button>
 
               <button
                 onClick={() => setPassageType('random-words')}
-                className={`px-4 py-4 rounded-lg border-2 transition-all ${
-                  passageType === 'random-words'
-                    ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow'
-                    : 'border-matrix-primary/30 hover:border-matrix-primary'
-                }`}
+                className={`terminal-tab ${passageType === 'random-words' ? 'active' : ''}`}
               >
-                <div className="text-3xl mb-2">🎲</div>
-                <div className="text-sm font-semibold text-matrix-light">Random Words</div>
+                <div className="text-2xl mb-1">🎲</div>
+                <div className="text-xs">RANDOM</div>
               </button>
 
               <button
                 onClick={() => setPassageType('random-letters')}
-                className={`px-4 py-4 rounded-lg border-2 transition-all ${
-                  passageType === 'random-letters'
-                    ? 'border-matrix-primary bg-matrix-primary/20 shadow-glow'
-                    : 'border-matrix-primary/30 hover:border-matrix-primary'
-                }`}
+                className={`terminal-tab ${passageType === 'random-letters' ? 'active' : ''}`}
               >
-                <div className="text-3xl mb-2">🔤</div>
-                <div className="text-sm font-semibold text-matrix-light">Random Letters</div>
+                <div className="text-2xl mb-1">🔤</div>
+                <div className="text-xs">LETTERS</div>
               </button>
             </div>
           </div>
 
+          {/* Book Selection */}
           {passageType === 'book' && (
             <>
               <div>
-                <label className="block text-sm font-semibold text-matrix-primary mb-2">
-                  Select Book
+                <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+                  SELECT BOOK:
                 </label>
                 <select
                   value={selectedBook}
@@ -143,9 +139,9 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                     setSelectedBook(e.target.value)
                     setSelectedPassage(0)
                   }}
-                  className="w-full px-4 py-3 bg-matrix-primary/5 border-2 border-matrix-primary/30 text-matrix-primary rounded-lg focus:outline-none focus:border-matrix-primary"
+                  className="w-full px-4 py-3 bg-[#003018]/30 border border-[#41ff5f30] text-[#41ff5f] rounded focus:outline-none focus:border-[#41ff5f] font-mono"
                 >
-                  <option value="">Choose a book...</option>
+                  <option value="">-- SELECT BOOK --</option>
                   {SAMPLE_BOOKS.map(book => (
                     <option key={book.id} value={book.id}>
                       {book.title} by {book.author}
@@ -156,23 +152,23 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
 
               {selectedBookData && (
                 <div>
-                  <label className="block text-sm font-semibold text-matrix-primary mb-2">
-                    Select Passage
+                  <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+                    SELECT PASSAGE:
                   </label>
                   <select
                     value={selectedPassage}
                     onChange={(e) => setSelectedPassage(Number(e.target.value))}
-                    className="w-full px-4 py-3 bg-matrix-primary/5 border-2 border-matrix-primary/30 text-matrix-primary rounded-lg focus:outline-none focus:border-matrix-primary"
+                    className="w-full px-4 py-3 bg-[#003018]/30 border border-[#41ff5f30] text-[#41ff5f] rounded focus:outline-none focus:border-[#41ff5f] font-mono"
                   >
                     {selectedBookData.passages.map((_, idx) => (
                       <option key={idx} value={idx}>
-                        Passage {idx + 1}
+                        PASSAGE {idx + 1}
                       </option>
                     ))}
                   </select>
 
-                  <div className="mt-4 p-4 bg-matrix-primary/10 border border-matrix-primary/20 rounded-lg max-h-40 overflow-y-auto">
-                    <p className="text-sm text-matrix-light">
+                  <div className="mt-4 p-4 bg-[#003018]/20 border border-[#41ff5f20] rounded max-h-40 overflow-y-auto">
+                    <p className="text-sm text-[#7bff9a]/80 font-mono">
                       {selectedBookData.passages[selectedPassage].substring(0, 200)}...
                     </p>
                   </div>
@@ -181,10 +177,11 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
             </>
           )}
 
+          {/* Random Options */}
           {passageType !== 'book' && (
             <div>
-              <label className="block text-sm font-semibold text-matrix-primary mb-2">
-                {passageType === 'random-letters' ? 'Character Length' : 'Word Count'}: {passageType === 'random-letters' ? wordCount * 5 : wordCount}
+              <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+                {passageType === 'random-letters' ? 'CHARACTER LENGTH' : 'WORD COUNT'}: {passageType === 'random-letters' ? wordCount * 5 : wordCount}
               </label>
               <input
                 type="range"
@@ -193,21 +190,21 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                 step={passageType === 'random-letters' ? 20 : 25}
                 value={wordCount}
                 onChange={(e) => setWordCount(Number(e.target.value))}
-                className="w-full h-2 bg-matrix-primary/20 rounded-full appearance-none cursor-pointer
+                className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer
                   [&::-webkit-slider-thumb]:appearance-none
                   [&::-webkit-slider-thumb]:w-5
                   [&::-webkit-slider-thumb]:h-5
                   [&::-webkit-slider-thumb]:rounded-full
-                  [&::-webkit-slider-thumb]:bg-matrix-primary
+                  [&::-webkit-slider-thumb]:bg-[#41ff5f]
                   [&::-webkit-slider-thumb]:cursor-pointer
                   [&::-moz-range-thumb]:w-5
                   [&::-moz-range-thumb]:h-5
                   [&::-moz-range-thumb]:rounded-full
-                  [&::-moz-range-thumb]:bg-matrix-primary
+                  [&::-moz-range-thumb]:bg-[#41ff5f]
                   [&::-moz-range-thumb]:border-0
                   [&::-moz-range-thumb]:cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-matrix-light mt-1">
+              <div className="flex justify-between text-xs text-[#7bff9a]/60 mt-1 font-mono">
                 {passageType === 'random-letters' ? (
                   <>
                     <span>100</span>
@@ -226,24 +223,12 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
             </div>
           )}
 
-          {passageType !== 'book' && (
-            <div className="p-4 bg-matrix-primary/10 border border-matrix-primary/20 rounded-lg">
-              <p className="text-xs text-matrix-light mb-2">Preview (example):</p>
-              <p className="text-sm text-matrix-light/80 font-mono">
-                {passageType === 'random-words' 
-                  ? 'the quick brown fox jumps over lazy dog and runs through...'
-                  : 'abcd efgh ijkl mnop qrst uvwx yz ab cdef ghij klmn...'
-                }
-              </p>
-            </div>
-          )}
-
           <button
             onClick={handleCreate}
             disabled={(passageType === 'book' && !selectedBook) || isCreating}
-            className="w-full px-6 py-3 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:shadow-glow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full terminal-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isCreating ? 'Creating Match...' : 'Create Match'}
+            {isCreating ? 'CREATING MATCH...' : 'CREATE MATCH'}
           </button>
         </div>
       </div>

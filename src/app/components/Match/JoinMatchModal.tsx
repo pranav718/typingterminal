@@ -22,7 +22,7 @@ export default function JoinMatchModal({ isOpen, onClose }: JoinMatchModalProps)
 
   const handleJoin = async () => {
     if (!inviteCode.trim()) {
-      setError('Please enter an invite code')
+      setError('ENTER INVITE CODE')
       return
     }
 
@@ -34,7 +34,7 @@ export default function JoinMatchModal({ isOpen, onClose }: JoinMatchModalProps)
       router.push(`/match/${result.matchId}`)
       onClose()
     } catch (err: any) {
-      setError(err.message || 'Invalid invite code')
+      setError(err.message || 'INVALID INVITE CODE')
     } finally {
       setIsJoining(false)
     }
@@ -42,18 +42,20 @@ export default function JoinMatchModal({ isOpen, onClose }: JoinMatchModalProps)
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-[#00120b]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-matrix-bg-darker border-2 border-matrix-primary rounded-2xl max-w-md w-full shadow-2xl"
+        className="terminal-window max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-matrix-primary/20 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-matrix-primary">Join Match</h2>
+        <div className="border-b border-[#41ff5f40] px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow tracking-wider">
+            JOIN MATCH
+          </h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-matrix-bg transition-all"
+            className="w-8 h-8 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center"
           >
             ✕
           </button>
@@ -61,8 +63,8 @@ export default function JoinMatchModal({ isOpen, onClose }: JoinMatchModalProps)
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-matrix-primary mb-2">
-              Enter Invite Code
+            <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+              ENTER INVITE CODE:
             </label>
             <input
               type="text"
@@ -73,23 +75,27 @@ export default function JoinMatchModal({ isOpen, onClose }: JoinMatchModalProps)
               }}
               placeholder="ABC123"
               maxLength={6}
-              className="w-full px-4 py-3 bg-matrix-primary/5 border-2 border-matrix-primary/30 text-matrix-primary text-center text-2xl font-mono tracking-widest rounded-lg focus:outline-none focus:border-matrix-primary uppercase"
+              className="w-full px-4 py-3 bg-[#003018]/30 border-2 border-[#41ff5f30] text-[#41ff5f] text-center text-2xl font-mono tracking-widest rounded focus:outline-none focus:border-[#41ff5f] uppercase"
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-error/10 border border-error rounded-lg text-error text-sm">
-              {error}
+            <div className="p-3 bg-[#ff5f4110] border border-[#ff5f4180] rounded text-[#ff5f41] text-sm font-mono">
+              ERROR: {error}
             </div>
           )}
 
           <button
             onClick={handleJoin}
             disabled={isJoining || !inviteCode.trim()}
-            className="w-full px-6 py-3 bg-matrix-primary text-matrix-bg font-bold rounded-lg hover:shadow-glow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full terminal-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isJoining ? 'Joining...' : 'Join Match'}
+            {isJoining ? 'JOINING...' : 'JOIN MATCH'}
           </button>
+
+          <div className="text-xs text-[#7bff9a]/60 text-center font-mono">
+            PASTE CODE FROM HOST TO JOIN BATTLE
+          </div>
         </div>
       </div>
     </div>

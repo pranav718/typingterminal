@@ -18,12 +18,12 @@ export default function GuestButton() {
   };
 
   return (
-    <button
-      onClick={handleGuestClick}
-      disabled={isLoading}
-      className="w-full px-6 py-3.5 border-2 border-matrix-primary/50 text-matrix-primary rounded-lg hover:bg-matrix-primary/10 hover:border-matrix-primary transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+    <button 
+      onClick={handleGuestClick} 
+      disabled={isLoading} 
+      className="w-full px-6 py-3 border-2 border-[#41ff5f50] text-[#41ff5f] rounded hover:bg-[#41ff5f10] hover:border-[#41ff5f] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase tracking-wider text-sm"
     >
-      {isLoading ? 'Loading...' : 'Continue as Guest'}
+      {isLoading ? 'INITIALIZING...' : '> CONTINUE AS GUEST'}
     </button>
   );
 }
