@@ -10,30 +10,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'matrix-primary': 'rgb(var(--color-primary) / <alpha-value>)',
-        'matrix-light': 'rgb(var(--color-light) / <alpha-value>)',
-        'matrix-bg': 'rgb(var(--color-bg) / <alpha-value>)',
-        'matrix-bg-darker': 'rgb(var(--color-bg-darker) / <alpha-value>)',
+        'matrix-primary': '#41ff5f',
+        'matrix-light': '#7bff9a',
+        'matrix-bg': '#00120b',
+        'matrix-bg-darker': '#000a06',
         'error': '#ff5555',
         'warning': '#ff9f40',
       },
       fontFamily: {
-        mono: ['JetBrains Mono', 'monospace'],
+        // ✅ NEW: Multiple font options
+        'jetbrains': ['"JetBrains Mono"', 'monospace'],
+        'geist': ['"Geist Mono"', 'monospace'],
+        'fira': ['"Fira Code"', 'monospace'],
       },
       dropShadow: {
-        'glow-sm': '0 0 8px rgba(var(--color-primary), 0.2)',
-        'glow': '0 0 8px rgba(var(--color-primary), 0.3)',
-        'glow-md': '0 0 16px rgba(var(--color-primary), 0.3)',
-        'glow-lg': '0 0 20px rgba(var(--color-primary), 0.4)',
-        'glow-xl': '0 0 24px rgba(var(--color-primary), 0.5)',
+        'glow-sm': '0 0 8px rgba(65, 255, 95, 0.2)',
+        'glow': '0 0 8px rgba(65, 255, 95, 0.3)',
+        'glow-md': '0 0 16px rgba(65, 255, 95, 0.3)',
+        'glow-lg': '0 0 20px rgba(65, 255, 95, 0.4)',
+        'glow-xl': '0 0 24px rgba(65, 255, 95, 0.5)',
         'error-glow': '0 0 8px rgba(255, 85, 85, 0.4)',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(var(--color-primary), 0.3)',
-        'glow-sm': '0 0 16px rgba(var(--color-primary), 0.2)',
-        'glow-md': '0 4px 20px rgba(var(--color-primary), 0.3)',
-        'glow-lg': '0 8px 24px rgba(var(--color-primary), 0.2)',
-        'glow-hover': '0 6px 24px rgba(var(--color-primary), 0.5)',
+        'glow': '0 0 20px rgba(65, 255, 95, 0.3)',
+        'glow-sm': '0 0 16px rgba(65, 255, 95, 0.2)',
+        'glow-md': '0 4px 20px rgba(65, 255, 95, 0.3)',
+        'glow-lg': '0 8px 24px rgba(65, 255, 95, 0.2)',
+        'glow-hover': '0 6px 24px rgba(65, 255, 95, 0.5)',
       },
       animation: {
         'pulse-slow': 'pulse 2s ease-in-out infinite',

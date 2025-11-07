@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useTheme } from "next-themes"
-import type { SettingsType } from "../hooks/useSettings"
+import type { SettingsType, FontTheme } from "../hooks/useSettings"
 
 interface SettingsProps {
   isOpen: boolean
@@ -11,16 +10,28 @@ interface SettingsProps {
   onSettingsChange: (settings: SettingsType) => void
 }
 
-const themes = [
-  { id: "matrix", name: "MATRIX", bg: "bg-[#0a0f0a]", text: "text-[#00ff88]", desc: "Classic green terminal" },
-  { id: "paper", name: "PAPER", bg: "bg-[#f5f5f5]", text: "text-[#2c3e50]", desc: "Light mode paper" },
-  { id: "ocean", name: "OCEAN", bg: "bg-[#0a1929]", text: "text-[#00d9ff]", desc: "Deep blue ocean" },
-  { id: "sunset", name: "SUNSET", bg: "bg-[#1a0a2e]", text: "text-[#ff9f40]", desc: "Warm sunset glow" },
-  { id: "sakura", name: "SAKURA", bg: "bg-[#fffafd]", text: "text-[#db7093]", desc: "Cherry blossom pink" },
+const fontThemes = [
+  { 
+    id: "jetbrains" as FontTheme, 
+    name: "JetBrains Mono", 
+    desc: "Classic dev font",
+    preview: "JetBrains"
+  },
+  { 
+    id: "geist" as FontTheme, 
+    name: "Geist Mono", 
+    desc: "Modern & sleek",
+    preview: "Geist"
+  },
+  { 
+    id: "fira" as FontTheme, 
+    name: "Fira Code", 
+    desc: "Ligature support",
+    preview: "Fira"
+  },
 ]
 
 export default function Settings({ isOpen, onClose, settings, onSettingsChange }: SettingsProps) {
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -51,37 +62,36 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
         </div>
 
         <div className="p-6 space-y-8">
-          {/* Theme Selection */}
           <div className="pb-6 border-b border-[#41ff5f10]">
             <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
-              VISUAL THEME:
+              FONT THEME:
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {themes.map((themeOption) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {fontThemes.map((font) => (
                 <button
-                  key={themeOption.id}
-                  onClick={() => setTheme(themeOption.id)}
-                  className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${
-                    theme === themeOption.id
+                  key={font.id}
+                  onClick={() => onSettingsChange({ ...settings, fontTheme: font.id })}
+                  className={`flex flex-col items-center gap-2 p-4 rounded border-2 transition-all hover:-translate-y-1 ${
+                    settings.fontTheme === font.id
                       ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
                       : "border-[#41ff5f20] hover:border-[#41ff5f]"
                   }`}
                 >
                   <div
-                    className={`w-14 h-14 rounded ${themeOption.bg} ${themeOption.text} flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-110 border border-[#41ff5f30]`}
+                    className={`w-full h-16 rounded bg-[#003018]/30 border border-[#41ff5f30] flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-105`}
+                    style={{ fontFamily: font.id === 'jetbrains' ? '"JetBrains Mono", monospace' : font.id === 'geist' ? '"Geist Mono", monospace' : '"Fira Code", monospace' }}
                   >
-                    Aa
+                    {font.preview}
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-[#41ff5f] font-bold font-mono">{themeOption.name}</div>
-                    <div className="text-[10px] text-[#7bff9a]/60">{themeOption.desc}</div>
+                    <div className="text-xs text-[#41ff5f] font-bold font-mono">{font.name}</div>
+                    <div className="text-[10px] text-[#7bff9a]/60">{font.desc}</div>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Error Shake Effect */}
           <div className="pb-6 border-b border-[#41ff5f10]">
             <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
               ERROR SHAKE INTENSITY:
@@ -112,7 +122,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
-          {/* Text Opacity */}
           <div>
             <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
               UNTYPED TEXT VISIBILITY:
@@ -159,7 +168,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             <div className="text-xs text-[#7bff9a]/80 font-mono">
               <div className="mb-2">💡 TIP: SETTINGS ARE SAVED LOCALLY</div>
               <div className="text-[#7bff9a]/60">
-                • Themes change the entire app appearance<br/>
+                • Font themes change the entire app typography<br/>
                 • Shake effects indicate typing errors<br/>
                 • Text opacity controls untyped character visibility
               </div>

@@ -1,4 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +8,7 @@
 
 @layer base {
   :root {
-    /* Terminal Green Theme */
+    /* Terminal Green Color Scheme */
     --color-primary: 65 255 95;
     --color-bg: 0 18 11;
     --color-bg-darker: 0 10 6;
@@ -14,39 +16,26 @@
     --color-accent: 0 48 24;
   }
 
-  .paper {
-    --color-primary: 44 62 80;
-    --color-bg: 245 245 245;
-    --color-bg-darker: 255 255 255;
-    --color-light: 84 110 122;
-  }
-
-  .ocean {
-    --color-primary: 0 217 255;
-    --color-bg: 10 25 41;
-    --color-bg-darker: 0 30 60;
-    --color-light: 77 208 225;
-  }
-
-  .sunset {
-    --color-primary: 255 159 64;
-    --color-bg: 26 10 46;
-    --color-bg-darker: 15 5 32;
-    --color-light: 255 183 77;
-  }
-
-  .sakura {
-    --color-primary: 219 112 147;
-    --color-bg: 255 245 250;
-    --color-bg-darker: 255 250 253;
-    --color-light: 199 89 122;
-  }
-
   body {
-    font-family: "JetBrains Mono", monospace;
     background: rgb(var(--color-bg-darker));
     color: rgb(var(--color-primary));
     transition: all 0.3s ease;
+  }
+
+  /* ✅ Font Theme Classes */
+  body.font-jetbrains,
+  body.font-jetbrains * {
+    font-family: "JetBrains Mono", monospace !important;
+  }
+
+  body.font-geist,
+  body.font-geist * {
+    font-family: "Geist Mono", monospace !important;
+  }
+
+  body.font-fira,
+  body.font-fira * {
+    font-family: "Fira Code", monospace !important;
   }
 }
 
@@ -66,16 +55,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(var(--color-primary), 0.05);
+  background: rgba(65, 255, 95, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary), 0.3);
+  background: rgba(65, 255, 95, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary), 0.5);
+  background: rgba(65, 255, 95, 0.5);
 }
 
 /* Terminal Grid Background */
@@ -107,10 +96,10 @@
 
 @keyframes glow-pulse {
   0%, 100% {
-    text-shadow: 0 0 10px rgba(var(--color-primary), 0.5);
+    text-shadow: 0 0 10px rgba(65, 255, 95, 0.5);
   }
   50% {
-    text-shadow: 0 0 20px rgba(var(--color-primary), 0.8);
+    text-shadow: 0 0 20px rgba(65, 255, 95, 0.8);
   }
 }
 
@@ -155,10 +144,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(var(--color-primary), 0.3);
+    box-shadow: 0 0 20px rgba(65, 255, 95, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(var(--color-primary), 0.6);
+    box-shadow: 0 0 40px rgba(65, 255, 95, 0.6);
   }
 }
 
@@ -181,27 +170,27 @@
 
 @layer utilities {
   .drop-shadow-glow {
-    filter: drop-shadow(0 0 8px rgba(var(--color-primary), 0.4));
+    filter: drop-shadow(0 0 8px rgba(65, 255, 95, 0.4));
   }
 
   .drop-shadow-glow-lg {
-    filter: drop-shadow(0 0 12px rgba(var(--color-primary), 0.5));
+    filter: drop-shadow(0 0 12px rgba(65, 255, 95, 0.5));
   }
 
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(var(--color-primary), 0.3);
+    box-shadow: 0 0 20px rgba(65, 255, 95, 0.3);
   }
 
   .shadow-glow-lg {
-    box-shadow: 0 0 30px rgba(var(--color-primary), 0.4);
+    box-shadow: 0 0 30px rgba(65, 255, 95, 0.4);
   }
 
   .shadow-glow-hover {
-    box-shadow: 0 0 40px rgba(var(--color-primary), 0.5);
+    box-shadow: 0 0 40px rgba(65, 255, 95, 0.5);
   }
 
   .text-shadow-glow {
-    text-shadow: 0 0 10px rgba(var(--color-primary), 0.6);
+    text-shadow: 0 0 10px rgba(65, 255, 95, 0.6);
   }
 
   .animate-glow-pulse {
