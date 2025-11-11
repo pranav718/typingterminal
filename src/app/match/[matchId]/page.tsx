@@ -91,7 +91,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     return () => clearInterval(interval)
   }, [startTime, userInput, text])
 
-  // Handle typing
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete || hasSubmitted) return
 
@@ -114,7 +113,6 @@ export default function MatchPage({ params }: MatchPageProps) {
       setLiveAccuracy(Math.round(((input.length - errorCount) / input.length) * 100))
     }
 
-    // Completion
     if (input.length === text.length && startTime) {
       const timeTaken = (Date.now() - startTime) / 60000
       const correctWords = countCorrectWords(input, text)
@@ -125,7 +123,6 @@ export default function MatchPage({ params }: MatchPageProps) {
       setLiveAccuracy(finalAccuracy)
       setIsComplete(true)
 
-      // Submit result
       try {
         await submitResult({
           matchId,
@@ -140,7 +137,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     }
   }
 
-  // Render text
   const renderText = () => {
     return text.split("").map((char, index) => {
       let className = "inline-block transition-all duration-150"
@@ -173,7 +169,6 @@ export default function MatchPage({ params }: MatchPageProps) {
   const opponentResult = matchData?.results?.find(r => r.userId !== user?._id)
   const myResult = matchData?.results?.find(r => r.userId === user?._id)
 
-  // Loading
   if (isLoading || !matchData) {
     return (
       <div className="min-h-screen bg-[#00120b] flex items-center justify-center">
@@ -187,7 +182,6 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   if (!user) return null
 
-  // Waiting for opponent
   if (matchData.status === 'waiting') {
     const isHost = user._id === matchData.hostId
 
@@ -203,58 +197,70 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            ← ABORT MATCH
+            ← BACK
           </button>
 
           <div className="terminal-window p-8 text-center relative">
             {isHost && (
               <button
                 onClick={async () => {
-                  if (confirm('TERMINATE MATCH SESSION?')) {
+                  if (confirm('terminate match session?')) {
                     try {
                       await cancelMatch({ matchId })
                       router.push('/matches')
                     } catch (error) {
                       console.error('Failed to cancel:', error)
-                      alert('ERROR: FAILED TO CANCEL MATCH')
+                      alert('error: failed to cancel match')
                     }
                   }
                 }}
-                className="absolute top-4 right-4 px-4 py-2 border border-[#ff5f4180] text-[#ff5f41] rounded hover:bg-[#ff5f4120] transition-all font-semibold text-sm"
+                className="absolute top-4 right-4 w-8 h-8 rounded border-2 border-[#ff5f41] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center text-lg font-bold"
+                title="Cancel match"
               >
-                ✕ CANCEL
+                ✕
               </button>
             )}
 
-            <h2 className="text-2xl md:text-3xl font-bold text-[#41ff5f] mb-6 text-shadow-glow">
-              WAITING FOR OPPONENT...
-            </h2>
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#41ff5f] mb-2 text-shadow-glow">
+                WAITING FOR OPPONENT
+              </h2>
+              <div className="flex items-center justify-center gap-2 text-sm text-[#7bff9a]/60 animate-pulse">
+                <div className="w-2 h-2 bg-[#41ff5f] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-[#41ff5f] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-[#41ff5f] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
             
             <div className="mb-8 p-6 bg-[#003018]/30 border-2 border-[#41ff5f30] rounded">
-              <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">INVITE CODE:</p>
-              <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow">
+              <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">share invite code:</p>
+              <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow mb-4">
                 {matchData.inviteCode}
               </div>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(matchData.inviteCode)
-                  alert('INVITE CODE COPIED TO CLIPBOARD')
+                  alert('invite code copied to clipboard')
                 }}
-                className="mt-4 terminal-btn"
+                className="terminal-btn"
               >
                 📋 COPY CODE
               </button>
             </div>
 
             <div className="text-[#7bff9a]/80 mb-6">
-              <p className="mb-2 text-xs uppercase tracking-wider">PASSAGE: <span className="font-semibold text-[#41ff5f]">{matchData.passageSource}</span></p>
+              <p className="mb-2 text-xs uppercase tracking-wider">passage: <span className="font-semibold text-[#41ff5f]">{matchData.passageSource}</span></p>
               <div className="p-4 bg-[#00120b] border border-[#41ff5f20] rounded text-sm max-h-32 overflow-y-auto text-left font-mono">
                 {matchData.passageText.substring(0, 150)}...
               </div>
             </div>
 
-            <div className="animate-pulse text-[#41ff5f] mb-4 text-sm">
-              SCANNING FOR OPPONENT CONNECTION...
+            <div className="text-[#41ff5f] text-sm font-mono">
+              <div className="flex items-center justify-center gap-2 animate-pulse">
+                <span className="inline-block w-1 h-1 bg-[#41ff5f] rounded-full"></span>
+                <span>scanning for opponent connection</span>
+                <span className="inline-block w-1 h-1 bg-[#41ff5f] rounded-full"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -323,7 +329,6 @@ export default function MatchPage({ params }: MatchPageProps) {
                 </div>
               </div>
 
-              {/* Opponent Result */}
               <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.opponentId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
                   <ProfileImage 

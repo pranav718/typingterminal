@@ -258,7 +258,6 @@ export default function MatchesPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-2xl">{won ? '🏆' : '😔'}</span>
                           <span className={`font-bold text-lg ${won ? 'text-[#41ff5f]' : 'text-[#ff5f41]'}`}>
                             {won ? 'VICTORY' : 'DEFEAT'}
                           </span>
