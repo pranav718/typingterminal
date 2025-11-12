@@ -13,20 +13,17 @@ interface SettingsProps {
 const fontThemes = [
   { 
     id: "jetbrains" as FontTheme, 
-    name: "JetBrains Mono", 
-    desc: "Classic dev font",
+    name: "JetBrains Mono",
     preview: "JetBrains"
   },
   { 
     id: "geist" as FontTheme, 
     name: "Geist Mono", 
-    desc: "Modern & sleek",
     preview: "Geist"
   },
   { 
     id: "fira" as FontTheme, 
     name: "Fira Code", 
-    desc: "Ligature support",
     preview: "Fira"
   },
 ]
@@ -85,7 +82,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-[#41ff5f] font-bold font-mono">{font.name}</div>
-                    <div className="text-[10px] text-[#7bff9a]/60">{font.desc}</div>
                   </div>
                 </button>
               ))}

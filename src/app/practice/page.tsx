@@ -7,7 +7,7 @@ import dynamic from "next/dynamic"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
-import { processPDFClient } from "../utils/clientPdfProcessor"
+import { processBookFile } from "../utils/fileProcessor"
 import { useAuth } from "../hooks/useAuth"
 import { useSettings } from "../hooks/useSettings"
 import { useSampleBookProgress } from "../hooks/useSampleBookProgress"
@@ -193,7 +193,7 @@ function PracticeContent() {
     setIsProcessing(true)
 
     try {
-      const processedBook = await processPDFClient(file)
+      const processedBook = await processBookFile(file)
 
       if (processedBook.passages.length > 0 && processedBook.passages[0] !== "No readable text found in this PDF.") {
         const bookId = await saveBook({
@@ -207,11 +207,11 @@ function PracticeContent() {
         setShowUpload(false)
         router.push(`/practice?uploaded=${bookId}`)
       } else {
-        alert("No suitable passages found in this PDF. Please try another book.")
+        alert("No suitable passages found in this book. Please try another file.")
       }
     } catch (error: any) {
-      console.error("Error processing PDF:", error)
-      alert(error.message || "Error processing PDF. Please try another file.")
+      console.error("Error processing book:", error)
+      alert(error.message || "Error processing book file. Please try another file.")
     } finally {
       setIsProcessing(false)
     }

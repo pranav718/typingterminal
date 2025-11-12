@@ -271,9 +271,9 @@ export default function HomePage() {
                   {!isGuest && (
                     <button
                       onClick={() => router.push("/practice?upload=true")}
-                      className="w-full terminal-btn mt-4"
+                      className="w-full mt-4 px-4 py-2 border border-[#41ff5f30] text-[#41ff5f] rounded hover:bg-[#003018] transition-all text-sm"
                     >
-                      + UPLOAD PDF BOOK
+                      &gt; UPLOAD BOOK (PDF / EPUB)
                     </button>
                   )}
                 </div>
