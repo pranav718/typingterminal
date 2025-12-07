@@ -162,7 +162,7 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
           {/* Info Box */}
           <div className="p-4 bg-[#41ff5f10] border border-[#41ff5f30] rounded">
             <div className="text-xs text-[#7bff9a]/80 font-mono">
-              <div className="mb-2">💡 TIP: SETTINGS ARE SAVED LOCALLY</div>
+              <div className="mb-2">TIP: SETTINGS ARE SAVED LOCALLY</div>
               <div className="text-[#7bff9a]/60">
                 • Font themes change the entire app typography<br/>
                 • Shake effects indicate typing errors<br/>

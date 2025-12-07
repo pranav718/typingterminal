@@ -47,20 +47,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
-      {/* Scanline Effect */}
       <div className="scanline" />
       
-      {/* Background Grid */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="grid-lines absolute inset-0" />
       </div>
 
-      {/* HEADER */}
       <header className="border-b border-[#41ff5f40] bg-[#001a0f]/60 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-shadow-glow">
-              TYPINGTERMINAL v1.1.1
+              TYPINGTERMINAL v1.0.0
             </h1>
             <p className="text-[#7bff9a]/70 text-xs md:text-sm">
               {isGuest ? "GUEST SESSION • LIMITED ACCESS" : "LOW SIGNAL • SYSTEM ONLINE"}
@@ -93,11 +90,8 @@ export default function HomePage() {
       </header>
 
 
-      {/* MAIN TERMINAL BODY */}
       <main className="max-w-7xl mx-auto p-4 md:p-6 grid lg:grid-cols-[2fr_1fr] gap-6 relative z-10">
-        {/* LEFT: MAIN DASHBOARD WINDOW */}
         <section className="terminal-window flex flex-col">
-          {/* Tabs */}
           <div className="flex flex-wrap gap-2 border-b border-[#41ff5f30] p-2 text-xs">
             {tabs.map(tab => (
               <button
@@ -116,9 +110,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Content Scroll Area */}
           <div className="flex-1 p-4 overflow-y-auto text-sm max-h-[600px]">
-            {/* PROFILE TAB */}
             {activeTab === "PROFILE" && (
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
@@ -180,14 +172,12 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* LEADERBOARD TAB */}
             {activeTab === "LEADERBOARD" && (
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
                   <h2 className="text-lg font-bold mb-3 text-[#41ff5f] text-shadow-glow">TOP PERFORMERS</h2>
                   {topPerformers ? (
                     <div className="space-y-4">
-                      {/* Fastest Typists */}
                       <div>
                         <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">Fastest Typists</div>
                         <div className="space-y-1">
@@ -203,7 +193,6 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Most Accurate */}
                       <div>
                         <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">Most Accurate</div>
                         <div className="space-y-1">
@@ -233,7 +222,6 @@ export default function HomePage() {
               </div>
             )}
 
-                        {/* BOOKS TAB */}
             {activeTab === "BOOKS" && (
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
@@ -319,7 +307,6 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* CHALLENGES TAB */}
             {activeTab === "CHALLENGES" && (
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
@@ -374,7 +361,6 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* STATS TAB */}
             {activeTab === "STATS" && (
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
@@ -450,7 +436,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Bottom Command Input */}
           <div className="border-t border-[#41ff5f40] p-2">
             <div className="flex items-center gap-2">
               <span className="text-[#41ff5f]">&gt;</span>
@@ -471,12 +456,11 @@ export default function HomePage() {
               />
             </div>
             <div className="text-xs text-[#7bff9a]/40 mt-1">
-              TIP: Type "practice", "leaderboard", "matches", or "logout"
+              Type "practice", "leaderboard", "matches", or "logout"
             </div>
           </div>
         </section>
 
-        {/* RIGHT PANEL — System Info */}
         <aside className="terminal-window p-4 text-sm flex flex-col justify-between h-fit sticky top-6">
           <div>
             <h2 className="text-sm mb-3 border-b border-[#41ff5f40] pb-2 text-shadow-glow">
@@ -505,7 +489,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Profile Data View */}
             <div className="mt-4 border border-[#41ff5f30] rounded p-4 h-48 flex flex-col items-center justify-center text-[#7bff9a]/50">
               {user?.image && !isGuest ? (
                 <div className="text-center">
@@ -527,7 +510,6 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Quick Actions */}
             <div className="mt-4 space-y-2">
               <div className="text-xs text-[#7bff9a]/60 mb-2">QUICK ACTIONS:</div>
               <button
@@ -561,7 +543,6 @@ export default function HomePage() {
         </aside>
       </main>
 
-      {/* Modals */}
       <Settings
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

@@ -115,7 +115,6 @@ export default function LeaderboardPage() {
         {isGuest && (
           <div className="terminal-window p-4 mb-6 border-[#41ff5f80]">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">👀</span>
               <div>
                 <div className="font-semibold text-[#41ff5f] mb-1">VIEWING AS GUEST</div>
                 <div className="text-sm text-[#7bff9a]/80">Sign up to compete on the leaderboard and track your progress!</div>
@@ -128,7 +127,6 @@ export default function LeaderboardPage() {
           <div className="terminal-window p-4 mb-6 border-[#41ff5f80]">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div className="flex items-start gap-3">
-                <span className="text-2xl">👀</span>
                 <div>
                   <div className="font-semibold text-[#41ff5f] mb-1">VIEWING AS VISITOR</div>
                   <div className="text-sm text-[#7bff9a]/80">Sign up to compete on the leaderboard!</div>

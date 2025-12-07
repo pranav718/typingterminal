@@ -1,11 +1,17 @@
 
-function getMediumDifficultyFallback(count: number): string[] {
+export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
+export interface RandomWordsOptions {
+  wordCount?: number;
+  difficulty?: DifficultyLevel;
+}
+
+function getFallbackWords(count: number, difficulty: DifficultyLevel): string[] {
   const mediumWords = [
     "time", "year", "work", "back", "call", "hand", "high", "keep", "last", "long",
     "come", "made", "find", "down", "side", "been", "make", "over", "such", "take",
     "than", "them", "well", "only", "also", "city", "life", "part", "said", "each",
     "both", "must", "just", "show", "very", "help", "many", "here", "form", "much",
-    
     "about", "after", "again", "being", "could", "every", "first", "found", "great", "house",
     "large", "later", "leave", "might", "never", "other", "place", "point", "right", "small",
     "sound", "still", "study", "their", "there", "these", "thing", "think", "three", "under",
@@ -14,7 +20,6 @@ function getMediumDifficultyFallback(count: number): string[] {
     "moved", "often", "order", "power", "since", "story", "those", "today", "until", "white",
     "whole", "whose", "young", "early", "begin", "group", "learn", "money", "music", "party",
     "before", "better", "change", "common", "family", "father", "friend", "mother", "number",
-    
     "against", "because", "between", "company", "country", "develop", "during", "enough",
     "example", "follow", "general", "getting", "however", "include", "interest", "letter",
     "making", "member", "moment", "nothing", "office", "others", "people", "person", "picture",
@@ -23,24 +28,30 @@ function getMediumDifficultyFallback(count: number): string[] {
     "together", "without", "another", "believe", "certain", "children", "consider", "continue",
   ];
 
+  const easyWords = ["the", "and", "for", "are", "but", "not", "you", "all", "any", "can", "her", "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "man", "new", "now", "old", "see", "two", "way", "who", "boy", "did", "its", "let", "put", "say", "she", "too", "use"];
+  const hardWords = ["absolute", "academic", "accident", "accuracy", "activity", "actually", "addition", "adequate", "advanced", "advisory", "advocate", "aircraft", "alliance", "although", "aluminum", "analysis", "announce", "anything", "anywhere", "apparent", "appendix", "approach", "approval"];
+
+  let pool = mediumWords;
+  if (difficulty === 'easy') pool = easyWords;
+  if (difficulty === 'hard') pool = hardWords;
+
   const result: string[] = [];
   for (let i = 0; i < count; i++) {
-    result.push(mediumWords[Math.floor(Math.random() * mediumWords.length)]);
+    result.push(pool[Math.floor(Math.random() * pool.length)]);
   }
   
   return result;
 }
 
-function isValidEnglishWord(word: string): boolean {
-  // Must be lowercase letters only
+function isValidEnglishWord(word: string, minLen: number, maxLen: number): boolean {
   if (!/^[a-z]+$/.test(word)) return false;
 
-  if (word.length < 3 || word.length > 8) return false;
+  if (word.length < minLen || word.length > maxLen) return false;
   
   const nonEnglishPatterns = [
-    /^[aeiou]{4,}/, // Too many consecutive vowels (aeio, ouea, etc.)
-    /[^aeiou]{5,}/, // Too many consecutive consonants
-    /(.)\1{3,}/,    // Same letter repeated 4+ times
+    /^[aeiou]{4,}/, 
+    /[^aeiou]{5,}/,
+    /(.)\1{3,}/,   
   ];
   
   for (const pattern of nonEnglishPatterns) {
@@ -50,7 +61,11 @@ function isValidEnglishWord(word: string): boolean {
   return true;
 }
 
-async function fetchMediumDifficultyWords(count: number): Promise<string[]> {
+async function fetchWordsFromAPI(count: number, difficulty: DifficultyLevel): Promise<string[]> {
+  let minLen = 3, maxLen = 8;
+  if (difficulty === 'easy') { minLen = 2; maxLen = 5; }
+  if (difficulty === 'hard') { minLen = 8; maxLen = 15; }
+
   try {
     const response = await fetch(
       `https://random-word-api.herokuapp.com/word?number=${count * 3}`
@@ -60,17 +75,17 @@ async function fetchMediumDifficultyWords(count: number): Promise<string[]> {
     
     const allWords: string[] = await response.json();
     
-    const mediumWords = allWords
-      .filter(isValidEnglishWord)
+    const validWords = allWords
+      .filter(w => isValidEnglishWord(w, minLen, maxLen))
       .slice(0, count);
     
-    if (mediumWords.length >= count) {
-      return shuffleArray(mediumWords);
+    if (validWords.length >= count) {
+      return shuffleArray(validWords);
     }
     
-    const needed = count - mediumWords.length;
-    const fallback = getMediumDifficultyFallback(needed);
-    return shuffleArray([...mediumWords, ...fallback]);
+    const needed = count - validWords.length;
+    const fallback = getFallbackWords(needed, difficulty);
+    return shuffleArray([...validWords, ...fallback]);
     
   } catch (error) {
     console.error('Failed to fetch from Random Word API:', error);
@@ -83,25 +98,24 @@ async function fetchMediumDifficultyWords(count: number): Promise<string[]> {
       if (response.ok) {
         const data: Array<{ word: string }> = await response.json();
         
-        const mediumWords = data
+        const validWords = data
           .map(item => item.word)
-          .filter(isValidEnglishWord)
+          .filter(w => isValidEnglishWord(w, minLen, maxLen))
           .slice(0, count);
         
-        if (mediumWords.length >= count * 0.8) { 
-          const needed = count - mediumWords.length;
-          const fallback = getMediumDifficultyFallback(needed);
-          return shuffleArray([...mediumWords, ...fallback]);
+        if (validWords.length >= count * 0.8) { 
+          const needed = count - validWords.length;
+          const fallback = getFallbackWords(needed, difficulty);
+          return shuffleArray([...validWords, ...fallback]);
         }
       }
     } catch (err) {
       console.error('DataMuse fallback also failed:', err);
     }
     
-    return getMediumDifficultyFallback(count);
+    return getFallbackWords(count, difficulty);
   }
 }
-
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -112,12 +126,11 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export async function generateRandomWords(wordCount: number = 50): Promise<string> {
-  const words = await fetchMediumDifficultyWords(wordCount);
-  
+export async function generateRandomWords(options: RandomWordsOptions = {}): Promise<string> {
+  const { wordCount = 50, difficulty = 'medium' } = options;
+  const words = await fetchWordsFromAPI(wordCount, difficulty);
   return words.map(w => w.toLowerCase()).join(' ');
 }
-
 
 export function generateRandomLetters(length: number = 200): string {
   const letters = 'abcdefghijklmnopqrstuvwxyz';
@@ -125,7 +138,6 @@ export function generateRandomLetters(length: number = 200): string {
   
   for (let i = 0; i < length; i++) {
     result += letters[Math.floor(Math.random() * letters.length)];
-    
     if (i > 0 && i % (4 + Math.floor(Math.random() * 4)) === 0) {
       result += ' ';
     }
@@ -133,7 +145,6 @@ export function generateRandomLetters(length: number = 200): string {
   
   return result.trim();
 }
-
 
 export function getRandomPassageSource(type: string): string {
   return type === 'letters' ? 'Random Letters' : 'Random Words';

@@ -11,6 +11,7 @@ interface PracticeHeaderProps {
   isComplete: boolean
   isLoadingBook: boolean
   showUpload: boolean
+  onBackClick?: () => void
 }
 
 export default function PracticeHeader({
@@ -22,6 +23,7 @@ export default function PracticeHeader({
   isComplete,
   isLoadingBook,
   showUpload,
+  onBackClick,
 }: PracticeHeaderProps) {
   const router = useRouter()
 
@@ -29,7 +31,7 @@ export default function PracticeHeader({
     <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => router.push('/')}
+          onClick={onBackClick || (() => router.push('/'))}
           className="p-2 border-2 border-matrix-primary/30 text-matrix-primary rounded-md hover:border-matrix-primary hover:bg-matrix-primary/10 transition-all"
           title="Back to Home"
         >
