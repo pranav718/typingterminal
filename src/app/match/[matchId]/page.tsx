@@ -298,7 +298,6 @@ export default function MatchPage({ params }: MatchPageProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Host Result */}
               <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.hostId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
                   <ProfileImage 
@@ -389,7 +388,6 @@ export default function MatchPage({ params }: MatchPageProps) {
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-6 relative z-10">
-        {/* Header */}
         <div className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -398,7 +396,6 @@ export default function MatchPage({ params }: MatchPageProps) {
             </div>
 
             <div className="flex gap-6">
-              {/* You */}
               <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f]">
                 <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">YOU</div>
                 <div className="font-bold text-[#41ff5f] font-mono text-lg">
@@ -406,10 +403,8 @@ export default function MatchPage({ params }: MatchPageProps) {
                 </div>
               </div>
 
-              {/* VS */}
               <div className="flex items-center text-2xl font-bold text-[#7bff9a]/40">VS</div>
 
-              {/* Opponent */}
               <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f30]">
                 <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">
                   {isHost ? matchData.opponent?.name : matchData.host.name}
@@ -422,7 +417,6 @@ export default function MatchPage({ params }: MatchPageProps) {
           </div>
         </div>
 
-        {/* Typing Area */}
         <div className="terminal-window p-6 mb-6 min-h-[300px]">
           <div className="text-xs text-[#7bff9a]/60 mb-3 uppercase tracking-wider">TEXT BUFFER:</div>
           <div className="text-lg md:text-xl leading-relaxed font-mono">
@@ -443,7 +437,6 @@ export default function MatchPage({ params }: MatchPageProps) {
           spellCheck={false}
         />
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="terminal-window p-4 text-center">
             <div className="text-xs text-[#7bff9a]/60 mb-1">WPM</div>
@@ -461,7 +454,6 @@ export default function MatchPage({ params }: MatchPageProps) {
           </div>
         </div>
 
-        {/* Completion Messages */}
         {isComplete && !hasSubmitted && (
           <div className="terminal-window p-4 text-center border-[#41ff5f80]">
             <p className="text-[#41ff5f] animate-pulse font-mono">SUBMITTING RESULTS...</p>

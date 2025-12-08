@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import '../terminal.css'
 
 interface PracticeHeaderProps {
   user: any
@@ -11,6 +12,7 @@ interface PracticeHeaderProps {
   isComplete: boolean
   isLoadingBook: boolean
   showUpload: boolean
+  showSelectionScreen: boolean 
   onBackClick?: () => void
 }
 
@@ -23,59 +25,72 @@ export default function PracticeHeader({
   isComplete,
   isLoadingBook,
   showUpload,
+  showSelectionScreen, 
   onBackClick,
 }: PracticeHeaderProps) {
   const router = useRouter()
 
   return (
-    <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-4 md:p-5 bg-matrix-primary/5 border border-matrix-primary/20 rounded-xl backdrop-blur-sm">
-      <div className="flex items-center gap-4">
+    <header className="terminal-window mb-6 p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex items-center gap-4 w-full md:w-auto">
         <button
           onClick={onBackClick || (() => router.push('/'))}
-          className="p-2 border-2 border-matrix-primary/30 text-matrix-primary rounded-md hover:border-matrix-primary hover:bg-matrix-primary/10 transition-all"
-          title="Back to Home"
+          className="terminal-btn px-3 py-2 text-xl hover:bg-[#41ff5f20] group"
+          title="Return to Root"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <span className="group-hover:-translate-x-1 transition-transform inline-block">&lt;</span>
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-matrix-primary drop-shadow-glow-lg">TerminalType</h1>
+        
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-[#41ff5f] text-shadow-glow tracking-wider font-mono">
+            TERMINALTYPE
+          </h1>
+          <div className="text-[10px] text-[#7bff9a]/60 tracking-widest">
+            SESSION_ID: {Math.floor(Math.random() * 99999).toString().padStart(5, '0')}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+        
         {user && (
-          <div className="flex items-center justify-between gap-3 px-3 py-2 bg-matrix-primary/10 rounded-md text-sm text-matrix-light w-full md:w-auto">
-            <div className="flex items-center gap-2">
-              {user.image && !isGuest && (
-                <img src={user.image} alt={user.name || 'User'} className="w-6 h-6 rounded-full" />
-              )}
-              <span className="truncate">{isGuest ? 'Guest User' : user.email || user.name}</span>
-              {isGuest && <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded">Guest</span>}
+          <div className="flex items-center border border-[#41ff5f30] bg-[#001a0f]/50 px-3 py-2 rounded-sm gap-4 w-full md:w-auto justify-between">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-2 h-2 rounded-full bg-[#41ff5f] animate-pulse shadow-[0_0_10px_#41ff5f]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-[#7bff9a]/60 uppercase leading-none mb-0.5">Logged In As</span>
+                <span className="text-xs text-[#41ff5f] font-mono truncate max-w-[150px]">
+                  {isGuest ? 'GUEST_USER' : user.email || user.name}
+                </span>
+              </div>
             </div>
+            
             <button
               onClick={logout}
-              className="px-3 py-1 text-xs border-2 border-error text-error rounded hover:bg-error hover:text-matrix-bg transition-all min-h-[36px]"
+              className="text-xs text-[#ff5f41] hover:text-[#ff5f41] hover:bg-[#ff5f4110] border border-[#ff5f4140] px-2 py-1 transition-all uppercase tracking-wider"
             >
               Logout
             </button>
           </div>
         )}
 
-        <button
-          onClick={onSettingsClick}
-          className="w-full md:w-auto px-4 py-2.5 border-2 border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2"
-        >
-          ⚙️ Settings
-        </button>
-
-        {!isComplete && !showUpload && !isLoadingBook && (
+        <div className="flex gap-2 w-full md:w-auto">
           <button
-            onClick={onSkipClick}
-            className="w-full md:w-auto px-4 py-2.5 border-2 border-warning text-warning rounded-md hover:bg-warning hover:text-matrix-bg transition-all font-semibold text-sm min-h-[44px]"
+            onClick={onSettingsClick}
+            className="terminal-btn flex-1 md:flex-none text-xs flex items-center justify-center gap-2"
           >
-            Skip Passage
+            <span>SETTINGS</span>
           </button>
-        )}
+
+          {!isComplete && !showUpload && !isLoadingBook && !showSelectionScreen && (
+            <button
+              onClick={onSkipClick}
+              className="terminal-btn flex-1 md:flex-none text-xs border-[#e6b450] text-[#e6b450] hover:bg-[#e6b45010] hover:shadow-[0_0_15px_rgba(230,180,80,0.3)]"
+            >
+              SKIP PASSAGE 
+            </button>
+          )}
+        </div>
       </div>
     </header>
   )

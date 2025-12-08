@@ -6,6 +6,7 @@ import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../hooks/useAuth'
 import AuthModal from '../components/Auth/AuthModal'
 import ProfileImage from '../components/ProfileImage'
+import ConfirmationModal from '../components/ConfirmationModal'
 import { Id } from '../../../convex/_generated/dataModel'
 import { useState } from 'react'
 import '../terminal.css'
@@ -18,20 +19,27 @@ export default function MatchesPage() {
   const matchHistory = useQuery(api.matches.getMatchHistory, { limit: 50 })
   const cancelMatch = useMutation(api.matches.cancelMatch)
 
-  const [cancellingMatchId, setCancellingMatchId] = useState<Id<"matches"> | null>(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [matchIdToCancel, setMatchIdToCancel] = useState<Id<"matches"> | null>(null)
+  const [isProcessingCancel, setIsProcessingCancel] = useState(false)
 
-  const handleCancelMatch = async (matchId: Id<"matches">) => {
-    if (!confirm('TERMINATE MATCH SESSION?')) return
+  const promptCancelMatch = (matchId: Id<"matches">) => {
+    setMatchIdToCancel(matchId)
+    setShowCancelModal(true)
+  }
 
-    setCancellingMatchId(matchId)
+  const confirmCancelMatch = async () => {
+    if (!matchIdToCancel) return
 
+    setIsProcessingCancel(true)
     try {
-      await cancelMatch({ matchId })
+      await cancelMatch({ matchId: matchIdToCancel })
     } catch (error: any) {
       console.error('Failed to cancel match:', error)
       alert(`ERROR: ${error.message || 'Failed to cancel match'}`)
     } finally {
-      setCancellingMatchId(null)
+      setIsProcessingCancel(false)
+      setMatchIdToCancel(null)
     }
   }
 
@@ -53,7 +61,7 @@ export default function MatchesPage() {
 
         <div className="max-w-4xl mx-auto text-center relative z-10 p-6">
           <div className="terminal-window p-8 border-[#ff5f4180]">
-            <h2 className="text-2xl font-bold text-[#ff5f41] mb-4 text-shadow-glow">⚠️ ACCESS DENIED</h2>
+            <h2 className="text-2xl font-bold text-[#ff5f41] mb-4 text-shadow-glow">ACCESS DENIED</h2>
             <p className="text-[#7bff9a]/80 mb-6">GUEST MODE DOES NOT HAVE MATCH PRIVILEGES</p>
             <button
               onClick={() => router.push('/')}
@@ -67,21 +75,114 @@ export default function MatchesPage() {
     )
   }
 
+  // Filter active matches generally
   const activeMatches = myMatches?.filter(m => m.status === 'waiting' || m.status === 'in_progress') || []
+  
+  // Split them into two groups
+  const waitingMatches = activeMatches.filter(m => m.status === 'waiting')
+  const inProgressMatches = activeMatches.filter(m => m.status === 'in_progress')
+  
   const completedMatches = matchHistory || []
+
+  // Helper function to render a single match card
+  const renderMatchCard = (match: any) => {
+    const isHost = user && match.hostId === user._id
+    const opponent = isHost ? match.opponent : match.host
+    const canCancel = isHost && match.status === 'waiting'
+    const isCancelling = matchIdToCancel === match._id && isProcessingCancel
+
+    return (
+      <div
+        key={match._id}
+        className="terminal-window p-4 relative"
+      >
+        {canCancel && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              promptCancelMatch(match._id)
+            }}
+            disabled={isCancelling}
+            className="absolute top-3 right-3 w-7 h-7 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center disabled:opacity-50 text-sm"
+            title="Cancel match"
+          >
+            {isCancelling ? '...' : 'X'}
+          </button>
+        )}
+
+        <div className="mb-3 pr-8">
+          <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase tracking-wider">
+            STATUS: {match.status === 'waiting' ? 'WAITING FOR OPPONENT' : 'IN PROGRESS'}
+          </div>
+          <div className="font-bold text-[#41ff5f] text-sm">{match.passageSource}</div>
+        </div>
+
+        {match.status === 'waiting' && isHost && (
+          <div className="mb-3 p-2 bg-[#003018]/30 border border-[#41ff5f30] rounded">
+            <div className="text-xs text-[#7bff9a]/60 mb-1">INVITE CODE:</div>
+            <div className="font-mono text-xl text-[#41ff5f] text-shadow-glow tracking-widest">
+              {match.inviteCode}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 mb-4 text-sm">
+          <div className="flex items-center gap-2">
+            <ProfileImage 
+              src={match.host.image} 
+              alt={match.host.name} 
+              fallbackText={match.host.name}
+              className="w-6 h-6 rounded-full border border-[#41ff5f30]"
+            />
+            <span className="text-[#7bff9a]">{match.host.name}</span>
+          </div>
+          <span className="text-[#7bff9a]/40">VS</span>
+          {opponent ? (
+            <div className="flex items-center gap-2">
+              <ProfileImage 
+                src={opponent.image} 
+                alt={opponent.name}
+                fallbackText={opponent.name}
+                className="w-6 h-6 rounded-full border border-[#41ff5f30]"
+              />
+              <span className="text-[#7bff9a]">{opponent.name}</span>
+            </div>
+          ) : (
+            <span className="text-[#7bff9a]/40 italic animate-pulse">WAITING...</span>
+          )}
+        </div>
+
+        <button
+          onClick={() => router.push(`/match/${match._id}`)}
+          className="w-full terminal-btn text-sm"
+        >
+          {match.status === 'waiting' 
+            ? (canCancel ? 'VIEW INVITE CODE' : 'WAITING TO START') 
+            : 'ENTER MATCH >'}
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
-      {/* Scanline */}
-      <div className="scanline" />
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={confirmCancelMatch}
+        title="TERMINATE SESSION"
+        message="Are you sure you want to cancel this match? This action cannot be undone."
+        confirmText="TERMINATE"
+        cancelText="KEEP MATCH"
+        isDangerous={true}
+      />
 
-      {/* Grid Background */}
+      <div className="scanline" />
       <div className="absolute inset-0 pointer-events-none">
         <div className="grid-lines absolute inset-0" />
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10 p-4 md:p-6">
-        {/* HEADER */}
         <header className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
@@ -89,7 +190,7 @@ export default function MatchesPage() {
                 onClick={() => router.push('/')}
                 className="terminal-btn text-sm"
               >
-                ← HOME
+                &lt; HOME
               </button>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">
@@ -116,12 +217,10 @@ export default function MatchesPage() {
           </div>
         </header>
 
-        {/* ACTIVE MATCHES */}
         {activeMatches.length > 0 && (
           <div className="mb-12">
-            <div className="terminal-window p-4 mb-4">
+            <div className="terminal-window p-4 mb-4 border-[#41ff5f40]">
               <h2 className="text-lg font-bold text-[#41ff5f] text-shadow-glow flex items-center gap-2">
-                <span>⚔️</span>
                 ACTIVE MATCHES
                 <span className="ml-2 px-2 py-0.5 bg-[#41ff5f20] text-[#41ff5f] text-xs rounded font-mono">
                   {activeMatches.length}
@@ -129,95 +228,33 @@ export default function MatchesPage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeMatches.map(match => {
-                const isHost = user && match.hostId === user._id
-                const opponent = isHost ? match.opponent : match.host
-                const canCancel = isHost && match.status === 'waiting'
-                const isCancelling = cancellingMatchId === match._id
+            {waitingMatches.length > 0 && (
+              <div className="mb-6 animate-slide-up">
+                <h3 className="text-xs text-[#7bff9a]/60 mb-2 pl-1 uppercase tracking-wider">
+                  &gt; WAITING ({waitingMatches.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {waitingMatches.map(renderMatchCard)}
+                </div>
+              </div>
+            )}
 
-                return (
-                  <div
-                    key={match._id}
-                    className="terminal-window p-4 relative"
-                  >
-                    {/* Cancel Button */}
-                    {canCancel && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleCancelMatch(match._id)
-                        }}
-                        disabled={isCancelling}
-                        className="absolute top-3 right-3 w-7 h-7 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center disabled:opacity-50 text-sm"
-                        title="Cancel match"
-                      >
-                        {isCancelling ? '...' : '✕'}
-                      </button>
-                    )}
-
-                    <div className="mb-3 pr-8">
-                      <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase tracking-wider">
-                        {match.status === 'waiting' ? 'WAITING FOR OPPONENT' : 'MATCH IN PROGRESS'}
-                      </div>
-                      <div className="font-bold text-[#41ff5f] text-sm">{match.passageSource}</div>
-                    </div>
-
-                    {match.status === 'waiting' && isHost && (
-                      <div className="mb-3 p-2 bg-[#003018]/30 border border-[#41ff5f30] rounded">
-                        <div className="text-xs text-[#7bff9a]/60 mb-1">INVITE CODE:</div>
-                        <div className="font-mono text-xl text-[#41ff5f] text-shadow-glow tracking-widest">
-                          {match.inviteCode}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mb-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <ProfileImage 
-                          src={match.host.image} 
-                          alt={match.host.name} 
-                          fallbackText={match.host.name}
-                          className="w-6 h-6 rounded-full border border-[#41ff5f30]"
-                        />
-                        <span className="text-[#7bff9a]">{match.host.name}</span>
-                      </div>
-                      <span className="text-[#7bff9a]/40">VS</span>
-                      {opponent ? (
-                        <div className="flex items-center gap-2">
-                          <ProfileImage 
-                            src={opponent.image} 
-                            alt={opponent.name}
-                            fallbackText={opponent.name}
-                            className="w-6 h-6 rounded-full border border-[#41ff5f30]"
-                          />
-                          <span className="text-[#7bff9a]">{opponent.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-[#7bff9a]/40 italic animate-pulse">WAITING...</span>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => router.push(`/match/${match._id}`)}
-                      className="w-full terminal-btn text-sm"
-                    >
-                      {match.status === 'waiting' 
-                        ? (canCancel ? 'VIEW INVITE CODE' : 'WAITING TO START') 
-                        : 'ENTER MATCH →'}
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+            {inProgressMatches.length > 0 && (
+              <div className="mb-6 animate-slide-up">
+                <h3 className="text-xs text-[#7bff9a]/60 mb-2 pl-1 uppercase tracking-wider">
+                  &gt; ONGOING ({inProgressMatches.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {inProgressMatches.map(renderMatchCard)}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* MATCH HISTORY */}
         <div>
-          <div className="terminal-window p-4 mb-4">
+          <div className="terminal-window p-4 mb-4 border-[#41ff5f40]">
             <h2 className="text-lg font-bold text-[#41ff5f] text-shadow-glow flex items-center gap-2">
-              <span>📜</span>
               MATCH HISTORY
               {completedMatches.length > 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-[#41ff5f20] text-[#41ff5f] text-xs rounded font-mono">
@@ -229,8 +266,7 @@ export default function MatchesPage() {
 
           {completedMatches.length === 0 ? (
             <div className="terminal-window p-12 text-center">
-              <div className="text-6xl mb-4"></div>
-              <p className="text-[#7bff9a]/80 text-lg mb-2">NO MATCHES FOUND</p>
+              <p className="text-[#7bff9a]/80 text-lg mb-2">NO RECORDS FOUND</p>
               <p className="text-[#7bff9a]/60 text-sm mb-6">CHALLENGE A FRIEND TO START COMPETING</p>
               <button
                 onClick={() => router.push('/')}
@@ -258,7 +294,7 @@ export default function MatchesPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`font-bold text-lg ${won ? 'text-[#41ff5f]' : 'text-[#ff5f41]'}`}>
+                          <span className={`font-bold text-lg tracking-widest ${won ? 'text-[#41ff5f]' : 'text-[#ff5f41]'}`}>
                             {won ? 'VICTORY' : 'DEFEAT'}
                           </span>
                         </div>
@@ -271,7 +307,6 @@ export default function MatchesPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Host Result */}
                       <div className={`p-4 rounded border ${
                         match.winnerId === match.hostId 
                           ? 'bg-[#41ff5f10] border-[#41ff5f30]' 
@@ -288,7 +323,7 @@ export default function MatchesPage() {
                             <div className="font-semibold text-[#41ff5f] text-sm">{match.host.name}</div>
                             <div className="text-xs text-[#7bff9a]/60">HOST</div>
                           </div>
-                          {match.winnerId === match.hostId && <span className="text-xl">👑</span>}
+                          {match.winnerId === match.hostId && <span className="text-xs text-[#41ff5f] border border-[#41ff5f] px-1 rounded">[WINNER]</span>}
                         </div>
                         <div className="space-y-1 text-sm font-mono">
                           <div className="flex justify-between">
@@ -306,7 +341,6 @@ export default function MatchesPage() {
                         </div>
                       </div>
 
-                      {/* Opponent Result */}
                       <div className={`p-4 rounded border ${
                         match.winnerId === match.opponentId 
                           ? 'bg-[#41ff5f10] border-[#41ff5f30]' 
@@ -323,7 +357,7 @@ export default function MatchesPage() {
                             <div className="font-semibold text-[#41ff5f] text-sm">{match.opponent?.name}</div>
                             <div className="text-xs text-[#7bff9a]/60">CHALLENGER</div>
                           </div>
-                          {match.winnerId === match.opponentId && <span className="text-xl">👑</span>}
+                          {match.winnerId === match.opponentId && <span className="text-xs text-[#41ff5f] border border-[#41ff5f] px-1 rounded">[WINNER]</span>}
                         </div>
                         <div className="space-y-1 text-sm font-mono">
                           <div className="flex justify-between">

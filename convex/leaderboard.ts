@@ -2,9 +2,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-// Helper function to calculate composite score
 function calculateScore(wpm: number, accuracy: number): number {
-  // Using multiplicative approach: penalizes low accuracy
   return wpm * (accuracy / 100);
 }
 

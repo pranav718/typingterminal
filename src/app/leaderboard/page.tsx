@@ -66,16 +66,13 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
-      {/* Scanline */}
       <div className="scanline" />
 
-      {/* Grid Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="grid-lines absolute inset-0" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 p-4 md:p-6">
-        {/* HEADER */}
         <header className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
@@ -111,7 +108,6 @@ export default function LeaderboardPage() {
           </div>
         </header>
 
-        {/* Guest/Visitor Warning */}
         {isGuest && (
           <div className="terminal-window p-4 mb-6 border-[#41ff5f80]">
             <div className="flex items-start gap-3">
@@ -139,7 +135,6 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {/* Category Selector */}
         <div className="terminal-window p-4 mb-6">
           <div className="text-xs text-[#7bff9a]/60 mb-3 uppercase tracking-wider">SELECT RANKING MODE:</div>
           <div className="flex flex-wrap gap-2">
@@ -156,7 +151,6 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* User Rank Card */}
         {userRank && user && (
           <div className="terminal-window p-4 md:p-6 mb-6 border-[#41ff5f80] animate-slide-up">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -190,9 +184,7 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {/* Leaderboard Table */}
         <div className="terminal-window overflow-hidden">
-          {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#003018]/30 border-b border-[#41ff5f30]">
@@ -276,7 +268,6 @@ export default function LeaderboardPage() {
             </table>
           </div>
 
-          {/* Mobile Cards */}
           <div className="md:hidden">
             {leaderboard?.map((entry) => {
               const isCurrentUser = user && entry.email === user.email
@@ -348,7 +339,6 @@ export default function LeaderboardPage() {
             })}
           </div>
 
-          {/* Empty State */}
           {leaderboard && leaderboard.length === 0 && (
             <div className="p-12 text-center text-[#7bff9a]/60">
               <div className="text-4xl mb-4">👾</div>
@@ -356,7 +346,6 @@ export default function LeaderboardPage() {
             </div>
           )}
 
-          {/* Loading State */}
           {!leaderboard && (
             <div className="p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41ff5f] border-t-transparent mb-4"></div>
@@ -365,7 +354,6 @@ export default function LeaderboardPage() {
           )}
         </div>
 
-        {/* Show All Button */}
         {leaderboard && leaderboard.length >= 50 && !showAll && (
           <div className="mt-6 text-center">
             <button onClick={() => setShowAll(true)} className="terminal-btn">
@@ -374,7 +362,6 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {/* Global Stats Footer */}
         {globalStats && (
           <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="terminal-window p-4 text-center">

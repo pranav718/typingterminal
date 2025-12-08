@@ -365,6 +365,7 @@ function PracticeContent() {
         showUpload={showUpload}
         isComplete={isComplete}
         isLoadingBook={isLoadingBook}
+        showSelectionScreen={showSelectionScreen} 
         onBackClick={() => {
           if (!showSelectionScreen) {
             setShowSelectionScreen(true)

@@ -159,7 +159,6 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
-          {/* Info Box */}
           <div className="p-4 bg-[#41ff5f10] border border-[#41ff5f30] rounded">
             <div className="text-xs text-[#7bff9a]/80 font-mono">
               <div className="mb-2">TIP: SETTINGS ARE SAVED LOCALLY</div>
