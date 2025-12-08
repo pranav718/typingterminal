@@ -8,6 +8,7 @@ import { Id } from '../../../../convex/_generated/dataModel'
 import { useAuth } from '../../hooks/useAuth'
 import { useSettings } from '../../hooks/useSettings'
 import ProfileImage from '../../components/ProfileImage'
+import ConfirmationModal from '../../components/ConfirmationModal' 
 import '../../terminal.css'
 
 interface MatchPageProps {
@@ -28,6 +29,10 @@ export default function MatchPage({ params }: MatchPageProps) {
   const [liveAccuracy, setLiveAccuracy] = useState(100)
   const [isComplete, setIsComplete] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  
+  const [isCopied, setIsCopied] = useState(false)
+  
+  const [showCancelModal, setShowCancelModal] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -44,6 +49,16 @@ export default function MatchPage({ params }: MatchPageProps) {
       inputRef.current?.focus()
     }
   }, [matchData?.status, isComplete])
+
+  const handleConfirmCancel = async () => {
+    try {
+      await cancelMatch({ matchId })
+      router.push('/matches')
+    } catch (error) {
+      console.error('Failed to cancel:', error)
+      alert('ERROR: FAILED TO CANCEL MATCH') 
+    }
+  }
 
   if (!isLoading && (isGuest || !user)) {
     return (
@@ -215,6 +230,17 @@ export default function MatchPage({ params }: MatchPageProps) {
 
     return (
       <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
+        <ConfirmationModal
+          isOpen={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          onConfirm={handleConfirmCancel}
+          title="CANCEL MATCH?"
+          message="Are you sure you want to terminate this session? Your opponent will not be able to join."
+          confirmText="TERMINATE"
+          cancelText="RESUME"
+          isDangerous={true}
+        />
+
         <div className="scanline" />
         <div className="absolute inset-0 pointer-events-none">
           <div className="grid-lines absolute inset-0" />
@@ -231,17 +257,7 @@ export default function MatchPage({ params }: MatchPageProps) {
           <div className="terminal-window p-8 text-center relative">
             {isHost && (
               <button
-                onClick={async () => {
-                  if (confirm('TERMINATE MATCH SESSION?')) {
-                    try {
-                      await cancelMatch({ matchId })
-                      router.push('/matches')
-                    } catch (error) {
-                      console.error('Failed to cancel:', error)
-                      alert('ERROR: FAILED TO CANCEL MATCH')
-                    }
-                  }
-                }}
+                onClick={() => setShowCancelModal(true)}
                 className="absolute top-4 right-4 w-8 h-8 rounded border-2 border-[#ff5f41] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center text-lg font-bold"
                 title="Cancel match"
               >
@@ -265,14 +281,16 @@ export default function MatchPage({ params }: MatchPageProps) {
               <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow mb-4">
                 {matchData.inviteCode}
               </div>
+              
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(matchData.inviteCode)
-                  alert('INVITE CODE COPIED TO CLIPBOARD')
+                  setIsCopied(true)
+                  setTimeout(() => setIsCopied(false), 2000)
                 }}
-                className="terminal-btn"
+                className={`terminal-btn transition-all duration-300 ${isCopied ? 'border-[#41ff5f] bg-[#41ff5f20] text-shadow-glow' : ''}`}
               >
-                 COPY CODE
+                 {isCopied ? '✓ CODE COPIED' : 'COPY CODE'}
               </button>
             </div>
 

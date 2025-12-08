@@ -47,7 +47,6 @@ export default function FileUpload({ onFileUpload, isProcessing }: FileUploadPro
         <p className="text-matrix-primary text-lg font-medium">Drop the file here...</p>
       ) : (
         <>
-          <div className="text-5xl mb-4">📚</div>
           <p className="text-matrix-primary text-lg font-medium mb-2">
             Drag & drop a book here, or click to select
           </p>

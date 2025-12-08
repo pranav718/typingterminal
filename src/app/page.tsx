@@ -343,6 +343,9 @@ export default function HomePage() {
                           <div className="flex items-center gap-2">
                             <span className="text-[#7bff9a]/80">Random Words</span>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#7bff9a]/80">Random Letters</span>
+                          </div>
                         </div>
                       </div>
 
@@ -501,7 +504,6 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="text-4xl mb-2">👤</div>
                   <div className="text-xs">PROFILE DATA VIEW</div>
                 </div>
               )}
@@ -532,10 +534,33 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <p className="text-[10px] text-center border-t border-[#41ff5f20] pt-3 text-[#7bff9a]/60">
-              PROPERTY OF TYPINGTERMINAL NETWORK SYSTEMS ©2025
-            </p>
+          <div className="mt-6 border-t border-[#41ff5f20] pt-3">
+            <div className="flex flex-col gap-2 text-[10px] text-[#7bff9a]/60 text-center font-mono">
+              <a 
+                className="hover:text-[#41ff5f] hover:text-shadow-glow transition-all"
+              >
+                made with ♡ by knight.
+              </a>
+              
+              <div className="flex justify-center gap-3">
+                <a 
+                  href="https://github.com/pranav718/typingterminal"
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
+                >
+                  &gt;star on github
+                </a>
+                <a 
+                  href="https://x.com/knightkun__" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
+                >
+                  &gt;@knightkun__
+                </a>
+              </div>
+            </div>
           </div>
         </aside>
       </main>

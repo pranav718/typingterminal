@@ -32,14 +32,17 @@ export const getLeaderboard = query({
     if (timeRange === "all_time") {
       const allStats = await ctx.db.query("userStats").collect();
 
-      enrichedStats = await Promise.all(
+      const results = await Promise.all(
         allStats.map(async (stat) => {
           const user = await ctx.db.get(stat.userId);
+          
+          if (!user || !user.name) return null;
+
           return {
             userId: stat.userId,
-            displayName: user?.name || user?.email?.split("@")[0] || "Anonymous",
-            email: user?.email,
-            image: user?.image,
+            displayName: user.name,
+            email: user.email,
+            image: user.image,
             bestWpm: stat.bestWpm,
             averageWpm: stat.averageWpm,
             bestAccuracy: stat.bestAccuracy,
@@ -50,6 +53,8 @@ export const getLeaderboard = query({
           };
         })
       );
+      
+      enrichedStats = results.filter((s): s is NonNullable<typeof s> => s !== null);
 
     } else {
       const now = Date.now();
@@ -90,19 +95,22 @@ export const getLeaderboard = query({
         userEntry.bestAccuracy = Math.max(userEntry.bestAccuracy, session.accuracy);
       }
 
-      enrichedStats = await Promise.all(
+      const results = await Promise.all(
         Array.from(userAggregates.values()).map(async (entry) => {
           const user = await ctx.db.get(entry.userId);
+
+          if (!user || !user.name) return null;
+
           const compositeScore = calculateScore(entry.bestWpm, entry.bestAccuracy);
           
           return {
             userId: entry.userId,
-            displayName: user?.name || user?.email?.split("@")[0] || "Anonymous",
-            email: user?.email,
-            image: user?.image,
+            displayName: user.name,
+            email: user.email,
+            image: user.image,
             bestWpm: entry.bestWpm,
             bestAccuracy: entry.bestAccuracy,
-            averageWpm: 0,
+            averageWpm: 0, 
             averageAccuracy: 0,
             totalSessions: entry.sessions.length,
             totalWordsTyped: 0, 
@@ -110,6 +118,9 @@ export const getLeaderboard = query({
           };
         })
       );
+
+      // remove nulls
+      enrichedStats = results.filter((s): s is NonNullable<typeof s> => s !== null);
     }
 
     const sorted = enrichedStats.sort((a, b) => {
@@ -142,6 +153,10 @@ export const getUserRank = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
+    const user = await ctx.db.get(userId);
+    // if user has no name, they aint on the leaderboard, so return null
+    if (!user || !user.name) return null;
+
     const userStat = await ctx.db
       .query("userStats")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -149,11 +164,17 @@ export const getUserRank = query({
 
     if (!userStat) return null;
 
-    const allStats = await ctx.db
-      .query("userStats")
-      .collect();
+    const allStats = await ctx.db.query("userStats").collect();
 
-    const sorted = allStats.sort((a, b) => {
+    const validUserStats = [];
+    for (const stat of allStats) {
+      const u = await ctx.db.get(stat.userId);
+      if (u && u.name) {
+        validUserStats.push(stat);
+      }
+    }
+
+    const sorted = validUserStats.sort((a, b) => {
       const scoreA = a.compositeScore || calculateScore(a.bestWpm, a.bestAccuracy);
       const scoreB = b.compositeScore || calculateScore(b.bestWpm, b.bestAccuracy);
       return scoreB - scoreA;
@@ -161,10 +182,12 @@ export const getUserRank = query({
 
     const rank = sorted.findIndex((s) => s.userId === userId) + 1;
 
+    if (rank === 0) return null;
+
     return {
       rank,
-      totalUsers: allStats.length,
-      percentile: rank > 0 ? Math.round((1 - (rank / allStats.length)) * 100) : 0,
+      totalUsers: validUserStats.length,
+      percentile: rank > 0 ? Math.round((1 - (rank / validUserStats.length)) * 100) : 0,
       bestWpm: userStat.bestWpm,
       bestAccuracy: userStat.bestAccuracy,
       compositeScore: userStat.compositeScore || calculateScore(userStat.bestWpm, userStat.bestAccuracy),
@@ -176,18 +199,8 @@ export const getGlobalStats = query({
   args: {},
   handler: async (ctx) => {
     const allStats = await ctx.db.query("userStats").collect();
+    if (allStats.length === 0) return { totalUsers: 0, totalSessions: 0, averageWpm: 0, averageAccuracy: 0, highestWpm: 0, highestAccuracy: 0 };
     
-    if (allStats.length === 0) {
-      return {
-        totalUsers: 0,
-        totalSessions: 0,
-        averageWpm: 0,
-        averageAccuracy: 0,
-        highestWpm: 0,
-        highestAccuracy: 0,
-      };
-    }
-
     const totalSessions = allStats.reduce((sum, s) => sum + s.totalSessions, 0);
     const totalWpm = allStats.reduce((sum, s) => sum + s.averageWpm, 0);
     const totalAccuracy = allStats.reduce((sum, s) => sum + s.averageAccuracy, 0);
@@ -210,14 +223,17 @@ export const getTopPerformers = query({
   handler: async (ctx) => {
     const allStats = await ctx.db.query("userStats").collect();
 
-    const enrichedStats = await Promise.all(
+    const results = await Promise.all(
       allStats.map(async (stat) => {
         const user = await ctx.db.get(stat.userId);
+        
+        if (!user || !user.name) return null;
+
         return {
           userId: stat.userId,
-          displayName: user?.name || user?.email?.split("@")[0] || "Anonymous",
-          email: user?.email,
-          image: user?.image,
+          displayName: user.name,
+          email: user.email,
+          image: user.image,
           bestWpm: stat.bestWpm,
           averageWpm: stat.averageWpm,
           bestAccuracy: stat.bestAccuracy,
@@ -227,22 +243,13 @@ export const getTopPerformers = query({
       })
     );
 
+    const enrichedStats = results.filter((s): s is NonNullable<typeof s> => s !== null);
+
     return {
-      fastestTypers: enrichedStats
-        .sort((a, b) => b.bestWpm - a.bestWpm)
-        .slice(0, 3),
-      
-      mostAccurate: enrichedStats
-        .sort((a, b) => b.bestAccuracy - a.bestAccuracy)
-        .slice(0, 3),
-      
-      topOverall: enrichedStats
-        .sort((a, b) => b.compositeScore - a.compositeScore)
-        .slice(0, 3),
-      
-      mostDedicated: enrichedStats
-        .sort((a, b) => b.totalSessions - a.totalSessions)
-        .slice(0, 3),
+      fastestTypers: enrichedStats.sort((a, b) => b.bestWpm - a.bestWpm).slice(0, 3),
+      mostAccurate: enrichedStats.sort((a, b) => b.bestAccuracy - a.bestAccuracy).slice(0, 3),
+      topOverall: enrichedStats.sort((a, b) => b.compositeScore - a.compositeScore).slice(0, 3),
+      mostDedicated: enrichedStats.sort((a, b) => b.totalSessions - a.totalSessions).slice(0, 3),
     };
   },
 });
