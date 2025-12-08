@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { SAMPLE_BOOKS } from '../../data/sampleBooks'
@@ -25,15 +25,31 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
   const [wordCount, setWordCount] = useState<number>(50)
   const [isCreating, setIsCreating] = useState(false)
   
+  const [isBookOpen, setIsBookOpen] = useState(false)
+  const [isPassageOpen, setIsPassageOpen] = useState(false)
+  
   const [showInstruction, setShowInstruction] = useState(false)
 
   const createMatch = useMutation(api.matches.createMatch)
+
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsBookOpen(false)
+        setIsPassageOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   if (!isOpen) return null
 
   const handleBookChange = (bookId: string) => {
     setSelectedBook(bookId)
     setSelectedPassage(0)
+    setIsBookOpen(false)
     if (bookId) {
       setShowInstruction(true)
     }
@@ -92,16 +108,17 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
         onClick={onClose}
       >
         <div 
-          className="terminal-window max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          className="terminal-window max-w-2xl w-full max-h-[90vh] overflow-y-auto border-[#41ff5f]"
           onClick={(e) => e.stopPropagation()}
+          ref={dropdownRef}
         >
-          <div className="sticky top-0 bg-[#001a0f] border-b border-[#41ff5f40] px-6 py-4 flex justify-between items-center">
+          <div className="sticky top-0 bg-[#001a0f] border-b border-[#41ff5f40] px-6 py-4 flex justify-between items-center z-10">
             <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow tracking-wider">
               CREATE NEW MATCH
             </h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center"
+              className="w-8 h-8 rounded border border-[#ff5f4180] text-[#ff5f41] hover:bg-[#ff5f4120] transition-all flex items-center justify-center font-bold"
             >
               ✕
             </button>
@@ -135,18 +152,39 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                   <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
                     SELECT BOOK:
                   </label>
-                  <select
-                    value={selectedBook}
-                    onChange={(e) => handleBookChange(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#003018]/30 border border-[#41ff5f30] text-[#41ff5f] rounded focus:outline-none focus:border-[#41ff5f] font-mono"
-                  >
-                    <option value="">-- SELECT BOOK --</option>
-                    {SAMPLE_BOOKS.map(book => (
-                      <option key={book.id} value={book.id}>
-                        {book.title} by {book.author}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBookOpen(!isBookOpen)
+                        setIsPassageOpen(false)
+                      }}
+                      className="w-full px-4 py-3 bg-[#001a0f] border border-[#41ff5f30] text-[#41ff5f] text-left flex justify-between items-center hover:border-[#41ff5f] transition-colors font-mono"
+                    >
+                      <span className="truncate">
+                        {selectedBookData ? `${selectedBookData.title} by ${selectedBookData.author}` : '-- SELECT BOOK --'}
+                      </span>
+                      <span className="text-xs ml-2">▼</span>
+                    </button>
+
+                    {isBookOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-[#00120b] border border-[#41ff5f] max-h-60 overflow-y-auto shadow-[0_0_20px_rgba(0,0,0,0.8)] custom-scrollbar">
+                        {SAMPLE_BOOKS.map((book) => (
+                          <div
+                            key={book.id}
+                            onClick={() => handleBookChange(book.id)}
+                            className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${
+                              selectedBook === book.id 
+                                ? 'bg-[#41ff5f] text-[#00120b] font-bold' 
+                                : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
+                            }`}
+                          >
+                            {book.title} by {book.author}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {selectedBookData && (
@@ -154,20 +192,43 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                     <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
                       SELECT PASSAGE:
                     </label>
-                    <select
-                      value={selectedPassage}
-                      onChange={(e) => setSelectedPassage(Number(e.target.value))}
-                      className="w-full px-4 py-3 bg-[#003018]/30 border border-[#41ff5f30] text-[#41ff5f] rounded focus:outline-none focus:border-[#41ff5f] font-mono"
-                    >
-                      {selectedBookData.passages.map((_, idx) => (
-                        <option key={idx} value={idx}>
-                          PASSAGE {idx + 1}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsPassageOpen(!isPassageOpen)
+                          setIsBookOpen(false)
+                        }}
+                        className="w-full px-4 py-3 bg-[#001a0f] border border-[#41ff5f30] text-[#41ff5f] text-left flex justify-between items-center hover:border-[#41ff5f] transition-colors font-mono"
+                      >
+                        <span>PASSAGE {selectedPassage + 1}</span>
+                        <span className="text-xs ml-2">▼</span>
+                      </button>
 
-                    <div className="mt-4 p-4 bg-[#003018]/20 border border-[#41ff5f20] rounded max-h-40 overflow-y-auto">
-                      <p className="text-sm text-[#7bff9a]/80 font-mono">
+                      {isPassageOpen && (
+                        <div className="absolute z-50 w-full mt-1 bg-[#00120b] border border-[#41ff5f] max-h-60 overflow-y-auto shadow-[0_0_20px_rgba(0,0,0,0.8)] custom-scrollbar">
+                          {selectedBookData.passages.map((_, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => {
+                                setSelectedPassage(idx)
+                                setIsPassageOpen(false)
+                              }}
+                              className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${
+                                selectedPassage === idx
+                                  ? 'bg-[#41ff5f] text-[#00120b] font-bold'
+                                  : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
+                              }`}
+                            >
+                              PASSAGE {idx + 1}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 p-4 bg-[#00120b] border border-[#41ff5f20] max-h-40 overflow-y-auto custom-scrollbar">
+                      <p className="text-sm text-[#7bff9a]/80 font-mono leading-relaxed">
                         {selectedBookData.passages[selectedPassage].substring(0, 200)}...
                       </p>
                     </div>
@@ -214,7 +275,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
             <button
               onClick={handleCreate}
               disabled={(passageType === 'book' && !selectedBook) || isCreating}
-              className="w-full terminal-btn disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full terminal-btn py-3 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreating ? 'CREATING MATCH...' : 'CREATE MATCH'}
             </button>

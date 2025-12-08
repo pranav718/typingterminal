@@ -15,7 +15,7 @@ export default function AuthModal() {
           <h1 className="text-3xl md:text-4xl font-bold text-[#41ff5f] text-shadow-glow mb-2 tracking-widest">
             TYPINGTERMINAL
           </h1>
-          <p className="text-sm text-[#7bff9a]/80 font-mono">v2.4.00 • AUTHENTICATION REQUIRED</p>
+          <p className="text-sm text-[#7bff9a]/80 font-mono">v1.0.0 • AUTHENTICATION REQUIRED</p>
         </div>
 
         <div className="flex gap-2 mb-6 p-1 bg-[#003018]/30 rounded border border-[#41ff5f20]">
