@@ -184,7 +184,7 @@ export default function HomePage() {
                           {topPerformers.fastestTypers.slice(0, 3).map((performer, idx) => (
                             <div key={performer.userId} className="flex items-center justify-between p-2 bg-[#003018]/20 border border-[#41ff5f20] rounded">
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">{idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}</span>
+                                <span className="text-sm font-bold text-[#41ff5f] font-mono">#{idx + 1}</span>
                                 <span className="truncate">{performer.displayName}</span>
                               </div>
                               <span className="font-bold text-[#41ff5f]">{performer.bestWpm} WPM</span>
@@ -199,7 +199,7 @@ export default function HomePage() {
                           {topPerformers.mostAccurate.slice(0, 3).map((performer, idx) => (
                             <div key={performer.userId} className="flex items-center justify-between p-2 bg-[#003018]/20 border border-[#41ff5f20] rounded">
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">{idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}</span>
+                                <span className="text-sm font-bold text-[#41ff5f] font-mono">#{idx + 1}</span>
                                 <span className="truncate">{performer.displayName}</span>
                               </div>
                               <span className="font-bold text-[#41ff5f]">{performer.bestAccuracy}%</span>

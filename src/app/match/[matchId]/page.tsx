@@ -39,7 +39,6 @@ export default function MatchPage({ params }: MatchPageProps) {
   const isHost = user?._id === matchData?.hostId
   const isOpponent = user?._id === matchData?.opponentId
 
-  // Redirect guests
   useEffect(() => {
     if (!isLoading && (isGuest || !user)) {
       alert('AUTHENTICATION REQUIRED FOR MATCHES')
@@ -47,7 +46,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     }
   }, [isGuest, user, isLoading, router])
 
-  // Redirect non-participants
   useEffect(() => {
     if (!isLoading && matchData && user && matchData.hostId !== user._id && matchData.opponentId !== user._id) {
       alert('ACCESS DENIED: NOT A PARTICIPANT')
@@ -55,14 +53,12 @@ export default function MatchPage({ params }: MatchPageProps) {
     }
   }, [matchData, user, isLoading, router])
 
-  // Auto-focus
   useEffect(() => {
     if (matchData?.status === 'in_progress' && !isComplete) {
       inputRef.current?.focus()
     }
   }, [matchData?.status, isComplete])
 
-  // Count correct words
   const countCorrectWords = (input: string, reference: string): number => {
     if (!input || !reference) return 0
     let correctChars = 0
@@ -73,7 +69,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     return correctChars / 5
   }
 
-  // Calculate live WPM
   useEffect(() => {
     if (!startTime || userInput.length === 0) {
       setLiveWpm(0)
@@ -268,7 +263,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     )
   }
 
-  // Match completed
   if (matchData.status === 'completed') {
     const winner = matchData.winnerId === user._id
     const hostResult = matchData.results?.find(r => r.userId === matchData.hostId)
@@ -379,7 +373,6 @@ export default function MatchPage({ params }: MatchPageProps) {
     )
   }
 
-  // Match in progress
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
       <div className="scanline" />

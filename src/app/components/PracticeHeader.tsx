@@ -43,7 +43,7 @@ export default function PracticeHeader({
         
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-[#41ff5f] text-shadow-glow tracking-wider font-mono">
-            TERMINALTYPE
+            TYPINGTERMINAL
           </h1>
           <div className="text-[10px] text-[#7bff9a]/60 tracking-widest">
             SESSION_ID: {Math.floor(Math.random() * 99999).toString().padStart(5, '0')}

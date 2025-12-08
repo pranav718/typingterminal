@@ -140,7 +140,6 @@ export const submitMatchResult = mutation({
       isFinished: true,
     });
 
-    //save to typing sessions (for stats n leaderboard)
     await ctx.db.insert("typingSessions", {
       userId,
       passageIndex: 0, 

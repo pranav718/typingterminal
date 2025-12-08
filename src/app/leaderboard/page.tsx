@@ -9,16 +9,20 @@ import ProfileImage from "../components/ProfileImage"
 import "../terminal.css"
 
 type LeaderboardCategory = "composite" | "wpm" | "accuracy"
+type TimeRange = "daily" | "weekly" | "monthly" | "all_time"
 
 export default function LeaderboardPage() {
   const { user, isLoading, isGuest, logout } = useAuth()
   const router = useRouter()
+  
   const [category, setCategory] = useState<LeaderboardCategory>("composite")
+  const [timeRange, setTimeRange] = useState<TimeRange>("all_time")
   const [showAll, setShowAll] = useState(false)
 
   const leaderboard = useQuery(api.leaderboard.getLeaderboard, {
     limit: showAll ? 100 : 50,
     sortBy: category,
+    timeRange: timeRange,
   })
 
   const userRank = useQuery(api.leaderboard.getUserRank, user ? {} : "skip")
@@ -35,17 +39,6 @@ export default function LeaderboardPage() {
     )
   }
 
-  const getCategoryIcon = (cat: LeaderboardCategory) => {
-    switch (cat) {
-      case "composite":
-        return "🏆"
-      case "wpm":
-        return "⚡"
-      case "accuracy":
-        return "🎯"
-    }
-  }
-
   const getCategoryName = (cat: LeaderboardCategory) => {
     switch (cat) {
       case "composite":
@@ -57,11 +50,13 @@ export default function LeaderboardPage() {
     }
   }
 
-  const getMedalEmoji = (rank: number) => {
-    if (rank === 1) return "🥇"
-    if (rank === 2) return "🥈"
-    if (rank === 3) return "🥉"
-    return null
+  const getTimeRangeLabel = (range: TimeRange) => {
+    switch (range) {
+      case "daily": return "TODAY"
+      case "weekly": return "THIS WEEK"
+      case "monthly": return "THIS MONTH"
+      case "all_time": return "ALL TIME"
+    }
   }
 
   return (
@@ -77,7 +72,7 @@ export default function LeaderboardPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
               <button onClick={() => router.push("/")} className="terminal-btn text-sm" title="Back to Home">
-                ← HOME
+                &lt; HOME
               </button>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">GLOBAL RANKINGS</h1>
@@ -108,50 +103,40 @@ export default function LeaderboardPage() {
           </div>
         </header>
 
-        {isGuest && (
-          <div className="terminal-window p-4 mb-6 border-[#41ff5f80]">
-            <div className="flex items-start gap-3">
-              <div>
-                <div className="font-semibold text-[#41ff5f] mb-1">VIEWING AS GUEST</div>
-                <div className="text-sm text-[#7bff9a]/80">Sign up to compete on the leaderboard and track your progress!</div>
-              </div>
+        <div className="terminal-window p-4 mb-6 space-y-4">
+          
+          <div>
+            <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">TIME PERIOD:</div>
+            <div className="flex flex-wrap gap-2">
+              {(["daily", "weekly", "monthly", "all_time"] as TimeRange[]).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`terminal-tab text-xs font-bold ${timeRange === range ? "active" : ""}`}
+                >
+                  {getTimeRangeLabel(range)}
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {!user && (
-          <div className="terminal-window p-4 mb-6 border-[#41ff5f80]">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div>
-                  <div className="font-semibold text-[#41ff5f] mb-1">VIEWING AS VISITOR</div>
-                  <div className="text-sm text-[#7bff9a]/80">Sign up to compete on the leaderboard!</div>
-                </div>
-              </div>
-              <button onClick={() => router.push("/")} className="terminal-btn text-sm whitespace-nowrap">
-                SIGN UP NOW →
-              </button>
+          <div>
+            <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">SORT METRIC:</div>
+            <div className="flex flex-wrap gap-2">
+              {(["composite", "wpm", "accuracy"] as LeaderboardCategory[]).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={`terminal-tab text-xs font-bold ${category === cat ? "active" : ""}`}
+                >
+                  {getCategoryName(cat)}
+                </button>
+              ))}
             </div>
-          </div>
-        )}
-
-        <div className="terminal-window p-4 mb-6">
-          <div className="text-xs text-[#7bff9a]/60 mb-3 uppercase tracking-wider">SELECT RANKING MODE:</div>
-          <div className="flex flex-wrap gap-2">
-            {(["composite", "wpm", "accuracy"] as LeaderboardCategory[]).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`terminal-tab ${category === cat ? "active" : ""}`}
-              >
-                <span className="mr-2">{getCategoryIcon(cat)}</span>
-                {getCategoryName(cat)}
-              </button>
-            ))}
           </div>
         </div>
 
-        {userRank && user && (
+        {userRank && user && timeRange === "all_time" && (
           <div className="terminal-window p-4 md:p-6 mb-6 border-[#41ff5f80] animate-slide-up">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-3">
@@ -162,7 +147,7 @@ export default function LeaderboardPage() {
                   className="w-12 h-12 rounded-full border-2 border-[#41ff5f]"
                 />
                 <div>
-                  <div className="text-xs text-[#7bff9a]/60">YOUR RANK</div>
+                  <div className="text-xs text-[#7bff9a]/60">YOUR ALL-TIME RANK</div>
                   <div className="text-lg font-bold text-[#41ff5f] text-shadow-glow">
                     {user.name || user.email?.split("@")[0] || "You"}
                   </div>
@@ -191,19 +176,24 @@ export default function LeaderboardPage() {
                 <tr className="text-[#41ff5f]">
                   <th className="px-6 py-3 text-left font-semibold text-xs uppercase tracking-wider">RANK</th>
                   <th className="px-6 py-3 text-left font-semibold text-xs uppercase tracking-wider">PLAYER</th>
-                  <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">BEST WPM</th>
-                  <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">ACCURACY</th>
+                  <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">
+                    {timeRange === 'all_time' ? 'BEST WPM' : 'MAX WPM'}
+                  </th>
+                  <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">
+                    {timeRange === 'all_time' ? 'BEST ACC' : 'MAX ACC'}
+                  </th>
                   {category === "composite" && (
                     <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">SCORE</th>
                   )}
-                  <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">AVG WPM</th>
+                  {timeRange === 'all_time' && (
+                    <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">AVG WPM</th>
+                  )}
                   <th className="px-6 py-3 text-right font-semibold text-xs uppercase tracking-wider">SESSIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {leaderboard?.map((entry) => {
                   const isCurrentUser = user && entry.email === user.email
-                  const medal = getMedalEmoji(entry.rank)
 
                   return (
                     <tr
@@ -213,12 +203,9 @@ export default function LeaderboardPage() {
                       }`}
                     >
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {medal && <span className="text-2xl">{medal}</span>}
-                          <span className={`font-bold font-mono ${entry.rank <= 3 ? "text-[#41ff5f] text-shadow-glow" : "text-[#7bff9a]"}`}>
-                            {!medal && `#${entry.rank}`}
-                          </span>
-                        </div>
+                        <span className={`font-bold font-mono ${entry.rank <= 3 ? "text-[#41ff5f] text-shadow-glow text-lg" : "text-[#7bff9a]"}`}>
+                          #{entry.rank}
+                        </span>
                       </td>
 
                       <td className="px-6 py-4">
@@ -254,9 +241,11 @@ export default function LeaderboardPage() {
                         </td>
                       )}
 
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-[#7bff9a]/70 font-mono text-sm">{entry.averageWpm}</span>
-                      </td>
+                      {timeRange === 'all_time' && (
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-[#7bff9a]/70 font-mono text-sm">{entry.averageWpm}</span>
+                        </td>
+                      )}
 
                       <td className="px-6 py-4 text-right">
                         <span className="text-[#7bff9a]/50 text-sm font-mono">{entry.totalSessions}</span>
@@ -271,7 +260,6 @@ export default function LeaderboardPage() {
           <div className="md:hidden">
             {leaderboard?.map((entry) => {
               const isCurrentUser = user && entry.email === user.email
-              const medal = getMedalEmoji(entry.rank)
 
               return (
                 <div
@@ -282,11 +270,7 @@ export default function LeaderboardPage() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      {medal ? (
-                        <span className="text-2xl">{medal}</span>
-                      ) : (
-                        <span className="text-lg font-bold text-[#7bff9a] font-mono">#{entry.rank}</span>
-                      )}
+                      <span className="text-lg font-bold text-[#41ff5f] font-mono text-shadow-glow">#{entry.rank}</span>
 
                       <ProfileImage
                         src={entry.image}
@@ -308,12 +292,12 @@ export default function LeaderboardPage() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[#003018]/30 rounded p-2 border border-[#41ff5f20]">
-                      <div className="text-xs text-[#7bff9a]/60">BEST WPM</div>
+                      <div className="text-xs text-[#7bff9a]/60">{timeRange === 'all_time' ? 'BEST' : 'MAX'} WPM</div>
                       <div className="text-lg font-bold text-[#41ff5f] font-mono">{entry.bestWpm}</div>
                     </div>
 
                     <div className="bg-[#003018]/30 rounded p-2 border border-[#41ff5f20]">
-                      <div className="text-xs text-[#7bff9a]/60">ACCURACY</div>
+                      <div className="text-xs text-[#7bff9a]/60">{timeRange === 'all_time' ? 'BEST' : 'MAX'} ACC</div>
                       <div className="text-lg font-bold text-[#7bff9a] font-mono">{entry.bestAccuracy}%</div>
                     </div>
 
@@ -323,11 +307,6 @@ export default function LeaderboardPage() {
                         <div className="text-lg font-bold text-[#41ff5f] font-mono">{entry.compositeScore.toFixed(1)}</div>
                       </div>
                     )}
-
-                    <div className="bg-[#003018]/30 rounded p-2 border border-[#41ff5f20]">
-                      <div className="text-xs text-[#7bff9a]/60">AVG WPM</div>
-                      <div className="text-lg font-bold text-[#7bff9a]/70 font-mono">{entry.averageWpm}</div>
-                    </div>
 
                     <div className="bg-[#003018]/30 rounded p-2 border border-[#41ff5f20]">
                       <div className="text-xs text-[#7bff9a]/60">SESSIONS</div>
@@ -341,61 +320,31 @@ export default function LeaderboardPage() {
 
           {leaderboard && leaderboard.length === 0 && (
             <div className="p-12 text-center text-[#7bff9a]/60">
-              <div className="text-4xl mb-4">👾</div>
-              <p>NO RANKINGS YET. BE THE FIRST TO COMPETE!</p>
-            </div>
-          )}
-
-          {!leaderboard && (
-            <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41ff5f] border-t-transparent mb-4"></div>
-              <p className="text-[#41ff5f] animate-pulse">LOADING LEADERBOARD...</p>
+              <p>NO RANKINGS FOUND FOR THIS PERIOD.</p>
             </div>
           )}
         </div>
-
-        {leaderboard && leaderboard.length >= 50 && !showAll && (
-          <div className="mt-6 text-center">
-            <button onClick={() => setShowAll(true)} className="terminal-btn">
-              SHOW ALL RANKINGS
-            </button>
-          </div>
-        )}
-
+        
         {globalStats && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">
-                {globalStats.totalUsers.toLocaleString()}
+          <div className="mt-8 border-t border-[#41ff5f30] pt-6">
+            <h3 className="text-sm font-bold text-[#41ff5f] mb-4 text-center tracking-widest">SYSTEM STATISTICS</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="terminal-window p-3 text-center">
+                <div className="text-xl font-bold text-[#41ff5f] font-mono">{globalStats.totalUsers.toLocaleString()}</div>
+                <div className="text-[10px] text-[#7bff9a]/60 uppercase">Total Typists</div>
               </div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Total Typists</div>
-            </div>
-
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">
-                {globalStats.totalSessions.toLocaleString()}
+              <div className="terminal-window p-3 text-center">
+                <div className="text-xl font-bold text-[#41ff5f] font-mono">{globalStats.totalSessions.toLocaleString()}</div>
+                <div className="text-[10px] text-[#7bff9a]/60 uppercase">Sessions Run</div>
               </div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Total Sessions</div>
-            </div>
-
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">{globalStats.averageWpm}</div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Average WPM</div>
-            </div>
-
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">{globalStats.averageAccuracy}%</div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Average Accuracy</div>
-            </div>
-
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">{globalStats.highestWpm}</div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Highest WPM</div>
-            </div>
-
-            <div className="terminal-window p-4 text-center">
-              <div className="text-2xl font-bold text-[#41ff5f] mb-1 text-shadow-glow font-mono">{globalStats.highestAccuracy}%</div>
-              <div className="text-xs text-[#7bff9a]/60 uppercase tracking-wider">Best Accuracy</div>
+              <div className="terminal-window p-3 text-center">
+                <div className="text-xl font-bold text-[#41ff5f] font-mono">{globalStats.averageWpm}</div>
+                <div className="text-[10px] text-[#7bff9a]/60 uppercase">Avg Speed</div>
+              </div>
+              <div className="terminal-window p-3 text-center">
+                <div className="text-xl font-bold text-[#41ff5f] font-mono">{globalStats.averageAccuracy}%</div>
+                <div className="text-[10px] text-[#7bff9a]/60 uppercase">Avg Accuracy</div>
+              </div>
             </div>
           </div>
         )}

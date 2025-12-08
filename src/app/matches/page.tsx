@@ -75,16 +75,13 @@ export default function MatchesPage() {
     )
   }
 
-  // Filter active matches generally
   const activeMatches = myMatches?.filter(m => m.status === 'waiting' || m.status === 'in_progress') || []
   
-  // Split them into two groups
   const waitingMatches = activeMatches.filter(m => m.status === 'waiting')
   const inProgressMatches = activeMatches.filter(m => m.status === 'in_progress')
   
   const completedMatches = matchHistory || []
 
-  // Helper function to render a single match card
   const renderMatchCard = (match: any) => {
     const isHost = user && match.hostId === user._id
     const opponent = isHost ? match.opponent : match.host

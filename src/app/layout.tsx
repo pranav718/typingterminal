@@ -3,8 +3,8 @@ import { Providers } from './providers';
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TerminalType",
-  description: "Master typing with classic literature in a terminal-style interface",
+  title: "TypingTerminal",
+  description: "Practice your typing and compete with your friends!!!",
 };
 
 export default function RootLayout({
