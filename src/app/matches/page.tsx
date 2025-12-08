@@ -187,13 +187,13 @@ export default function MatchesPage() {
                 onClick={() => router.push('/')}
                 className="terminal-btn text-sm"
               >
-                &lt; HOME
+                &lt;
               </button>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">
                   MATCH TERMINAL
                 </h1>
-                <p className="text-[#7bff9a]/70 text-xs">BATTLE HISTORY & ACTIVE SESSIONS</p>
+                <p className="text-[#7bff9a]/70 text-xs">ACTIVE MATCHES & MATCH HISTORY</p>
               </div>
             </div>
 

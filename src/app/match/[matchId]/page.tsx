@@ -40,24 +40,57 @@ export default function MatchPage({ params }: MatchPageProps) {
   const isOpponent = user?._id === matchData?.opponentId
 
   useEffect(() => {
-    if (!isLoading && (isGuest || !user)) {
-      alert('AUTHENTICATION REQUIRED FOR MATCHES')
-      router.push('/')
-    }
-  }, [isGuest, user, isLoading, router])
-
-  useEffect(() => {
-    if (!isLoading && matchData && user && matchData.hostId !== user._id && matchData.opponentId !== user._id) {
-      alert('ACCESS DENIED: NOT A PARTICIPANT')
-      router.push('/')
-    }
-  }, [matchData, user, isLoading, router])
-
-  useEffect(() => {
     if (matchData?.status === 'in_progress' && !isComplete) {
       inputRef.current?.focus()
     }
   }, [matchData?.status, isComplete])
+
+  if (!isLoading && (isGuest || !user)) {
+    return (
+      <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden flex items-center justify-center">
+        <div className="scanline" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="grid-lines absolute inset-0" />
+        </div>
+        <div className="relative z-10 max-w-lg w-full p-4">
+          <div className="terminal-window p-8 border-[#ff5f4180] text-center animate-fade-in">
+            <h2 className="text-2xl font-bold text-[#ff5f41] mb-4 text-shadow-glow">ACCESS DENIED</h2>
+            <p className="text-[#7bff9a]/80 mb-6 font-mono">AUTHENTICATION REQUIRED FOR MATCH PROTOCOLS</p>
+            <button
+              onClick={() => router.push('/')}
+              className="terminal-btn border-[#ff5f41] text-[#ff5f41] hover:bg-[#ff5f4120]"
+            >
+              RETURN TO ROOT
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isLoading && matchData && user && matchData.hostId !== user._id && matchData.opponentId !== user._id) {
+    return (
+      <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden flex items-center justify-center">
+        <div className="scanline" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="grid-lines absolute inset-0" />
+        </div>
+        <div className="relative z-10 max-w-lg w-full p-4">
+          <div className="terminal-window p-8 border-[#ff5f4180] text-center animate-fade-in">
+            <h2 className="text-2xl font-bold text-[#ff5f41] mb-4 text-shadow-glow">UNAUTHORIZED</h2>
+            <p className="text-[#7bff9a]/80 mb-6 font-mono">YOU ARE NOT A PARTICIPANT IN THIS SESSION</p>
+            <button
+              onClick={() => router.push('/')}
+              className="terminal-btn border-[#ff5f41] text-[#ff5f41] hover:bg-[#ff5f4120]"
+            >
+              RETURN TO ROOT
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
   const countCorrectWords = (input: string, reference: string): number => {
     if (!input || !reference) return 0
@@ -192,20 +225,20 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            ← BACK
+            &lt; BACK
           </button>
 
           <div className="terminal-window p-8 text-center relative">
             {isHost && (
               <button
                 onClick={async () => {
-                  if (confirm('terminate match session?')) {
+                  if (confirm('TERMINATE MATCH SESSION?')) {
                     try {
                       await cancelMatch({ matchId })
                       router.push('/matches')
                     } catch (error) {
                       console.error('Failed to cancel:', error)
-                      alert('error: failed to cancel match')
+                      alert('ERROR: FAILED TO CANCEL MATCH')
                     }
                   }
                 }}
@@ -228,23 +261,23 @@ export default function MatchPage({ params }: MatchPageProps) {
             </div>
             
             <div className="mb-8 p-6 bg-[#003018]/30 border-2 border-[#41ff5f30] rounded">
-              <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">share invite code:</p>
+              <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">SHARE INVITE CODE:</p>
               <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow mb-4">
                 {matchData.inviteCode}
               </div>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(matchData.inviteCode)
-                  alert('invite code copied to clipboard')
+                  alert('INVITE CODE COPIED TO CLIPBOARD')
                 }}
                 className="terminal-btn"
               >
-                📋 COPY CODE
+                 COPY CODE
               </button>
             </div>
 
             <div className="text-[#7bff9a]/80 mb-6">
-              <p className="mb-2 text-xs uppercase tracking-wider">passage: <span className="font-semibold text-[#41ff5f]">{matchData.passageSource}</span></p>
+              <p className="mb-2 text-xs uppercase tracking-wider">PASSAGE: <span className="font-semibold text-[#41ff5f]">{matchData.passageSource}</span></p>
               <div className="p-4 bg-[#00120b] border border-[#41ff5f20] rounded text-sm max-h-32 overflow-y-auto text-left font-mono">
                 {matchData.passageText.substring(0, 150)}...
               </div>
@@ -253,7 +286,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             <div className="text-[#41ff5f] text-sm font-mono">
               <div className="flex items-center justify-center gap-2 animate-pulse">
                 <span className="inline-block w-1 h-1 bg-[#41ff5f] rounded-full"></span>
-                <span>scanning for opponent connection</span>
+                <span>SCANNING FOR OPPONENT CONNECTION</span>
                 <span className="inline-block w-1 h-1 bg-[#41ff5f] rounded-full"></span>
               </div>
             </div>
@@ -280,7 +313,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            ← RETURN HOME
+            &lt; RETURN HOME
           </button>
 
           <div className={`terminal-window p-8 ${winner ? 'border-[#41ff5f80]' : 'border-[#ff5f4180]'}`}>
@@ -384,7 +417,7 @@ export default function MatchPage({ params }: MatchPageProps) {
         <div className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow uppercase tracking-wider">LIVE BATTLE</h2>
+              <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow uppercase tracking-wider">MATCH</h2>
               <p className="text-sm text-[#7bff9a]/70 font-mono">{matchData.passageSource}</p>
             </div>
 
@@ -455,7 +488,7 @@ export default function MatchPage({ params }: MatchPageProps) {
 
         {hasSubmitted && !opponentResult?.isFinished && (
           <div className="terminal-window p-4 text-center border-[#41ff5f80]">
-            <p className="text-[#41ff5f] font-semibold font-mono">✓ COMPLETE! WAITING FOR OPPONENT...</p>
+            <p className="text-[#41ff5f] font-semibold font-mono">MATCH COMPLETED!! WAITING FOR OPPONENT...</p>
           </div>
         )}
 

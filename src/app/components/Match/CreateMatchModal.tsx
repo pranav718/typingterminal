@@ -117,16 +117,14 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                   onClick={() => setPassageType('book')}
                   className={`terminal-tab ${passageType === 'book' ? 'active' : ''}`}
                 >
-                  <div className="text-2xl mb-1">📖</div>
-                  <div className="text-xs">BOOK</div>
+                  <div className="text-sm">BOOK</div>
                 </button>
 
                 <button
                   onClick={() => setPassageType('random-words')}
                   className={`terminal-tab ${passageType === 'random-words' ? 'active' : ''}`}
                 >
-                  <div className="text-2xl mb-1">🎲</div>
-                  <div className="text-xs">RANDOM</div>
+                  <div className="text-sm">RANDOM</div>
                 </button>
               </div>
             </div>

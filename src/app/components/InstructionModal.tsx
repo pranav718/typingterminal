@@ -55,7 +55,7 @@ export default function InstructionModal({
             onClick={handleAction}
             className="terminal-btn bg-[#41ff5f10] hover:bg-[#41ff5f20] px-8 py-2 font-bold w-full md:w-auto"
           >
-            &gt; PROCEED
+            &gt; 
           </button>
         </div>
       </div>

@@ -72,7 +72,7 @@ export default function LeaderboardPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
               <button onClick={() => router.push("/")} className="terminal-btn text-sm" title="Back to Home">
-                &lt; HOME
+                &lt;
               </button>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">GLOBAL RANKINGS</h1>
