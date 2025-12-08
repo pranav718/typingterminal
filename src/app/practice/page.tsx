@@ -19,14 +19,13 @@ import PracticeLayout from "../components/PracticeLayout"
 import InstructionModal from "../components/InstructionModal"
 import { 
 generateRandomWords, 
-generateRandomLetters, 
 type DifficultyLevel 
 } from "../utils/randomWords"
 import "../terminal.css"
 
 const FileUpload = dynamic(() => import("../components/FileUpload"), { ssr: false })
 
-type PracticeMode = 'BOOKS' | 'RANDOM' | 'LETTERS'
+type PracticeMode = 'BOOKS' | 'RANDOM'
 
 function PracticeContent() {
   const { user, isGuest, logout, isLoading } = useAuth()
@@ -129,10 +128,7 @@ function PracticeContent() {
       if (selectionMode === 'RANDOM') {
         newText = await generateRandomWords({ wordCount, difficulty })
         source = `Random Words (${wordCount}, ${difficulty})`
-      } else if (selectionMode === 'LETTERS') {
-        newText = generateRandomLetters(wordCount * 5)
-        source = `Random Letters (${wordCount * 5} chars)`
-      }
+      } 
 
       setText(newText)
       setPassageSource(source)
@@ -365,7 +361,7 @@ function PracticeContent() {
         showUpload={showUpload}
         isComplete={isComplete}
         isLoadingBook={isLoadingBook}
-        showSelectionScreen={showSelectionScreen} 
+        showSelectionScreen={showSelectionScreen}
         onBackClick={() => {
           if (!showSelectionScreen) {
             setShowSelectionScreen(true)
@@ -392,7 +388,7 @@ function PracticeContent() {
           </h2>
 
           <div className="flex gap-2 mb-6">
-            {(['BOOKS', 'RANDOM', 'LETTERS'] as PracticeMode[]).map((mode) => (
+            {(['BOOKS', 'RANDOM'] as PracticeMode[]).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setSelectionMode(mode)}
@@ -477,27 +473,6 @@ function PracticeContent() {
                 className="w-full terminal-btn py-3 text-lg font-bold"
               >
                 {isGenerating ? 'GENERATING...' : 'START PRACTICE >'}
-              </button>
-            </div>
-          )}
-
-          {selectionMode === 'LETTERS' && (
-            <div className="space-y-6 p-4 border border-[#41ff5f20] rounded bg-[#003018]/20">
-              <div>
-                <label className="text-xs text-[#7bff9a]/60 mb-2 block uppercase">Character Count: {wordCount * 5}</label>
-                <input 
-                  type="range" min="20" max="200" step="20" value={wordCount} 
-                  onChange={(e) => setWordCount(Number(e.target.value))}
-                  className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#41ff5f]"
-                />
-              </div>
-              
-              <button 
-                onClick={startRandomPractice}
-                disabled={isGenerating} 
-                className="w-full terminal-btn py-3 text-lg font-bold"
-              >
-                {isGenerating ? 'GENERATING...' : 'START DRILL >'}
               </button>
             </div>
           )}

@@ -343,9 +343,6 @@ export default function HomePage() {
                           <div className="flex items-center gap-2">
                             <span className="text-[#7bff9a]/80">Random Words</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#7bff9a]/80">Random Letters</span>
-                          </div>
                         </div>
                       </div>
 

@@ -4,10 +4,9 @@ import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { SAMPLE_BOOKS } from '../../data/sampleBooks'
-import InstructionModal from '../InstructionModal' 
+import InstructionModal from '../InstructionModal'
 import { 
   generateRandomWords, 
-  generateRandomLetters, 
   getRandomPassageSource 
 } from '../../utils/randomWords'
 
@@ -17,7 +16,7 @@ interface CreateMatchModalProps {
   onMatchCreated: (matchId: string, inviteCode: string) => void
 }
 
-type PassageType = 'book' | 'random-words' | 'random-letters'
+type PassageType = 'book' | 'random-words'
 
 export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: CreateMatchModalProps) {
   const [passageType, setPassageType] = useState<PassageType>('book')
@@ -65,9 +64,6 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
       } else if (passageType === 'random-words') {
         passageText = await generateRandomWords({ wordCount, difficulty: 'medium' })
         passageSource = `${getRandomPassageSource('words')} (${wordCount} words)`
-      } else if (passageType === 'random-letters') {
-        passageText = generateRandomLetters(wordCount * 5)
-        passageSource = getRandomPassageSource('letters')
       }
 
       const result = await createMatch({ passageText, passageSource })
@@ -116,7 +112,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
               <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-3 uppercase tracking-wider">
                 SELECT PASSAGE TYPE:
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setPassageType('book')}
                   className={`terminal-tab ${passageType === 'book' ? 'active' : ''}`}
@@ -131,14 +127,6 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                 >
                   <div className="text-2xl mb-1">🎲</div>
                   <div className="text-xs">RANDOM</div>
-                </button>
-
-                <button
-                  onClick={() => setPassageType('random-letters')}
-                  className={`terminal-tab ${passageType === 'random-letters' ? 'active' : ''}`}
-                >
-                  <div className="text-2xl mb-1">🔤</div>
-                  <div className="text-xs">LETTERS</div>
                 </button>
               </div>
             </div>
@@ -190,16 +178,16 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
               </>
             )}
 
-            {passageType !== 'book' && (
+            {passageType === 'random-words' && (
               <div>
                 <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
-                  {passageType === 'random-letters' ? 'CHARACTER LENGTH' : 'WORD COUNT'}: {passageType === 'random-letters' ? wordCount * 5 : wordCount}
+                  WORD COUNT: {wordCount}
                 </label>
                 <input
                   type="range"
-                  min={passageType === 'random-letters' ? 20 : 25}
-                  max={passageType === 'random-letters' ? 100 : 100}
-                  step={passageType === 'random-letters' ? 20 : 25}
+                  min={25}
+                  max={100}
+                  step={25}
                   value={wordCount}
                   onChange={(e) => setWordCount(Number(e.target.value))}
                   className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer
@@ -217,20 +205,10 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                     [&::-moz-range-thumb]:cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-[#7bff9a]/60 mt-1 font-mono">
-                  {passageType === 'random-letters' ? (
-                    <>
-                      <span>100</span>
-                      <span>300</span>
-                      <span>500</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>25</span>
-                      <span>50</span>
-                      <span>75</span>
-                      <span>100</span>
-                    </>
-                  )}
+                  <span>25</span>
+                  <span>50</span>
+                  <span>75</span>
+                  <span>100</span>
                 </div>
               </div>
             )}

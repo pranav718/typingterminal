@@ -44,7 +44,6 @@ export function useBookNavigation(
     }
   }, [bookIdFromUrl, getProgress, uploadedBookIdFromUrl, isLoading, currentSampleBook])
 
-  // Load uploaded book from URL
   useEffect(() => {
     if (!uploadedBookIdFromUrl || currentBookId) return
 
@@ -58,7 +57,6 @@ export function useBookNavigation(
     }
   }, [uploadedBookIdFromUrl, currentBookId])
 
-  // Update text when book data loads
   useEffect(() => {
     if (!currentBookData || !currentBookId) return
 
@@ -69,7 +67,6 @@ export function useBookNavigation(
     setIsLoadingBook(false)
   }, [currentBookData, currentBookId])
 
-  // Save sample book progress
   useEffect(() => {
     if (!currentSampleBook || currentPassageIndex === undefined) return
     
