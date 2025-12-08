@@ -72,7 +72,7 @@ export default function LeaderboardPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
               <button onClick={() => router.push("/")} className="terminal-btn text-sm" title="Back to Home">
-                &lt;
+                &lt; 
               </button>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">GLOBAL RANKINGS</h1>
@@ -104,7 +104,6 @@ export default function LeaderboardPage() {
         </header>
 
         <div className="terminal-window p-4 mb-6 space-y-4">
-          
           <div>
             <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">TIME PERIOD:</div>
             <div className="flex flex-wrap gap-2">
@@ -169,7 +168,7 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        <div className="terminal-window overflow-hidden">
+        <div className="terminal-window overflow-hidden mb-6">
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#003018]/30 border-b border-[#41ff5f30]">
@@ -326,7 +325,7 @@ export default function LeaderboardPage() {
         </div>
         
         {globalStats && (
-          <div className="mt-8 border-t border-[#41ff5f30] pt-6">
+          <div className="border-t border-[#41ff5f30] pt-6 mb-6">
             <h3 className="text-sm font-bold text-[#41ff5f] mb-4 text-center tracking-widest">SYSTEM STATISTICS</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="terminal-window p-3 text-center">
@@ -348,6 +347,43 @@ export default function LeaderboardPage() {
             </div>
           </div>
         )}
+
+        <div className="terminal-window p-6 border border-[#41ff5f40] relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-2 text-[10px] text-[#41ff5f40]">meow</div>
+          
+          <h3 className="text-lg font-bold text-[#41ff5f] mb-4 text-shadow-glow flex items-center gap-2">
+            TOTAL SCORE          
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-[#7bff9a]/80 mb-4 leading-relaxed">
+                The composite score is designed to reward high speed only when accompanied by high accuracy. Speed without precision results in a significantly lower rank.
+              </p>
+              <ul className="text-xs text-[#7bff9a]/60 space-y-2 font-mono">
+                <li className="flex items-center gap-2">
+                  <span className="text-[#41ff5f]">&gt;</span> WPM: Words Per Minute (raw speed)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#41ff5f]">&gt;</span> ACC: Accuracy Percentage (precision)
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <div className="bg-[#001a0f] p-4 border border-[#41ff5f30] rounded text-center relative group">
+                <div className="text-xs text-[#7bff9a]/40 mb-2 uppercase tracking-widest">Calculation Formula</div>
+                <div className="text-xl md:text-2xl font-bold text-[#41ff5f] font-mono group-hover:text-shadow-glow transition-all">
+                  SCORE = WPM × (ACC% / 100)
+                </div>
+                <div className="mt-3 text-[10px] text-[#7bff9a]/50 border-t border-[#41ff5f10] pt-2">
+                  Example: 100 WPM @ 95% Acc = <span className="text-[#41ff5f]">95.0 Score</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   )
