@@ -32,13 +32,15 @@ export default function MatchPage({ params }: MatchPageProps) {
   
   const [isCopied, setIsCopied] = useState(false)
   
-  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false) 
+  const [showSurrenderModal, setShowSurrenderModal] = useState(false) 
 
   const inputRef = useRef<HTMLInputElement>(null)
 
   const matchData = useQuery(api.matches.getMatch, { matchId })
   const submitResult = useMutation(api.matches.submitMatchResult)
   const cancelMatch = useMutation(api.matches.cancelMatch)
+  const surrenderMatch = useMutation(api.matches.surrenderMatch)
 
   const text = matchData?.passageText || ''
   const isHost = user?._id === matchData?.hostId
@@ -57,6 +59,16 @@ export default function MatchPage({ params }: MatchPageProps) {
     } catch (error) {
       console.error('Failed to cancel:', error)
       alert('ERROR: FAILED TO CANCEL MATCH') 
+    }
+  }
+
+  const handleConfirmSurrender = async () => {
+    try {
+      await surrenderMatch({ matchId })
+      setShowSurrenderModal(false)
+    } catch (error) {
+      console.error('Failed to surrender:', error)
+      alert('ERROR: FAILED TO SURRENDER MATCH')
     }
   }
 
@@ -339,7 +351,9 @@ export default function MatchPage({ params }: MatchPageProps) {
               <h2 className={`text-3xl md:text-4xl font-bold mb-4 text-shadow-glow ${winner ? 'text-[#41ff5f]' : 'text-[#ff5f41]'}`}>
                 {winner ? 'VICTORY' : 'DEFEAT'}
               </h2>
-              <p className="text-[#7bff9a]/80 text-sm font-mono uppercase tracking-wider">MATCH TERMINATED</p>
+              <p className="text-[#7bff9a]/80 text-sm font-mono uppercase tracking-wider">
+                {matchData.winnerId === user._id ? 'OPPONENT ELIMINATED' : 'MATCH TERMINATED'}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -426,6 +440,17 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
+      <ConfirmationModal
+        isOpen={showSurrenderModal}
+        onClose={() => setShowSurrenderModal(false)}
+        onConfirm={handleConfirmSurrender}
+        title="SURRENDER MATCH?"
+        message="Leaving now results in an instant defeat. Are you sure you want to surrender?"
+        confirmText="LEAVE MATCH"
+        cancelText="CONTINUE"
+        isDangerous={true}
+      />
+
       <div className="scanline" />
       <div className="absolute inset-0 pointer-events-none">
         <div className="grid-lines absolute inset-0" />
@@ -434,29 +459,39 @@ export default function MatchPage({ params }: MatchPageProps) {
       <div className="max-w-6xl mx-auto p-4 md:p-6 relative z-10">
         <div className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            
             <div>
               <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow uppercase tracking-wider">MATCH</h2>
               <p className="text-sm text-[#7bff9a]/70 font-mono">{matchData.passageSource}</p>
             </div>
 
-            <div className="flex gap-6">
-              <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f]">
-                <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">YOU</div>
-                <div className="font-bold text-[#41ff5f] font-mono text-lg">
-                  {isComplete ? `${liveWpm} WPM` : myResult?.isFinished ? `${myResult.wpm} WPM` : 'TYPING...'}
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex gap-6">
+                <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f]">
+                  <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">YOU</div>
+                  <div className="font-bold text-[#41ff5f] font-mono text-lg">
+                    {isComplete ? `${liveWpm} WPM` : myResult?.isFinished ? `${myResult.wpm} WPM` : 'TYPING...'}
+                  </div>
+                </div>
+
+                <div className="flex items-center text-2xl font-bold text-[#7bff9a]/40">VS</div>
+
+                <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f30]">
+                  <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">
+                    {isHost ? matchData.opponent?.name : matchData.host.name}
+                  </div>
+                  <div className="font-bold text-[#41ff5f] font-mono text-lg">
+                    {opponentResult?.isFinished ? `${opponentResult.wpm} WPM` : 'TYPING...'}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center text-2xl font-bold text-[#7bff9a]/40">VS</div>
-
-              <div className="text-center p-3 bg-[#003018]/30 rounded border-2 border-[#41ff5f30]">
-                <div className="text-xs text-[#7bff9a]/60 mb-1 uppercase">
-                  {isHost ? matchData.opponent?.name : matchData.host.name}
-                </div>
-                <div className="font-bold text-[#41ff5f] font-mono text-lg">
-                  {opponentResult?.isFinished ? `${opponentResult.wpm} WPM` : 'TYPING...'}
-                </div>
-              </div>
+              <button
+                onClick={() => setShowSurrenderModal(true)}
+                className="h-9 px-3 border border-[#ff5f4180] text-[#ff5f41] rounded-sm hover:bg-[#ff5f4120] text-xs font-bold tracking-wider transition-colors ml-2"
+              >
+                LEAVE
+              </button>
             </div>
           </div>
         </div>

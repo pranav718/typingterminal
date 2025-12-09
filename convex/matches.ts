@@ -354,3 +354,48 @@ export const getMatchHistory = query({
     return enrichedMatches;
   },
 });
+
+export const surrenderMatch = mutation({
+  args: { matchId: v.id("matches") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const match = await ctx.db.get(args.matchId);
+    if (!match) throw new Error("Match not found");
+    
+    if (match.status !== "in_progress") throw new Error("Can only surrender active matches");
+
+    const isHost = match.hostId === userId;
+    const isOpponent = match.opponentId === userId;
+
+    if (!isHost && !isOpponent) throw new Error("You are not part of this match");
+
+    const winnerId = isHost ? match.opponentId : match.hostId;
+
+    if (!winnerId) throw new Error("Opponent not found");
+
+    await ctx.db.patch(args.matchId, {
+      status: "completed",
+      completedAt: Date.now(),
+      winnerId: winnerId,
+    });
+
+    const userResult = await ctx.db
+      .query("matchResults")
+      .withIndex("by_match_and_user", (q) => q.eq("matchId", args.matchId).eq("userId", userId))
+      .first();
+
+    if (userResult) {
+      await ctx.db.patch(userResult._id, {
+        wpm: 0,
+        accuracy: 0,
+        errors: 0,
+        isFinished: true,
+        completedAt: Date.now(),
+      });
+    }
+
+    return { success: true };
+  },
+});
