@@ -44,33 +44,40 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   const text = matchData?.passageText || ''
   const isHost = user?._id === matchData?.hostId
-  const isOpponent = user?._id === matchData?.opponentId
-
+  
   useEffect(() => {
     if (matchData?.status === 'in_progress' && !isComplete) {
       inputRef.current?.focus()
     }
   }, [matchData?.status, isComplete])
 
-  const handleConfirmCancel = async () => {
-    try {
-      await cancelMatch({ matchId })
-      router.push('/matches')
-    } catch (error) {
-      console.error('Failed to cancel:', error)
-      alert('ERROR: FAILED TO CANCEL MATCH') 
+  const countCorrectWords = (input: string, reference: string): number => {
+    if (!input || !reference) return 0
+    let correctChars = 0
+    const minLength = Math.min(input.length, reference.length)
+    for (let i = 0; i < minLength; i++) {
+      if (input[i] === reference[i]) correctChars++
     }
+    return correctChars / 5
   }
 
-  const handleConfirmSurrender = async () => {
-    try {
-      await surrenderMatch({ matchId })
-      setShowSurrenderModal(false)
-    } catch (error) {
-      console.error('Failed to surrender:', error)
-      alert('ERROR: FAILED TO SURRENDER MATCH')
+  useEffect(() => {
+    if (!startTime || userInput.length === 0) {
+      setLiveWpm(0)
+      return
     }
-  }
+
+    const interval = setInterval(() => {
+      const timeElapsed = (Date.now() - startTime) / 60000
+      if (timeElapsed > 0) {
+        const correctWords = countCorrectWords(userInput, text)
+        setLiveWpm(Math.round(correctWords / timeElapsed))
+      }
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [startTime, userInput, text])
+
 
   if (!isLoading && (isGuest || !user)) {
     return (
@@ -119,32 +126,25 @@ export default function MatchPage({ params }: MatchPageProps) {
   }
 
 
-  const countCorrectWords = (input: string, reference: string): number => {
-    if (!input || !reference) return 0
-    let correctChars = 0
-    const minLength = Math.min(input.length, reference.length)
-    for (let i = 0; i < minLength; i++) {
-      if (input[i] === reference[i]) correctChars++
+  const handleConfirmCancel = async () => {
+    try {
+      await cancelMatch({ matchId })
+      router.push('/matches')
+    } catch (error) {
+      console.error('Failed to cancel:', error)
+      alert('ERROR: FAILED TO CANCEL MATCH') 
     }
-    return correctChars / 5
   }
 
-  useEffect(() => {
-    if (!startTime || userInput.length === 0) {
-      setLiveWpm(0)
-      return
+  const handleConfirmSurrender = async () => {
+    try {
+      await surrenderMatch({ matchId })
+      setShowSurrenderModal(false)
+    } catch (error) {
+      console.error('Failed to surrender:', error)
+      alert('ERROR: FAILED TO SURRENDER MATCH')
     }
-
-    const interval = setInterval(() => {
-      const timeElapsed = (Date.now() - startTime) / 60000
-      if (timeElapsed > 0) {
-        const correctWords = countCorrectWords(userInput, text)
-        setLiveWpm(Math.round(correctWords / timeElapsed))
-      }
-    }, 100)
-
-    return () => clearInterval(interval)
-  }, [startTime, userInput, text])
+  }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComplete || hasSubmitted) return
@@ -263,7 +263,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; 
+            &lt; BACK
           </button>
 
           <div className="terminal-window p-8 text-center relative">
@@ -344,7 +344,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; 
+            &lt; RETURN HOME
           </button>
 
           <div className={`terminal-window p-8 ${winner ? 'border-[#41ff5f80]' : 'border-[#ff5f4180]'}`}>
