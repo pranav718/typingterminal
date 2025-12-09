@@ -11,13 +11,9 @@ export const { auth, signIn, signOut, store } = convexAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
     Twitter({
-      clientId: process.env.AUTH_TWITTER_ID,
-      clientSecret: process.env.AUTH_TWITTER_SECRET,
-      authorization: {
-        params: {
-          scope: "users.read", 
-        },
-      },
+      clientId: process.env.AUTH_TWITTER_ID!,
+      clientSecret: process.env.AUTH_TWITTER_SECRET!,
+      authorization: "https://twitter.com/i/oauth2/authorize?scope=users.read",
     }),
     Password,
     Anonymous,
