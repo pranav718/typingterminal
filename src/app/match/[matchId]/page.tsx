@@ -263,7 +263,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; BACK
+            &lt; 
           </button>
 
           <div className="terminal-window p-8 text-center relative">
@@ -339,11 +339,12 @@ export default function MatchPage({ params }: MatchPageProps) {
         </div>
 
         <div className="max-w-4xl mx-auto p-6 relative z-10">
+          
           <button
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; RETURN HOME
+            &lt; 
           </button>
 
           <div className={`terminal-window p-8 ${winner ? 'border-[#41ff5f80]' : 'border-[#ff5f4180]'}`}>
@@ -369,7 +370,9 @@ export default function MatchPage({ params }: MatchPageProps) {
                     <div className="font-bold text-[#41ff5f]">{matchData.host.name}</div>
                     <div className="text-xs text-[#7bff9a]/60 uppercase">HOST</div>
                   </div>
-                  {matchData.winnerId === matchData.hostId && <span className="text-3xl">👑</span>}
+                  {matchData.winnerId === matchData.hostId && (
+                    <span className="text-xl font-bold text-[#41ff5f] border border-[#41ff5f] px-2 py-0.5 rounded font-mono shadow-[0_0_10px_rgba(65,255,95,0.3)]">#1</span>
+                  )}
                 </div>
                 <div className="space-y-2 font-mono">
                   <div className="flex justify-between">
@@ -399,7 +402,9 @@ export default function MatchPage({ params }: MatchPageProps) {
                     <div className="font-bold text-[#41ff5f]">{matchData.opponent?.name || 'Opponent'}</div>
                     <div className="text-xs text-[#7bff9a]/60 uppercase">CHALLENGER</div>
                   </div>
-                  {matchData.winnerId === matchData.opponentId && <span className="text-3xl">👑</span>}
+                  {matchData.winnerId === matchData.opponentId && (
+                    <span className="text-xl font-bold text-[#41ff5f] border border-[#41ff5f] px-2 py-0.5 rounded font-mono shadow-[0_0_10px_rgba(65,255,95,0.3)]">#1</span>
+                  )}
                 </div>
                 <div className="space-y-2 font-mono">
                   <div className="flex justify-between">
@@ -418,16 +423,10 @@ export default function MatchPage({ params }: MatchPageProps) {
               </div>
             </div>
 
-            <div className="text-center space-y-4">
-              <button
-                onClick={() => router.push('/')}
-                className="terminal-btn mr-4"
-              >
-                RETURN HOME
-              </button>
+            <div className="text-center">
               <button
                 onClick={() => router.push('/matches')}
-                className="terminal-btn"
+                className="terminal-btn px-8 py-3 text-sm tracking-widest"
               >
                 VIEW HISTORY
               </button>
