@@ -14,7 +14,7 @@ type TimeRange = "daily" | "weekly" | "monthly" | "all_time"
 export default function LeaderboardPage() {
   const { user, isLoading, isGuest, logout } = useAuth()
   const router = useRouter()
-  
+
   const [category, setCategory] = useState<LeaderboardCategory>("composite")
   const [timeRange, setTimeRange] = useState<TimeRange>("all_time")
   const [showAll, setShowAll] = useState(false)
@@ -71,33 +71,42 @@ export default function LeaderboardPage() {
         <header className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
-              <button onClick={() => router.push("/")} className="terminal-btn text-sm" title="Back to Home">
-                &lt; 
+              <button onClick={() => router.push("/")} className="terminal-btn text-sm h-9 px-3 flex items-center justify-center" title="Back to Home">
+                &lt;
               </button>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">GLOBAL RANKINGS</h1>
-                <p className="text-[#7bff9a]/70 text-xs">LIVE LEADERBOARD DATA</p>
+                <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow leading-none">GLOBAL RANKINGS</h1>
+                <p className="text-[#7bff9a]/70 text-xs mt-1">LIVE LEADERBOARD DATA</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               {user && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-[#003018]/50 border border-[#41ff5f30] rounded text-xs">
-                  <ProfileImage
-                    src={user.image}
-                    alt={user.name || "User"}
-                    fallbackText={user.name || user.email}
-                    className="w-6 h-6 rounded-full border border-[#41ff5f60]"
-                  />
-                  <span className="truncate max-w-[120px]">{isGuest ? "GUEST" : user.email || user.name}</span>
-                  {isGuest && <span className="px-2 py-0.5 bg-[#ff5f4180] text-[#ff5f41] rounded">GUEST</span>}
-                </div>
-              )}
+                <>
+                  <div className="flex items-center gap-2 px-3 h-9 bg-[#003018]/50 border border-[#41ff5f30] rounded-sm text-xs select-none">
+                    <ProfileImage
+                      src={user.image}
+                      alt={user.name || "User"}
+                      fallbackText={user.name || user.email}
+                      className="w-5 h-5 rounded-full border border-[#41ff5f60]"
+                    />
+                    <span className="text-[#41ff5f] font-mono max-w-[100px] truncate hidden sm:inline-block">
+                      {user.name || user.email?.split('@')[0]}
+                    </span>
+                    {isGuest && (
+                      <span className="px-1.5 py-0.5 bg-[#ff5f4180] text-[#000] text-[10px] font-bold rounded">
+                        GUEST
+                      </span>
+                    )}
+                  </div>
 
-              {user && (
-                <button onClick={logout} className="px-3 py-1 border border-[#ff5f4180] text-[#ff5f41] rounded hover:bg-[#ff5f4120] text-xs">
-                  LOGOUT
-                </button>
+                  <button
+                    onClick={logout}
+                    className="h-9 px-3 border border-[#ff5f4180] text-[#ff5f41] rounded-sm hover:bg-[#ff5f4120] text-xs font-bold tracking-wider transition-colors"
+                  >
+                    LOGOUT
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -197,9 +206,8 @@ export default function LeaderboardPage() {
                   return (
                     <tr
                       key={entry.userId}
-                      className={`border-t border-[#41ff5f10] transition-colors ${
-                        isCurrentUser ? "bg-[#41ff5f20] hover:bg-[#41ff5f25]" : "hover:bg-[#003018]/20"
-                      }`}
+                      className={`border-t border-[#41ff5f10] transition-colors ${isCurrentUser ? "bg-[#41ff5f20] hover:bg-[#41ff5f25]" : "hover:bg-[#003018]/20"
+                        }`}
                     >
                       <td className="px-6 py-4">
                         <span className={`font-bold font-mono ${entry.rank <= 3 ? "text-[#41ff5f] text-shadow-glow text-lg" : "text-[#7bff9a]"}`}>
@@ -263,9 +271,8 @@ export default function LeaderboardPage() {
               return (
                 <div
                   key={entry.userId}
-                  className={`p-4 border-b border-[#41ff5f10] ${
-                    isCurrentUser ? "bg-[#41ff5f20]" : "hover:bg-[#003018]/20"
-                  } transition-colors`}
+                  className={`p-4 border-b border-[#41ff5f10] ${isCurrentUser ? "bg-[#41ff5f20]" : "hover:bg-[#003018]/20"
+                    } transition-colors`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -323,7 +330,7 @@ export default function LeaderboardPage() {
             </div>
           )}
         </div>
-        
+
         {globalStats && (
           <div className="border-t border-[#41ff5f30] pt-6 mb-6">
             <h3 className="text-sm font-bold text-[#41ff5f] mb-4 text-center tracking-widest">SYSTEM STATISTICS</h3>
@@ -350,9 +357,9 @@ export default function LeaderboardPage() {
 
         <div className="terminal-window p-6 border border-[#41ff5f40] relative overflow-hidden">
           <div className="absolute top-0 right-0 p-2 text-[10px] text-[#41ff5f40]">meow</div>
-          
+
           <h3 className="text-lg font-bold text-[#41ff5f] mb-4 text-shadow-glow flex items-center gap-2">
-            TOTAL SCORE          
+            TOTAL SCORE
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

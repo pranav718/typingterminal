@@ -185,31 +185,46 @@ export default function MatchesPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/')}
-                className="terminal-btn text-sm"
+                className="terminal-btn text-sm h-9 px-3 flex items-center justify-center"
               >
                 &lt;
               </button>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow">
+                <h1 className="text-xl md:text-2xl font-bold tracking-widest text-shadow-glow leading-none">
                   MATCH TERMINAL
                 </h1>
-                <p className="text-[#7bff9a]/70 text-xs">ACTIVE MATCHES & MATCH HISTORY</p>
+                <p className="text-[#7bff9a]/70 text-xs mt-1">ACTIVE MATCHES & MATCH HISTORY</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               {user && (
-                <div className="text-xs px-3 py-1 bg-[#003018]/50 border border-[#41ff5f30] rounded">
-                  {user.email}
-                </div>
-              )}
+                <>
+                  <div className="flex items-center gap-2 px-3 h-9 bg-[#003018]/50 border border-[#41ff5f30] rounded-sm text-xs select-none">
+                    <ProfileImage
+                      src={user.image}
+                      alt={user.name || "User"}
+                      fallbackText={user.name || user.email}
+                      className="w-5 h-5 rounded-full border border-[#41ff5f60]"
+                    />
+                    <span className="text-[#41ff5f] font-mono max-w-[100px] truncate hidden sm:inline-block">
+                      {user.name || user.email?.split('@')[0]}
+                    </span>
+                    {isGuest && (
+                      <span className="px-1.5 py-0.5 bg-[#ff5f4180] text-[#000] text-[10px] font-bold rounded">
+                        GUEST
+                      </span>
+                    )}
+                  </div>
 
-              <button
-                onClick={logout}
-                className="px-3 py-1 border border-[#ff5f4180] text-[#ff5f41] rounded hover:bg-[#ff5f4120] text-xs"
-              >
-                LOGOUT
-              </button>
+                  <button
+                    onClick={logout}
+                    className="h-9 px-3 border border-[#ff5f4180] text-[#ff5f41] rounded-sm hover:bg-[#ff5f4120] text-xs font-bold tracking-wider transition-colors"
+                  >
+                    LOGOUT
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </header>
