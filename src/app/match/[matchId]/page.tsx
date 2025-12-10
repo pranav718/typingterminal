@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState, useRef, use } from 'react'
+import { useMutation, useQuery } from 'convex/react'
 import { useRouter } from 'next/navigation'
-import { useQuery, useMutation } from 'convex/react'
+import { use, useEffect, useRef, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import { Id } from '../../../../convex/_generated/dataModel'
+import ConfirmationModal from '../../components/ConfirmationModal'
+import ProfileImage from '../../components/ProfileImage'
 import { useAuth } from '../../hooks/useAuth'
 import { useSettings } from '../../hooks/useSettings'
-import ProfileImage from '../../components/ProfileImage'
-import ConfirmationModal from '../../components/ConfirmationModal' 
 import '../../terminal.css'
 
 interface MatchPageProps {
@@ -29,11 +29,11 @@ export default function MatchPage({ params }: MatchPageProps) {
   const [liveAccuracy, setLiveAccuracy] = useState(100)
   const [isComplete, setIsComplete] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
-  
+
   const [isCopied, setIsCopied] = useState(false)
-  
-  const [showCancelModal, setShowCancelModal] = useState(false) 
-  const [showSurrenderModal, setShowSurrenderModal] = useState(false) 
+
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showSurrenderModal, setShowSurrenderModal] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -44,7 +44,7 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   const text = matchData?.passageText || ''
   const isHost = user?._id === matchData?.hostId
-  
+
   useEffect(() => {
     if (matchData?.status === 'in_progress' && !isComplete) {
       inputRef.current?.focus()
@@ -132,7 +132,7 @@ export default function MatchPage({ params }: MatchPageProps) {
       router.push('/matches')
     } catch (error) {
       console.error('Failed to cancel:', error)
-      alert('ERROR: FAILED TO CANCEL MATCH') 
+      alert('ERROR: FAILED TO CANCEL MATCH')
     }
   }
 
@@ -205,7 +205,10 @@ export default function MatchPage({ params }: MatchPageProps) {
           className += ` text-[#ff5f41] bg-[#ff5f4120] px-0.5 rounded drop-shadow-[0_0_8px_rgba(255,95,65,0.6)]${shakeClass}`
         }
       } else if (index === userInput.length) {
-        className += " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
+        const cursorClasses = settings?.cursorAnimation
+          ? " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
+          : " bg-[#41ff5f40] rounded px-1 -mx-0.5"
+        className += cursorClasses
       } else {
         className += " text-[#7bff9a]"
         style.opacity = settings?.textOpacity ?? 0.3
@@ -287,13 +290,13 @@ export default function MatchPage({ params }: MatchPageProps) {
                 <div className="w-2 h-2 bg-[#41ff5f] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
-            
+
             <div className="mb-8 p-6 bg-[#003018]/30 border-2 border-[#41ff5f30] rounded">
               <p className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">SHARE INVITE CODE:</p>
               <div className="text-4xl md:text-5xl font-bold text-[#41ff5f] tracking-widest font-mono text-shadow-glow mb-4">
                 {matchData.inviteCode}
               </div>
-              
+
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(matchData.inviteCode)
@@ -302,7 +305,7 @@ export default function MatchPage({ params }: MatchPageProps) {
                 }}
                 className={`terminal-btn transition-all duration-300 ${isCopied ? 'border-[#41ff5f] bg-[#41ff5f20] text-shadow-glow' : ''}`}
               >
-                 {isCopied ? 'CODE COPIED' : 'COPY CODE'}
+                {isCopied ? 'CODE COPIED' : 'COPY CODE'}
               </button>
             </div>
 
@@ -339,7 +342,7 @@ export default function MatchPage({ params }: MatchPageProps) {
         </div>
 
         <div className="max-w-4xl mx-auto p-6 relative z-10">
-          
+
           <button
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
@@ -360,8 +363,8 @@ export default function MatchPage({ params }: MatchPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.hostId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <ProfileImage 
-                    src={matchData.host.image} 
+                  <ProfileImage
+                    src={matchData.host.image}
                     alt={matchData.host.name}
                     fallbackText={matchData.host.name}
                     className="w-12 h-12 rounded-full border-2 border-[#41ff5f60]"
@@ -392,8 +395,8 @@ export default function MatchPage({ params }: MatchPageProps) {
 
               <div className={`p-6 rounded border-2 ${matchData.winnerId === matchData.opponentId ? 'bg-[#41ff5f10] border-[#41ff5f]' : 'bg-[#003018]/20 border-[#41ff5f20]'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <ProfileImage 
-                    src={matchData.opponent?.image} 
+                  <ProfileImage
+                    src={matchData.opponent?.image}
                     alt={matchData.opponent?.name || 'Opponent'}
                     fallbackText={matchData.opponent?.name}
                     className="w-12 h-12 rounded-full border-2 border-[#41ff5f60]"
@@ -458,7 +461,7 @@ export default function MatchPage({ params }: MatchPageProps) {
       <div className="max-w-6xl mx-auto p-4 md:p-6 relative z-10">
         <div className="terminal-window p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            
+
             <div>
               <h2 className="text-xl font-bold text-[#41ff5f] text-shadow-glow uppercase tracking-wider">MATCH</h2>
               <p className="text-sm text-[#7bff9a]/70 font-mono">{matchData.passageSource}</p>

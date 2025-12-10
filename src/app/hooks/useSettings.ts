@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export type ShakeIntensity = 'off' | 'subtle' | 'medium' | 'strong'
 export type FontTheme = 'jetbrains' | 'geist' | 'fira'
@@ -9,12 +9,14 @@ export interface SettingsType {
   shakeIntensity: ShakeIntensity
   textOpacity: number
   fontTheme: FontTheme
+  cursorAnimation: boolean
 }
 
 const DEFAULT_SETTINGS: SettingsType = {
   shakeIntensity: 'medium',
   textOpacity: 0.3,
   fontTheme: 'jetbrains',
+  cursorAnimation: false,
 }
 
 export function useSettings() {
@@ -38,7 +40,7 @@ export function useSettings() {
     if (!isLoaded) return
 
     document.body.classList.remove('font-jetbrains', 'font-geist', 'font-fira')
-    
+
     document.body.classList.add(`font-${settings.fontTheme}`)
   }, [settings.fontTheme, isLoaded])
 

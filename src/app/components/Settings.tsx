@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { SettingsType, FontTheme } from "../hooks/useSettings"
+import { useEffect, useState } from "react"
+import type { FontTheme, SettingsType } from "../hooks/useSettings"
 
 interface SettingsProps {
   isOpen: boolean
@@ -11,19 +11,19 @@ interface SettingsProps {
 }
 
 const fontThemes = [
-  { 
-    id: "jetbrains" as FontTheme, 
+  {
+    id: "jetbrains" as FontTheme,
     name: "JetBrains Mono",
     preview: "JetBrains"
   },
-  { 
-    id: "geist" as FontTheme, 
-    name: "Geist Mono", 
+  {
+    id: "geist" as FontTheme,
+    name: "Geist Mono",
     preview: "Geist"
   },
-  { 
-    id: "fira" as FontTheme, 
-    name: "Fira Code", 
+  {
+    id: "fira" as FontTheme,
+    name: "Fira Code",
     preview: "Fira"
   },
 ]
@@ -38,11 +38,11 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
   if (!isOpen || !mounted) return null
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-[#00120b]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="terminal-window max-w-3xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -68,11 +68,10 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                 <button
                   key={font.id}
                   onClick={() => onSettingsChange({ ...settings, fontTheme: font.id })}
-                  className={`flex flex-col items-center gap-2 p-4 rounded border-2 transition-all hover:-translate-y-1 ${
-                    settings.fontTheme === font.id
+                  className={`flex flex-col items-center gap-2 p-4 rounded border-2 transition-all hover:-translate-y-1 ${settings.fontTheme === font.id
                       ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
                       : "border-[#41ff5f20] hover:border-[#41ff5f]"
-                  }`}
+                    }`}
                 >
                   <div
                     className={`w-full h-16 rounded bg-[#003018]/30 border border-[#41ff5f30] flex items-center justify-center text-2xl font-bold shadow-inner transition-transform hover:scale-105`}
@@ -97,17 +96,15 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                 <button
                   key={intensity}
                   onClick={() => onSettingsChange({ ...settings, shakeIntensity: intensity })}
-                  className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 group ${
-                    settings.shakeIntensity === intensity
+                  className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 group ${settings.shakeIntensity === intensity
                       ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
                       : "border-[#41ff5f20] hover:border-[#41ff5f]"
-                  }`}
+                    }`}
                 >
                   <div className="w-12 h-12 rounded bg-[#ff5f4110] border border-[#ff5f4130] flex items-center justify-center">
                     <span
-                      className={`text-2xl font-bold text-[#ff5f41] ${
-                        intensity !== 'off' ? `group-hover:animate-shake-${intensity}` : ''
-                      }`}
+                      className={`text-2xl font-bold text-[#ff5f41] ${intensity !== 'off' ? `group-hover:animate-shake-${intensity}` : ''
+                        }`}
                     >
                       A
                     </span>
@@ -159,13 +156,50 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
             </div>
           </div>
 
+          <div className="pb-6 border-b border-[#41ff5f10]">
+            <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
+              CURSOR ANIMATION:
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => onSettingsChange({ ...settings, cursorAnimation: true })}
+                className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${settings.cursorAnimation
+                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                  }`}
+              >
+                <div className="w-12 h-12 rounded bg-[#41ff5f10] border border-[#41ff5f30] flex items-center justify-center">
+                  <span className="text-2xl font-bold text-[#41ff5f] animate-pulse">|</span>
+                </div>
+                <span className="text-xs text-[#41ff5f] font-mono uppercase">ON</span>
+              </button>
+
+              <button
+                onClick={() => onSettingsChange({ ...settings, cursorAnimation: false })}
+                className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${!settings.cursorAnimation
+                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                  }`}
+              >
+                <div className="w-12 h-12 rounded bg-[#41ff5f10] border border-[#41ff5f30] flex items-center justify-center">
+                  <span className="text-2xl font-bold text-[#41ff5f]">|</span>
+                </div>
+                <span className="text-xs text-[#41ff5f] font-mono uppercase">OFF</span>
+              </button>
+            </div>
+            <p className="text-xs text-[#7bff9a]/60 mt-3 font-mono">
+              disable for better performance during fast typing
+            </p>
+          </div>
+
           <div className="p-4 bg-[#41ff5f10] border border-[#41ff5f30] rounded">
             <div className="text-xs text-[#7bff9a]/80 font-mono">
               <div className="mb-2">TIP: SETTINGS ARE SAVED LOCALLY</div>
               <div className="text-[#7bff9a]/60">
-                • Font themes change the entire app typography<br/>
-                • Shake effects indicate typing errors<br/>
-                • Text opacity controls untyped character visibility
+                • Font themes change the entire app typography<br />
+                • Shake effects indicate typing errors<br />
+                • Text opacity controls untyped character visibility<br />
+                • Cursor animation can be disabled for high-speed typing
               </div>
             </div>
           </div>

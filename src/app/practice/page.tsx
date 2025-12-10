@@ -1,27 +1,27 @@
 "use client"
 
-import type React from "react"
-import { useState, useRef, useEffect, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useMutation, useQuery } from "convex/react"
 import dynamic from "next/dynamic"
-import { useQuery, useMutation } from "convex/react"
+import { useRouter, useSearchParams } from "next/navigation"
+import type React from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
-import { processBookFile } from "../utils/fileProcessor"
-import { useAuth } from "../hooks/useAuth"
-import { useSettings } from "../hooks/useSettings"
-import { useSampleBookProgress } from "../hooks/useSampleBookProgress"
+import BookProgress from "../components/BookProgress"
+import InstructionModal from "../components/InstructionModal"
+import PracticeHeader from "../components/PracticeHeader"
+import PracticeLayout from "../components/PracticeLayout"
 import Settings from "../components/Settings"
 import { SAMPLE_BOOKS } from "../data/sampleBooks"
-import PracticeHeader from "../components/PracticeHeader"
-import BookProgress from "../components/BookProgress"
-import PracticeLayout from "../components/PracticeLayout"
-import InstructionModal from "../components/InstructionModal"
-import { 
-generateRandomWords, 
-type DifficultyLevel 
-} from "../utils/randomWords"
+import { useAuth } from "../hooks/useAuth"
+import { useSampleBookProgress } from "../hooks/useSampleBookProgress"
+import { useSettings } from "../hooks/useSettings"
 import "../terminal.css"
+import { processBookFile } from "../utils/fileProcessor"
+import {
+  generateRandomWords,
+  type DifficultyLevel
+} from "../utils/randomWords"
 
 const FileUpload = dynamic(() => import("../components/FileUpload"), { ssr: false })
 
@@ -129,7 +129,7 @@ function PracticeContent() {
       if (selectionMode === 'RANDOM') {
         newText = await generateRandomWords({ wordCount, difficulty })
         source = `Random Words (${wordCount}, ${difficulty})`
-      } 
+      }
 
       setText(newText)
       setPassageSource(source)
@@ -333,7 +333,10 @@ function PracticeContent() {
         if (userInput[index] === char) className += " text-[#41ff5f] drop-shadow-glow"
         else className += ` text-[#ff5f41] bg-[#ff5f4120] px-0.5 rounded`
       } else if (index === userInput.length) {
-        className += " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
+        const cursorClasses = settings?.cursorAnimation
+          ? " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
+          : " bg-[#41ff5f40] rounded px-1 -mx-0.5"
+        className += cursorClasses
       } else {
         className += " text-[#7bff9a]"
         style.opacity = settings?.textOpacity ?? 0.3
@@ -376,7 +379,7 @@ function PracticeContent() {
 
       <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} settings={settings} onSettingsChange={updateSettings} />
 
-      <InstructionModal 
+      <InstructionModal
         isOpen={showInstruction}
         onClose={() => setShowInstruction(false)}
         onConfirm={handleInstructionConfirm}
@@ -393,11 +396,10 @@ function PracticeContent() {
               <button
                 key={mode}
                 onClick={() => setSelectionMode(mode)}
-                className={`flex-1 py-2 border-2 rounded text-sm font-bold transition-all ${
-                  selectionMode === mode 
-                    ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]' 
+                className={`flex-1 py-2 border-2 rounded text-sm font-bold transition-all ${selectionMode === mode
+                    ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
                     : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
-                }`}
+                  }`}
               >
                 {mode}
               </button>
@@ -414,7 +416,7 @@ function PracticeContent() {
                   + UPLOAD BOOK (PDF / EPUB)
                 </button>
               )}
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                 {SAMPLE_BOOKS.map((book) => {
                   const prog = getProgress(book.id)
@@ -440,15 +442,15 @@ function PracticeContent() {
 
           {selectionMode === 'RANDOM' && (
             <div className="space-y-6 p-4 border border-[#41ff5f20] rounded bg-[#003018]/20">
-              
+
               <p className="text-xs text-[#7bff9a]/80 italic mb-2">
                 (suggestion: start with easy difficulty and 20 words)
               </p>
 
               <div>
                 <label className="text-xs text-[#7bff9a]/60 mb-2 block uppercase">Word Count: {wordCount}</label>
-                <input 
-                  type="range" min="10" max="100" step="10" value={wordCount} 
+                <input
+                  type="range" min="10" max="100" step="10" value={wordCount}
                   onChange={(e) => setWordCount(Number(e.target.value))}
                   className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#41ff5f]"
                 />
@@ -461,20 +463,19 @@ function PracticeContent() {
                     <button
                       key={lvl}
                       onClick={() => setDifficulty(lvl)}
-                      className={`flex-1 py-2 border rounded text-xs font-bold uppercase transition-all ${
-                        difficulty === lvl
+                      className={`flex-1 py-2 border rounded text-xs font-bold uppercase transition-all ${difficulty === lvl
                           ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
                           : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
-                      }`}
+                        }`}
                     >
                       {lvl}
                     </button>
                   ))}
                 </div>
               </div>
-              
-              <button 
-                onClick={startRandomPractice} 
+
+              <button
+                onClick={startRandomPractice}
                 disabled={isGenerating}
                 className="w-full terminal-btn py-3 text-lg font-bold"
               >
