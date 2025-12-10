@@ -62,7 +62,7 @@ export default function MatchPage({ params }: MatchPageProps) {
   }
 
   useEffect(() => {
-    if (!startTime || userInput.length === 0) {
+    if (!startTime || userInput.length === 0 || isComplete) {
       setLiveWpm(0)
       return
     }
@@ -76,7 +76,7 @@ export default function MatchPage({ params }: MatchPageProps) {
     }, 100)
 
     return () => clearInterval(interval)
-  }, [startTime, userInput, text])
+  }, [startTime, userInput, text, isComplete])
 
 
   if (!isLoading && (isGuest || !user)) {
@@ -263,7 +263,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; BACK
+            &lt;
           </button>
 
           <div className="terminal-window p-8 text-center relative">
@@ -344,7 +344,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             onClick={() => router.push('/')}
             className="mb-6 terminal-btn text-sm"
           >
-            &lt; RETURN HOME
+            &lt;
           </button>
 
           <div className={`terminal-window p-8 ${winner ? 'border-[#41ff5f80]' : 'border-[#ff5f4180]'}`}>
