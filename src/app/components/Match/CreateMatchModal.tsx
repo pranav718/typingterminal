@@ -6,7 +6,8 @@ import { api } from '../../../../convex/_generated/api'
 import { SAMPLE_BOOKS } from '../../data/sampleBooks'
 import {
   generateRandomWords,
-  getRandomPassageSource
+  getRandomPassageSource,
+  type DifficultyLevel
 } from '../../utils/randomWords'
 import InstructionModal from '../InstructionModal'
 
@@ -23,6 +24,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
   const [selectedBook, setSelectedBook] = useState<string>('')
   const [selectedPassage, setSelectedPassage] = useState<number>(0)
   const [wordCount, setWordCount] = useState<number>(50)
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
   const [isCreating, setIsCreating] = useState(false)
 
   const [isBookOpen, setIsBookOpen] = useState(false)
@@ -78,8 +80,8 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
         passageText = book.passages[selectedPassage]
         passageSource = `${book.title} - Passage ${selectedPassage + 1}`
       } else if (passageType === 'random-words') {
-        passageText = await generateRandomWords({ wordCount, difficulty: 'easy' })
-        passageSource = `${getRandomPassageSource('words')} (${wordCount} words)`
+        passageText = await generateRandomWords({ wordCount, difficulty })
+        passageSource = `${getRandomPassageSource('words')} (${wordCount} words, ${difficulty})`
       }
 
       const result = await createMatch({ passageText, passageSource })
@@ -236,36 +238,52 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
             )}
 
             {passageType === 'random-words' && (
-              <div>
-                <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
-                  WORD COUNT: {wordCount}
-                </label>
-                <input
-                  type="range"
-                  min={25}
-                  max={100}
-                  step={25}
-                  value={wordCount}
-                  onChange={(e) => setWordCount(Number(e.target.value))}
-                  className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:w-5
-                    [&::-webkit-slider-thumb]:h-5
-                    [&::-webkit-slider-thumb]:rounded-full
-                    [&::-webkit-slider-thumb]:bg-[#41ff5f]
-                    [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-moz-range-thumb]:w-5
-                    [&::-moz-range-thumb]:h-5
-                    [&::-moz-range-thumb]:rounded-full
-                    [&::-moz-range-thumb]:bg-[#41ff5f]
-                    [&::-moz-range-thumb]:border-0
-                    [&::-moz-range-thumb]:cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-[#7bff9a]/60 mt-1 font-mono">
-                  <span>25</span>
-                  <span>50</span>
-                  <span>75</span>
-                  <span>100</span>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+                    WORD COUNT: {wordCount}
+                  </label>
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    step={10}
+                    value={wordCount}
+                    onChange={(e) => setWordCount(Number(e.target.value))}
+                    className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-5
+                      [&::-webkit-slider-thumb]:h-5
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-[#41ff5f]
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-moz-range-thumb]:w-5
+                      [&::-moz-range-thumb]:h-5
+                      [&::-moz-range-thumb]:rounded-full
+                      [&::-moz-range-thumb]:bg-[#41ff5f]
+                      [&::-moz-range-thumb]:border-0
+                      [&::-moz-range-thumb]:cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#7bff9a]/80 mb-2 uppercase tracking-wider">
+                    DIFFICULTY: {difficulty}
+                  </label>
+                  <div className="flex gap-2">
+                    {(['easy', 'medium', 'hard'] as DifficultyLevel[]).map((lvl) => (
+                      <button
+                        key={lvl}
+                        onClick={() => setDifficulty(lvl)}
+                        className={`flex-1 py-2 border rounded text-xs font-bold uppercase transition-all ${difficulty === lvl
+                          ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
+                          : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
+                          }`}
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
