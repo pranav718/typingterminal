@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import { useMutation } from 'convex/react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import { SAMPLE_BOOKS } from '../../data/sampleBooks'
-import InstructionModal from '../InstructionModal'
-import { 
-  generateRandomWords, 
-  getRandomPassageSource 
+import {
+  generateRandomWords,
+  getRandomPassageSource
 } from '../../utils/randomWords'
+import InstructionModal from '../InstructionModal'
 
 interface CreateMatchModalProps {
   isOpen: boolean
@@ -24,10 +24,10 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
   const [selectedPassage, setSelectedPassage] = useState<number>(0)
   const [wordCount, setWordCount] = useState<number>(50)
   const [isCreating, setIsCreating] = useState(false)
-  
+
   const [isBookOpen, setIsBookOpen] = useState(false)
   const [isPassageOpen, setIsPassageOpen] = useState(false)
-  
+
   const [showInstruction, setShowInstruction] = useState(false)
 
   const createMatch = useMutation(api.matches.createMatch)
@@ -78,7 +78,7 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
         passageText = book.passages[selectedPassage]
         passageSource = `${book.title} - Passage ${selectedPassage + 1}`
       } else if (passageType === 'random-words') {
-        passageText = await generateRandomWords({ wordCount, difficulty: 'medium' })
+        passageText = await generateRandomWords({ wordCount, difficulty: 'easy' })
         passageSource = `${getRandomPassageSource('words')} (${wordCount} words)`
       }
 
@@ -97,17 +97,17 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
 
   return (
     <>
-      <InstructionModal 
+      <InstructionModal
         isOpen={showInstruction}
         onClose={() => setShowInstruction(false)}
         title="PASSAGE SELECTION ADVISORY"
       />
 
-      <div 
+      <div
         className="fixed inset-0 bg-[#00120b]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
-        <div 
+        <div
           className="terminal-window max-w-2xl w-full max-h-[90vh] overflow-y-auto border-[#41ff5f]"
           onClick={(e) => e.stopPropagation()}
           ref={dropdownRef}
@@ -173,11 +173,10 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                           <div
                             key={book.id}
                             onClick={() => handleBookChange(book.id)}
-                            className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${
-                              selectedBook === book.id 
-                                ? 'bg-[#41ff5f] text-[#00120b] font-bold' 
-                                : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
-                            }`}
+                            className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${selectedBook === book.id
+                              ? 'bg-[#41ff5f] text-[#00120b] font-bold'
+                              : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
+                              }`}
                           >
                             {book.title} by {book.author}
                           </div>
@@ -214,11 +213,10 @@ export default function CreateMatchModal({ isOpen, onClose, onMatchCreated }: Cr
                                 setSelectedPassage(idx)
                                 setIsPassageOpen(false)
                               }}
-                              className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${
-                                selectedPassage === idx
-                                  ? 'bg-[#41ff5f] text-[#00120b] font-bold'
-                                  : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
-                              }`}
+                              className={`px-4 py-2 cursor-pointer text-sm font-mono transition-colors ${selectedPassage === idx
+                                ? 'bg-[#41ff5f] text-[#00120b] font-bold'
+                                : 'text-[#7bff9a] hover:bg-[#41ff5f20] hover:text-[#41ff5f]'
+                                }`}
                             >
                               PASSAGE {idx + 1}
                             </div>

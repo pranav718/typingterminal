@@ -1,10 +1,10 @@
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { Providers } from './providers';
 import "./globals.css";
-
 export const metadata: Metadata = {
   title: "typingterminal",
-  description: "Practice your typing and compete with your friends!!!",
+  description: "a retro terminal-themed typing and competing practice platform",
 };
 
 export default function RootLayout({
@@ -21,6 +21,7 @@ export default function RootLayout({
       <body suppressHydrationWarning className="font-jetbrains">
         <Providers>
           {children}
+          <Analytics />
         </Providers>
       </body>
     </html>
