@@ -85,7 +85,8 @@ function PracticeContent() {
     if (bookIdFromUrl && !uploadedBookIdFromUrl) {
       const book = SAMPLE_BOOKS.find((b) => b.id === bookIdFromUrl)
       if (book) {
-        loadSampleBook(book) 
+        setPendingBook(book)
+        setShowInstruction(true)
       }
     } else if (uploadedBookIdFromUrl) {
       setShowSelectionScreen(false)
@@ -439,6 +440,11 @@ function PracticeContent() {
 
           {selectionMode === 'RANDOM' && (
             <div className="space-y-6 p-4 border border-[#41ff5f20] rounded bg-[#003018]/20">
+              
+              <p className="text-xs text-[#7bff9a]/80 italic mb-2">
+                (suggestion: start with easy difficulty and 20 words)
+              </p>
+
               <div>
                 <label className="text-xs text-[#7bff9a]/60 mb-2 block uppercase">Word Count: {wordCount}</label>
                 <input 
@@ -492,7 +498,7 @@ function PracticeContent() {
 
           {!currentBook && !isLoadingBook && !showUpload && text && (
             <div className="terminal-window p-3 mb-4 flex justify-between items-center">
-              <span className="text-xs text-[#7bff9a]/60">MODE: RANDOM DRILL</span>
+              <span className="text-xs text-[#7bff9a]/60">MODE: RANDOM</span>
               <span className="text-sm text-[#41ff5f] font-bold">{passageSource}</span>
             </div>
           )}
@@ -545,7 +551,7 @@ function PracticeContent() {
 
           {isComplete && !isLoadingBook && (
             <div className="terminal-window p-6 text-center animate-slide-up">
-              <h3 className="text-2xl md:text-3xl font-bold text-[#41ff5f] mb-4 text-shadow-glow">SESSION COMPLETE ✓</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-[#41ff5f] mb-4 text-shadow-glow">SESSION COMPLETE</h3>
               <div className="flex flex-col md:flex-row justify-around gap-4 mb-6">
                 <div className="px-4 py-2 bg-[#003018]/30 border border-[#41ff5f20] rounded">
                   <span className="text-sm text-[#7bff9a]/80">FINAL WPM: {wpm}</span>
@@ -555,7 +561,7 @@ function PracticeContent() {
                 </div>
               </div>
               <button onClick={handleNextPassage} className="terminal-btn text-lg px-8 py-3">
-                NEXT SEQUENCE →
+                NEXT SEQUENCE
               </button>
             </div>
           )}

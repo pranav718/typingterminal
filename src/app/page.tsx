@@ -142,7 +142,7 @@ export default function HomePage() {
                             <div className="text-xl font-bold text-[#41ff5f]">{userStats.bestWpm}</div>
                           </div>
                           <div className="bg-[#003018]/30 border border-[#41ff5f20] rounded p-2">
-                            <div className="text-xs text-[#7bff9a]/60">ACCURACY</div>
+                            <div className="text-xs text-[#7bff9a]/60">BEST ACCURACY</div>
                             <div className="text-xl font-bold text-[#41ff5f]">{userStats.bestAccuracy}%</div>
                           </div>
                           <div className="bg-[#003018]/30 border border-[#41ff5f20] rounded p-2">
@@ -268,7 +268,16 @@ export default function HomePage() {
 
                 <div className="border border-[#41ff5f30] rounded p-4">
                   <h2 className="text-lg font-bold mb-3 text-[#41ff5f] text-shadow-glow">CLASSIC LIBRARY</h2>
-                  <p className="text-[#7bff9a]/80 text-xs mb-4">SELECT A CLASSIC TO PRACTICE TYPING</p>
+                  <p className="text-[#7bff9a]/80 text-xs mb-4">
+                    SELECT A CLASSIC TO PRACTICE TYPING
+                    <span className="mx-2 text-[#7bff9a]/40">|</span>
+                    <button 
+                      onClick={() => router.push('/practice')}
+                      className="hover:text-[#41ff5f] hover:underline decoration-dotted transition-all cursor-pointer"
+                    >
+                      (or practice with random words)
+                    </button>
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                     {SAMPLE_BOOKS.map((book) => {
                       const currentProgress = getProgress(book.id)

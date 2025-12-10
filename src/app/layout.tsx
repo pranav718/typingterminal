@@ -3,7 +3,7 @@ import { Providers } from './providers';
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TypingTerminal",
+  title: "typingterminal",
   description: "Practice your typing and compete with your friends!!!",
 };
 

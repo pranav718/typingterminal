@@ -302,7 +302,7 @@ export default function MatchPage({ params }: MatchPageProps) {
                 }}
                 className={`terminal-btn transition-all duration-300 ${isCopied ? 'border-[#41ff5f] bg-[#41ff5f20] text-shadow-glow' : ''}`}
               >
-                 {isCopied ? '✓ CODE COPIED' : 'COPY CODE'}
+                 {isCopied ? 'CODE COPIED' : 'COPY CODE'}
               </button>
             </div>
 

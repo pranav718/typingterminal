@@ -92,7 +92,7 @@ export default function PracticeHeader({
         {!isComplete && !showUpload && !isLoadingBook && !showSelectionScreen && (
           <button
             onClick={onSkipClick}
-            className="h-9 px-3 border border-[#e6b450] text-[#e6b450] bg-transparent hover:bg-[#e6b45010] hover:shadow-[0_0_15px_rgba(230,180,80,0.3)] rounded-sm text-xs font-bold tracking-wider transition-all"
+            className="terminal-btn h-9 px-4 text-xs font-bold tracking-wider flex items-center justify-center"
           >
             SKIP
           </button>
