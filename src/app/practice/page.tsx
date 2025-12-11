@@ -450,7 +450,7 @@ function PracticeContent() {
             <div className="space-y-6 p-4 border border-[#41ff5f20] rounded bg-[#003018]/20">
 
               <p className="text-xs text-[#7bff9a]/80 italic mb-2">
-                (suggestion: start with easy difficulty and 20 words)
+                (suggestion: start with easy difficulty and 30 words)
               </p>
 
               <div>
