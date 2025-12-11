@@ -51,13 +51,12 @@ export default function SpecialThanks() {
     }, [])
 
     return (
-        <div className="flex flex-col relative h-[600px] justify-between">
-
+        <div className="flex flex-col relative h-auto md:h-[600px] justify-between">
             <h3 className="text-lg font-bold mb-4 text-[#41ff5f] text-center border-b border-[#41ff5f30] pb-2">
                 my special thanks to:
             </h3>
 
-            <div className="flex-1 w-full relative flex flex-col items-center justify-center">
+            <div className="flex-1 w-full relative flex flex-col items-center justify-center my-4 md:my-0">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentTweetIndex}

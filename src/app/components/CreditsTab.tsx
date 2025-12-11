@@ -120,18 +120,18 @@ const SUGGESTIONS: Suggestion[] = [
 export default function CreditsTab() {
     return (
         <div className="h-full flex flex-col gap-4 animate-fade-in">
-            <div className="h-full border border-[#41ff5f30] rounded-xl p-6 relative overflow-hidden bg-[#001a0f]/40 flex flex-col">
+            <div className="h-full border border-[#41ff5f30] rounded-xl p-4 md:p-6 relative overflow-hidden bg-[#001a0f]/40 flex flex-col">
                 <div className="absolute top-0 left-0 w-full h-1 bg-[#41ff5f]/20"></div>
-                <h2 className="text-xl font-bold mb-6 text-[#41ff5f] text-shadow-glow tracking-wider">
+                <h2 className="text-lg md:text-xl font-bold mb-4 md:mb-6 text-[#41ff5f] text-shadow-glow tracking-wider">
                     SUGGESTIONS:
                 </h2>
 
                 <div className="space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-2">
                     {SUGGESTIONS.map((suggestion) => (
                         <div key={suggestion.id} className="relative group">
-                            <div className="flex items-start gap-4">
-                                <div className="mt-1.5 flex-1">
-                                    <p className="text-[#41ff5f] text-lg font-medium leading-relaxed">
+                            <div className="flex items-start gap-3 md:gap-4">
+                                <div className="mt-1 flex-1">
+                                    <p className="text-[#41ff5f] text-base md:text-lg font-medium leading-relaxed">
                                         "{suggestion.text}"
                                     </p>
                                     <div className="flex items-center gap-3 mt-2 pl-4 border-l-2 border-[#41ff5f30]">
