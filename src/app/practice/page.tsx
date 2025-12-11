@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams } from "next/navigation"
 import type React from "react"
-import { Suspense, useEffect, useRef, useState } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
 import BookProgress from "../components/BookProgress"
@@ -22,6 +22,7 @@ import {
   generateRandomWords,
   type DifficultyLevel
 } from "../utils/randomWords"
+import { normalizeText } from "../utils/textNormalization"
 
 const FileUpload = dynamic(() => import("../components/FileUpload"), { ssr: false })
 
@@ -48,6 +49,7 @@ function PracticeContent() {
   const [showSelectionScreen, setShowSelectionScreen] = useState(true)
   const [selectionMode, setSelectionMode] = useState<PracticeMode>('BOOKS')
   const [wordCount, setWordCount] = useState(50)
+  const [lowercaseBook, setLowercaseBook] = useState(false)
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -118,7 +120,14 @@ function PracticeContent() {
     const savedProgress = getProgress(book.id)
     setCurrentSampleBook(book)
     setCurrentPassageIndex(savedProgress)
-    setText(book.passages[savedProgress])
+
+    let passage = book.passages[savedProgress]
+    passage = normalizeText(passage)
+    if (lowercaseBook) {
+      passage = passage.toLowerCase()
+    }
+
+    setText(passage)
     setPassageSource(`${book.title} - Passage ${savedProgress + 1}`)
     setCurrentBookId(null)
     setShowSelectionScreen(false)
@@ -206,7 +215,14 @@ function PracticeContent() {
     if (currentSampleBook) {
       const nextIndex = (currentPassageIndex + 1) % currentSampleBook.passages.length
       setCurrentPassageIndex(nextIndex)
-      setText(currentSampleBook.passages[nextIndex])
+
+      let passage = currentSampleBook.passages[nextIndex]
+      passage = normalizeText(passage)
+      if (lowercaseBook) {
+        passage = passage.toLowerCase()
+      }
+
+      setText(passage)
       setPassageSource(`${currentSampleBook.title} - Passage ${nextIndex + 1}`)
     } else if (currentBookData) {
       const nextIndex = (currentPassageIndex + 1) % currentBookData.passages.length
@@ -315,6 +331,7 @@ function PracticeContent() {
           title: processedBook.title,
           passages: processedBook.passages,
           isPublic: false,
+          lowercase: lowercaseBook,
         })
         setCurrentBookId(bookId)
         setCurrentSampleBook(null)
@@ -331,9 +348,9 @@ function PracticeContent() {
     }
   }
 
-  const renderText = () => {
+  const renderText = useMemo(() => {
     return text.split("").map((char, index) => {
-      let className = "inline-block transition-all duration-150"
+      let className = "inline-block"
       let style: React.CSSProperties = { whiteSpace: "pre" }
       if (index < userInput.length) {
         if (userInput[index] === char) className += " text-[#41ff5f] drop-shadow-glow"
@@ -359,7 +376,7 @@ function PracticeContent() {
       }
       return <span key={index} className={className} style={style}>{char === " " ? "\u00A0" : char}</span>
     })
-  }
+  }, [text, userInput, settings?.cursorStyle, settings?.cursorAnimation, settings?.textOpacity])
 
   const currentBook = currentSampleBook
     ? { title: `${currentSampleBook.title}`, totalPassages: currentSampleBook.passages.length }
@@ -393,7 +410,15 @@ function PracticeContent() {
         }}
       />
 
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} settings={settings} onSettingsChange={updateSettings} />
+      <Settings
+        isOpen={showSettings}
+        onClose={() => {
+          setShowSettings(false)
+          setTimeout(() => inputRef.current?.focus(), 100)
+        }}
+        settings={settings}
+        onSettingsChange={updateSettings}
+      />
 
       <InstructionModal
         isOpen={showInstruction}
@@ -506,15 +531,59 @@ function PracticeContent() {
         </div>
       ) : (
         <>
-          {showUpload && !isGuest && <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />}
+          {showUpload && !isGuest && (
+            <>
+              <div className="mb-4 flex items-center gap-2 p-3 bg-matrix-primary/5 border border-matrix-primary/20 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="lowercaseBook"
+                  checked={lowercaseBook}
+                  onChange={(e) => setLowercaseBook(e.target.checked)}
+                  className="w-4 h-4 accent-matrix-primary cursor-pointer"
+                />
+                <label htmlFor="lowercaseBook" className="text-sm text-matrix-light cursor-pointer select-none">
+                  convert text to lowercase
+                </label>
+              </div>
+              <FileUpload onFileUpload={handleFileUpload} isProcessing={isProcessing} />
+            </>
+          )}
 
           {currentBook && !isLoadingBook && !showUpload && (
-            <BookProgress
-              title={currentBook.title}
-              currentPassage={currentPassageIndex}
-              totalPassages={currentBook.totalPassages}
-              isUploaded={!!currentBookId}
-            />
+            <>
+              <BookProgress
+                title={currentBook.title}
+                currentPassage={currentPassageIndex}
+                totalPassages={currentBook.totalPassages}
+                isUploaded={!!currentBookId}
+              />
+
+              {currentSampleBook && (
+                <div className="mb-4">
+                  <button
+                    onClick={() => {
+                      const newLowercaseState = !lowercaseBook
+                      setLowercaseBook(newLowercaseState)
+
+                      let passage = currentSampleBook.passages[currentPassageIndex]
+                      passage = normalizeText(passage)
+                      if (newLowercaseState) {
+                        passage = passage.toLowerCase()
+                      }
+                      setText(passage)
+                      resetTypingState()
+                      setTimeout(() => inputRef.current?.focus(), 0)
+                    }}
+                    className={`px-3 py-2 border font-mono text-xs tracking-wider transition-all ${lowercaseBook
+                      ? 'border-[#41ff5f] bg-[#41ff5f]/10 text-[#41ff5f]'
+                      : 'border-[#41ff5f]/30 text-[#7bff9a]/60 hover:border-[#41ff5f]/60'
+                      }`}
+                  >
+                    [{lowercaseBook ? 'X' : ' '}] CONVERT TO LOWERCASE
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {!currentBook && !isLoadingBook && !showUpload && text && (
@@ -537,7 +606,7 @@ function PracticeContent() {
               {isLoadingBook || !text ? (
                 <div className="text-[#41ff5f] animate-pulse">LOADING...</div>
               ) : (
-                renderText()
+                renderText
               )}
             </div>
           </div>

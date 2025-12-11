@@ -1,28 +1,38 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { normalizeText } from "./textNormalization";
 
 export const saveBook = mutation({
   args: {
     title: v.string(),
     passages: v.array(v.string()),
     isPublic: v.optional(v.boolean()),
+    lowercase: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const processedPassages = args.passages.map(passage => {
+      let processed = normalizeText(passage);
+      if (args.lowercase) {
+        processed = processed.toLowerCase();
+      }
+      return processed;
+    });
+
     const bookId = await ctx.db.insert("books", {
       userId,
       title: args.title,
       uploadedAt: Date.now(),
-      totalPassages: args.passages.length,
+      totalPassages: processedPassages.length,
       lastReadPosition: 0,
       isPublic: args.isPublic ?? false,
     });
 
     await Promise.all(
-      args.passages.map((content, index) =>
+      processedPassages.map((content, index) =>
         ctx.db.insert("passages", {
           bookId,
           content,

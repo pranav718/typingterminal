@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as matches from "../matches.js";
 import type * as sessions from "../sessions.js";
+import type * as textNormalization from "../textNormalization.js";
 import type * as users from "../users.js";
 
 /**
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   leaderboard: typeof leaderboard;
   matches: typeof matches;
   sessions: typeof sessions;
+  textNormalization: typeof textNormalization;
   users: typeof users;
 }>;
 export declare const api: FilterApi<
