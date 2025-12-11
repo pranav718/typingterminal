@@ -128,15 +128,15 @@ export default function CreditsTab() {
 
                 <div className="space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-2">
                     {SUGGESTIONS.map((suggestion) => (
-                        <div key={suggestion.id} className="relative group">
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="mt-1 flex-1">
+                        <div key={suggestion.id} className="relative group bg-[#41ff5f]/5 rounded-lg p-3 md:bg-transparent md:p-0">
+                            <div className="flex flex-col-reverse md:flex-row items-end md:items-start gap-2 md:gap-4">
+                                <div className="w-full md:flex-1">
                                     <p className="text-[#41ff5f] text-base md:text-lg font-medium leading-relaxed">
                                         "{suggestion.text}"
                                     </p>
-                                    <div className="flex items-center gap-3 mt-2 pl-4 border-l-2 border-[#41ff5f30]">
+                                    <div className="flex items-center gap-3 mt-3 pl-0 md:pl-4 md:border-l-2 md:border-[#41ff5f30]">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full overflow-hidden border border-[#41ff5f50]">
+                                            <div className="w-8 h-8 md:w-6 md:h-6 rounded-full overflow-hidden border border-[#41ff5f50]">
                                                 {suggestion.user.image ? (
                                                     <img src={suggestion.user.image} alt={suggestion.user.handle} className="w-full h-full object-cover" />
                                                 ) : (
@@ -150,9 +150,9 @@ export default function CreditsTab() {
                                     </div>
                                 </div>
 
-                                <div className="mt-1.5">
+                                <div className="mb-1 md:mb-0">
                                     <span className={`
-                        px-3 py-1 text-xs font-bold rounded border border-dashed
+                        px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-bold rounded border border-dashed
                         ${suggestion.status === 'Implemented'
                                             ? 'text-[#41ff5f] border-[#41ff5f] bg-[#41ff5f]/10'
                                             : 'text-[#ffbf00] border-[#ffbf00] bg-[#ffbf00]/10'}
