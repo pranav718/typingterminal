@@ -51,6 +51,12 @@ function PracticeContent() {
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
   const [isGenerating, setIsGenerating] = useState(false)
 
+  useEffect(() => {
+    if (difficulty === 'easy' && wordCount < 30) {
+      setWordCount(30)
+    }
+  }, [difficulty, wordCount])
+
   const [currentSampleBook, setCurrentSampleBook] = useState<(typeof SAMPLE_BOOKS)[0] | null>(null)
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0)
   const [text, setText] = useState("")
@@ -450,7 +456,11 @@ function PracticeContent() {
               <div>
                 <label className="text-xs text-[#7bff9a]/60 mb-2 block uppercase">Word Count: {wordCount}</label>
                 <input
-                  type="range" min="10" max="100" step="10" value={wordCount}
+                  type="range"
+                  min={difficulty === 'easy' ? "30" : "10"}
+                  max="100"
+                  step="10"
+                  value={wordCount}
                   onChange={(e) => setWordCount(Number(e.target.value))}
                   className="w-full h-2 bg-[#41ff5f20] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#41ff5f]"
                 />
