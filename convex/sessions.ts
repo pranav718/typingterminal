@@ -1,6 +1,6 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 function calculateScore(wpm: number, accuracy: number): number {
   return wpm * (accuracy / 100);
@@ -17,6 +17,11 @@ export const saveSession = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+
+    // Server-side validation to prevent exploiting
+    if (args.wpm > 300) {
+      throw new Error("Invalid WPM: Score exceeds maximum possible limit.");
+    }
 
     const sessionId = await ctx.db.insert("typingSessions", {
       userId,
@@ -35,17 +40,17 @@ export const saveSession = mutation({
 
       const newTotalSessions = existingStats.totalSessions + 1;
       const newTotalWords = existingStats.totalWordsTyped + wordsTyped;
-      
+
       const newAvgWpm = Math.round(
         (existingStats.averageWpm * existingStats.totalSessions + args.wpm) / newTotalSessions
       );
       const newAvgAccuracy = Math.round(
         (existingStats.averageAccuracy * existingStats.totalSessions + args.accuracy) / newTotalSessions
       );
-      
+
       const newBestWpm = Math.max(existingStats.bestWpm, args.wpm);
       const newBestAccuracy = Math.max(existingStats.bestAccuracy, args.accuracy);
-      
+
       const compositeScore = calculateScore(newBestWpm, newBestAccuracy);
 
       await ctx.db.patch(existingStats._id, {
@@ -158,7 +163,7 @@ export const deleteSession = mutation({
     }
 
     await ctx.db.delete(args.sessionId);
-    
+
     return { success: true };
   },
 });

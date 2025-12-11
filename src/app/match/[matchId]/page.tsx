@@ -510,6 +510,7 @@ export default function MatchPage({ params }: MatchPageProps) {
           type="text"
           value={userInput}
           onChange={handleInputChange}
+          onPaste={(e) => e.preventDefault()}
           className="hidden-input"
           disabled={isComplete || hasSubmitted}
           autoComplete="off"

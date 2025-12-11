@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -99,10 +99,10 @@ export const getMatch = query({
       },
       opponent: opponent
         ? {
-            id: opponent._id,
-            name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
-            image: opponent.image,
-          }
+          id: opponent._id,
+          name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
+          image: opponent.image,
+        }
         : null,
       results,
     };
@@ -124,6 +124,10 @@ export const submitMatchResult = mutation({
     if (!match) throw new Error("Match not found");
     if (match.status !== "in_progress") throw new Error("Match is not in progress");
 
+    if (args.wpm > 300) {
+      throw new Error("Invalid WPM: Score exceeds maximum possible limit.");
+    }
+
     const userResult = await ctx.db
       .query("matchResults")
       .withIndex("by_match_and_user", (q) => q.eq("matchId", args.matchId).eq("userId", userId))
@@ -142,7 +146,7 @@ export const submitMatchResult = mutation({
 
     await ctx.db.insert("typingSessions", {
       userId,
-      passageIndex: 0, 
+      passageIndex: 0,
       wpm: args.wpm,
       accuracy: args.accuracy,
       errors: args.errors,
@@ -154,22 +158,22 @@ export const submitMatchResult = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
 
-    const wordsTyped = Math.round(args.wpm * 1); 
+    const wordsTyped = Math.round(args.wpm * 1);
 
     if (existingStats) {
       const newTotalSessions = existingStats.totalSessions + 1;
       const newTotalWords = existingStats.totalWordsTyped + wordsTyped;
-      
+
       const newAvgWpm = Math.round(
         (existingStats.averageWpm * existingStats.totalSessions + args.wpm) / newTotalSessions
       );
       const newAvgAccuracy = Math.round(
         (existingStats.averageAccuracy * existingStats.totalSessions + args.accuracy) / newTotalSessions
       );
-      
+
       const newBestWpm = Math.max(existingStats.bestWpm, args.wpm);
       const newBestAccuracy = Math.max(existingStats.bestAccuracy, args.accuracy);
-      
+
       const compositeScore = newBestWpm * (newBestAccuracy / 100);
 
       await ctx.db.patch(existingStats._id, {
@@ -184,7 +188,7 @@ export const submitMatchResult = mutation({
       });
     } else {
       const compositeScore = args.wpm * (args.accuracy / 100);
-      
+
       await ctx.db.insert("userStats", {
         userId,
         bestWpm: args.wpm,
@@ -258,10 +262,10 @@ export const getMyMatches = query({
           },
           opponent: opponent
             ? {
-                id: opponent._id,
-                name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
-                image: opponent.image,
-              }
+              id: opponent._id,
+              name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
+              image: opponent.image,
+            }
             : null,
         };
       })
@@ -279,7 +283,7 @@ export const cancelMatch = mutation({
 
     const match = await ctx.db.get(args.matchId);
     if (!match) throw new Error("Match not found");
-    
+
     console.log('Cancel attempt:', {
       matchId: args.matchId,
       userId,
@@ -341,10 +345,10 @@ export const getMatchHistory = query({
           },
           opponent: opponent
             ? {
-                id: opponent._id,
-                name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
-                image: opponent.image,
-              }
+              id: opponent._id,
+              name: opponent.name || opponent.email?.split("@")[0] || "Unknown",
+              image: opponent.image,
+            }
             : null,
           results,
         };
@@ -363,7 +367,7 @@ export const surrenderMatch = mutation({
 
     const match = await ctx.db.get(args.matchId);
     if (!match) throw new Error("Match not found");
-    
+
     if (match.status !== "in_progress") throw new Error("Can only surrender active matches");
 
     const isHost = match.hostId === userId;

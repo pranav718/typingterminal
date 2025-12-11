@@ -397,8 +397,8 @@ function PracticeContent() {
                 key={mode}
                 onClick={() => setSelectionMode(mode)}
                 className={`flex-1 py-2 border-2 rounded text-sm font-bold transition-all ${selectionMode === mode
-                    ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
-                    : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
+                  ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
+                  : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
                   }`}
               >
                 {mode}
@@ -464,8 +464,8 @@ function PracticeContent() {
                       key={lvl}
                       onClick={() => setDifficulty(lvl)}
                       className={`flex-1 py-2 border rounded text-xs font-bold uppercase transition-all ${difficulty === lvl
-                          ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
-                          : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
+                        ? 'bg-[#41ff5f] text-[#00120b] border-[#41ff5f]'
+                        : 'bg-transparent text-[#7bff9a] border-[#41ff5f30] hover:border-[#41ff5f]'
                         }`}
                     >
                       {lvl}
@@ -527,6 +527,7 @@ function PracticeContent() {
             type="text"
             value={userInput}
             onChange={handleInputChange}
+            onPaste={(e) => e.preventDefault()}
             className="hidden-input"
             disabled={isComplete || showUpload || showSettings || isLoadingBook || !user || !text}
             autoComplete="off"
