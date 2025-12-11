@@ -1,27 +1,29 @@
 "use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { useQuery } from "convex/react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { api } from "../../convex/_generated/api"
-import { useAuth } from "./hooks/useAuth"
-import { useSettings } from "./hooks/useSettings"
-import { useSampleBookProgress } from "./hooks/useSampleBookProgress"
 import AuthModal from "./components/Auth/AuthModal"
-import Settings from "./components/Settings"
+import CreditsTab from "./components/CreditsTab"
 import CreateMatchModal from "./components/Match/CreateMatchModal"
 import JoinMatchModal from "./components/Match/JoinMatchModal"
 import ProfileImage from "./components/ProfileImage"
+import Settings from "./components/Settings"
+import SpecialThanks from "./components/SpecialThanks"
 import { SAMPLE_BOOKS } from "./data/sampleBooks"
+import { useAuth } from "./hooks/useAuth"
+import { useSampleBookProgress } from "./hooks/useSampleBookProgress"
+import { useSettings } from "./hooks/useSettings"
 import "./terminal.css"
 
-type Tab = "PROFILE" | "LEADERBOARD" | "BOOKS" | "CHALLENGES" | "SETTINGS" | "STATS"
+type Tab = "PROFILE" | "LEADERBOARD" | "BOOKS" | "CHALLENGES" | "SETTINGS" | "STATS" | "CREDITS"
 
 export default function HomePage() {
   const { user, isLoading: authLoading, isGuest, logout } = useAuth()
   const router = useRouter()
   const { getProgress } = useSampleBookProgress(isGuest)
   const { settings, updateSettings } = useSettings()
-  
+
   const [activeTab, setActiveTab] = useState<Tab>("PROFILE")
   const [showSettings, setShowSettings] = useState(false)
   const [showCreateMatch, setShowCreateMatch] = useState(false)
@@ -43,12 +45,12 @@ export default function HomePage() {
     )
   }
 
-  const tabs: Tab[] = ["PROFILE", "LEADERBOARD", "BOOKS", "CHALLENGES", "SETTINGS", "STATS"]
+  const tabs: Tab[] = ["PROFILE", "LEADERBOARD", "BOOKS", "CHALLENGES", "SETTINGS", "STATS", "CREDITS"]
 
   return (
     <div className="min-h-screen bg-[#00120b] text-[#41ff5f] font-mono relative overflow-hidden">
       <div className="scanline" />
-      
+
       <div className="absolute inset-0 pointer-events-none">
         <div className="grid-lines absolute inset-0" />
       </div>
@@ -63,7 +65,7 @@ export default function HomePage() {
               {isGuest ? "GUEST SESSION • LIMITED ACCESS" : "LOW SIGNAL • SYSTEM ONLINE"}
             </p>
           </div>
-          
+
           <div className="flex gap-2 flex-wrap justify-center">
             <button
               onClick={() => router.push("/practice")}
@@ -134,7 +136,7 @@ export default function HomePage() {
                           )}
                         </div>
                       </div>
-                      
+
                       {userStats && (
                         <div className="grid grid-cols-2 gap-3 mt-4">
                           <div className="bg-[#003018]/30 border border-[#41ff5f20] rounded p-2">
@@ -155,7 +157,7 @@ export default function HomePage() {
                           </div>
                         </div>
                       )}
-                      
+
                       <button
                         onClick={logout}
                         className="mt-3 px-4 py-2 border border-[#ff5f4180] text-[#ff5f41] rounded hover:bg-[#ff5f4120] transition-all w-full"
@@ -241,8 +243,8 @@ export default function HomePage() {
                               {book.totalPassages} passages • {progress}% complete
                             </div>
                             <div className="mt-2 h-1 bg-[#41ff5f20] rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-[#41ff5f]" 
+                              <div
+                                className="h-full bg-[#41ff5f]"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
@@ -255,7 +257,7 @@ export default function HomePage() {
                       {isGuest ? "SIGN UP TO UPLOAD BOOKS" : "NO UPLOADED BOOKS YET"}
                     </div>
                   )}
-                  
+
                   {!isGuest && (
                     <button
                       onClick={() => router.push("/practice?upload=true")}
@@ -271,7 +273,7 @@ export default function HomePage() {
                   <p className="text-[#7bff9a]/80 text-xs mb-4">
                     SELECT A CLASSIC TO PRACTICE TYPING
                     <span className="mx-2 text-[#7bff9a]/40">|</span>
-                    <button 
+                    <button
                       onClick={() => router.push('/practice')}
                       className="hover:text-[#41ff5f] hover:underline decoration-dotted transition-all cursor-pointer"
                     >
@@ -301,8 +303,8 @@ export default function HomePage() {
                             <div className="mt-2">
                               <div className="text-xs text-[#7bff9a]/60">{progressPercent}% complete</div>
                               <div className="mt-1 h-1 bg-[#41ff5f20] rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-[#41ff5f]" 
+                                <div
+                                  className="h-full bg-[#41ff5f]"
                                   style={{ width: `${progressPercent}%` }}
                                 />
                               </div>
@@ -320,7 +322,7 @@ export default function HomePage() {
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
                   <h2 className="text-lg font-bold mb-3 text-[#41ff5f] text-shadow-glow">TYPING CHALLENGES</h2>
-                  
+
                   {isGuest ? (
                     <div className="text-center py-8">
                       <div className="text-[#ff5f41] mb-2">GUEST MODE RESTRICTION</div>
@@ -374,7 +376,7 @@ export default function HomePage() {
               <div className="space-y-6 animate-fade-in">
                 <div className="border border-[#41ff5f30] rounded p-4">
                   <h2 className="text-lg font-bold mb-3 text-[#41ff5f] text-shadow-glow">PERFORMANCE STATS</h2>
-                  
+
                   {userStats ? (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
@@ -443,6 +445,10 @@ export default function HomePage() {
                 </div>
               </div>
             )}
+
+            {activeTab === "CREDITS" && (
+              <CreditsTab />
+            )}
           </div>
 
           <div className="border-t border-[#41ff5f40] p-2">
@@ -471,106 +477,112 @@ export default function HomePage() {
         </section>
 
         <aside className="terminal-window p-4 text-sm flex flex-col justify-between h-fit sticky top-6">
-          <div>
-            <h2 className="text-sm mb-3 border-b border-[#41ff5f40] pb-2 text-shadow-glow">
-              SYSTEM INFO:
-            </h2>
-            <div className="space-y-1 text-xs font-mono">
-              <div className="flex justify-between">
-                <span className="text-[#7bff9a]/60">USER:</span>
-                <span className="text-[#41ff5f]">{user?.email || "GUEST"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7bff9a]/60">MODE:</span>
-                <span className="text-[#41ff5f]">{isGuest ? "GUEST SESSION" : "ACTIVE SESSION"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7bff9a]/60">STATUS:</span>
-                <span className="text-[#41ff5f]">ONLINE</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7bff9a]/60">SECURITY:</span>
-                <span className="text-[#41ff5f]">48532695-CF</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7bff9a]/60">IP:</span>
-                <span className="text-[#41ff5f]">192.168.1.37</span>
-              </div>
-            </div>
-
-            <div className="mt-4 border border-[#41ff5f30] rounded p-4 h-48 flex flex-col items-center justify-center text-[#7bff9a]/50">
-              {user?.image && !isGuest ? (
-                <div className="text-center">
-                  <ProfileImage
-                    src={user.image}
-                    alt={user.name || "User"}
-                    fallbackText={user.name || user.email}
-                    className="w-24 h-24 rounded-full border-2 border-[#41ff5f60] mx-auto mb-3"
-                  />
-                  <div className="text-[#41ff5f] text-sm font-bold">
-                    {user.name || "ANONYMOUS"}
+          {activeTab === "CREDITS" ? (
+            <SpecialThanks />
+          ) : (
+            <>
+              <div>
+                <h2 className="text-sm mb-3 border-b border-[#41ff5f40] pb-2 text-shadow-glow">
+                  SYSTEM INFO:
+                </h2>
+                <div className="space-y-1 text-xs font-mono">
+                  <div className="flex justify-between">
+                    <span className="text-[#7bff9a]/60">USER:</span>
+                    <span className="text-[#41ff5f]">{user?.email || "GUEST"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#7bff9a]/60">MODE:</span>
+                    <span className="text-[#41ff5f]">{isGuest ? "GUEST SESSION" : "ACTIVE SESSION"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#7bff9a]/60">STATUS:</span>
+                    <span className="text-[#41ff5f]">ONLINE</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#7bff9a]/60">SECURITY:</span>
+                    <span className="text-[#41ff5f]">48532695-CF</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#7bff9a]/60">IP:</span>
+                    <span className="text-[#41ff5f]">192.168.1.37</span>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center">
-                  <div className="text-xs">PROFILE DATA VIEW</div>
+
+                <div className="mt-4 border border-[#41ff5f30] rounded p-4 h-48 flex flex-col items-center justify-center text-[#7bff9a]/50">
+                  {user?.image && !isGuest ? (
+                    <div className="text-center">
+                      <ProfileImage
+                        src={user.image}
+                        alt={user.name || "User"}
+                        fallbackText={user.name || user.email}
+                        className="w-24 h-24 rounded-full border-2 border-[#41ff5f60] mx-auto mb-3"
+                      />
+                      <div className="text-[#41ff5f] text-sm font-bold">
+                        {user.name || "ANONYMOUS"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-xs">PROFILE DATA VIEW</div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="mt-4 space-y-2">
-              <div className="text-xs text-[#7bff9a]/60 mb-2">QUICK ACTIONS:</div>
-              <button
-                onClick={() => router.push("/practice")}
-                className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
-              >
-                &gt; START PRACTICE
-              </button>
-              <button
-                onClick={() => router.push("/leaderboard")}
-                className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
-              >
-                &gt; VIEW RANKINGS
-              </button>
-              {!isGuest && (
-                <button
-                  onClick={() => setShowCreateMatch(true)}
-                  className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
-                >
-                  &gt; CREATE MATCH
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-[#41ff5f20] pt-3">
-            <div className="flex flex-col gap-2 text-[10px] text-[#7bff9a]/60 text-center font-mono">
-              <a 
-                className="hover:text-[#41ff5f] hover:text-shadow-glow transition-all"
-              >
-                made with ♡ by knight.
-              </a>
-              
-              <div className="flex justify-center gap-3">
-                <a 
-                  href="https://github.com/pranav718/typingterminal"
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
-                >
-                  &gt;star on github
-                </a>
-                <a 
-                  href="https://x.com/knightkun__" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
-                >
-                  &gt;@knightkun__
-                </a>
+                <div className="mt-4 space-y-2">
+                  <div className="text-xs text-[#7bff9a]/60 mb-2">QUICK ACTIONS:</div>
+                  <button
+                    onClick={() => router.push("/practice")}
+                    className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
+                  >
+                    &gt; START PRACTICE
+                  </button>
+                  <button
+                    onClick={() => router.push("/leaderboard")}
+                    className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
+                  >
+                    &gt; VIEW RANKINGS
+                  </button>
+                  {!isGuest && (
+                    <button
+                      onClick={() => setShowCreateMatch(true)}
+                      className="w-full text-left px-3 py-2 border border-[#41ff5f20] rounded hover:bg-[#003018] transition-all text-xs"
+                    >
+                      &gt; CREATE MATCH
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
+
+              <div className="mt-6 border-t border-[#41ff5f20] pt-3">
+                <div className="flex flex-col gap-2 text-[10px] text-[#7bff9a]/60 text-center font-mono">
+                  <a
+                    className="hover:text-[#41ff5f] hover:text-shadow-glow transition-all"
+                  >
+                    made with ♡ by knight.
+                  </a>
+
+                  <div className="flex justify-center gap-3">
+                    <a
+                      href="https://github.com/pranav718/typingterminal"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
+                    >
+                      &gt;star on github
+                    </a>
+                    <a
+                      href="https://x.com/knightkun__"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#41ff5f] underline decoration-dotted underline-offset-2 transition-all"
+                    >
+                      &gt;@knightkun__
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </aside>
       </main>
 
