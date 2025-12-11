@@ -56,7 +56,7 @@ export default function SpecialThanks() {
                 my special thanks to:
             </h3>
 
-            <div className="flex-1 w-full relative flex flex-col items-center justify-center my-4 md:my-0">
+            <div className="flex-1 w-full relative flex flex-col items-center justify-center my-3 md:my-0">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentTweetIndex}
@@ -66,20 +66,20 @@ export default function SpecialThanks() {
                         transition={{ duration: 0.5 }}
                         className="w-full flex justify-center"
                     >
-                        <div className="light-theme w-full h-[280px] overflow-y-auto custom-scrollbar rounded-xl" data-theme="dark">
+                        <div className="light-theme w-full h-[240px] md:h-[280px] overflow-y-auto custom-scrollbar rounded-xl" data-theme="dark">
                             <Tweet id={TWEET_IDS[currentTweetIndex]} />
                         </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            <div className="mt-4 p-3 border border-dashed border-[#41ff5f40] rounded bg-[#41ff5f]/5">
-                <p className="text-xs text-center text-[#7bff9a]/80 leading-relaxed font-mono">
-                    you can get your tweet here by contributing/giving suggestions
+            <div className="mt-2 md:mt-4 p-2 md:p-3 border border-dashed border-[#41ff5f40] rounded bg-[#41ff5f]/5">
+                <p className="text-[10px] md:text-xs text-center text-[#7bff9a]/80 leading-relaxed font-mono">
+                    you can get your name here by contributing/giving suggestions
                     <br />
-                    <span className="text-[#41ff5f] font-bold mt-1 block">thank you!</span>
+                    <span className="text-[#41ff5f] font-bold mt-0.5 md:mt-1 block">thank you!</span>
                 </p>
             </div>
-        </div >
+        </div>
     )
 }
