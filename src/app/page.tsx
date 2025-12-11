@@ -59,7 +59,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-shadow-glow">
-              TYPINGTERMINAL v1.0.0
+              TYPINGTERMINAL v1.1.0
             </h1>
             <p className="text-[#7bff9a]/70 text-xs md:text-sm">
               {isGuest ? "GUEST SESSION • LIMITED ACCESS" : "LOW SIGNAL • SYSTEM ONLINE"}
