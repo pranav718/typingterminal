@@ -205,10 +205,20 @@ export default function MatchPage({ params }: MatchPageProps) {
           className += ` text-[#ff5f41] bg-[#ff5f4120] px-0.5 rounded drop-shadow-[0_0_8px_rgba(255,95,65,0.6)]${shakeClass}`
         }
       } else if (index === userInput.length) {
-        const cursorClasses = settings?.cursorAnimation
-          ? " bg-[#41ff5f40] rounded px-1 -mx-0.5 scale-110 animate-pulse"
-          : " bg-[#41ff5f40] rounded px-1 -mx-0.5"
-        className += cursorClasses
+        const isDefault = !settings?.cursorStyle || settings.cursorStyle === 'line'
+        const baseCursorClass = " rounded -mx-0.5 px-0.5 "
+
+        let cursorStyleClass = ""
+        if (isDefault) cursorStyleClass = " bg-[#41ff5f40] border-l-2 border-[#41ff5f]"
+        else if (settings.cursorStyle === 'block') cursorStyleClass = " bg-[#41ff5f] text-black"
+        else if (settings.cursorStyle === 'underline') cursorStyleClass = " border-b-2 border-[#41ff5f]"
+        else if (settings.cursorStyle === 'box') cursorStyleClass = " border-[1px] border-[#41ff5f]"
+
+        if (settings?.cursorAnimation) {
+          cursorStyleClass += " animate-pulse"
+        }
+
+        className += baseCursorClass + cursorStyleClass
       } else {
         className += " text-[#7bff9a]"
         style.opacity = settings?.textOpacity ?? 0.3

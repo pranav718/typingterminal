@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 
 export type ShakeIntensity = 'off' | 'subtle' | 'medium' | 'strong'
 export type FontTheme = 'jetbrains' | 'geist' | 'fira'
+export type CursorStyle = 'line' | 'block' | 'underline' | 'box'
 
 export interface SettingsType {
   shakeIntensity: ShakeIntensity
   textOpacity: number
   fontTheme: FontTheme
   cursorAnimation: boolean
+  cursorStyle: CursorStyle
 }
 
 const DEFAULT_SETTINGS: SettingsType = {
@@ -17,6 +19,7 @@ const DEFAULT_SETTINGS: SettingsType = {
   textOpacity: 0.3,
   fontTheme: 'jetbrains',
   cursorAnimation: false,
+  cursorStyle: 'underline',
 }
 
 export function useSettings() {

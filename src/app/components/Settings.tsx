@@ -69,8 +69,8 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                   key={font.id}
                   onClick={() => onSettingsChange({ ...settings, fontTheme: font.id })}
                   className={`flex flex-col items-center gap-2 p-4 rounded border-2 transition-all hover:-translate-y-1 ${settings.fontTheme === font.id
-                      ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
-                      : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
                     }`}
                 >
                   <div
@@ -97,8 +97,8 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
                   key={intensity}
                   onClick={() => onSettingsChange({ ...settings, shakeIntensity: intensity })}
                   className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 group ${settings.shakeIntensity === intensity
-                      ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
-                      : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
                     }`}
                 >
                   <div className="w-12 h-12 rounded bg-[#ff5f4110] border border-[#ff5f4130] flex items-center justify-center">
@@ -158,14 +158,40 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
 
           <div className="pb-6 border-b border-[#41ff5f10]">
             <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
+              CURSOR STYLE:
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(['line', 'block', 'underline', 'box'] as const).map((style) => (
+                <button
+                  key={style}
+                  onClick={() => onSettingsChange({ ...settings, cursorStyle: style })}
+                  className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${settings.cursorStyle === style
+                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                    }`}
+                >
+                  <div className="w-12 h-12 rounded bg-[#41ff5f10] border border-[#41ff5f30] flex items-center justify-center font-mono text-2xl text-[#41ff5f]">
+                    {style === 'line' && '|'}
+                    {style === 'block' && <span className="w-4 h-6 bg-[#41ff5f]"></span>}
+                    {style === 'underline' && '_'}
+                    {style === 'box' && <span className="w-4 h-6 border-2 border-[#41ff5f]"></span>}
+                  </div>
+                  <span className="text-xs text-[#41ff5f] font-mono uppercase">{style}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pb-6 border-b border-[#41ff5f10]">
+            <h3 className="text-xs font-semibold text-[#7bff9a]/80 uppercase tracking-wider mb-4">
               CURSOR ANIMATION:
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => onSettingsChange({ ...settings, cursorAnimation: true })}
                 className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${settings.cursorAnimation
-                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
-                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                  ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                  : "border-[#41ff5f20] hover:border-[#41ff5f]"
                   }`}
               >
                 <div className="w-12 h-12 rounded bg-[#41ff5f10] border border-[#41ff5f30] flex items-center justify-center">
@@ -177,8 +203,8 @@ export default function Settings({ isOpen, onClose, settings, onSettingsChange }
               <button
                 onClick={() => onSettingsChange({ ...settings, cursorAnimation: false })}
                 className={`flex flex-col items-center gap-2 p-3 rounded border-2 transition-all hover:-translate-y-1 ${!settings.cursorAnimation
-                    ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
-                    : "border-[#41ff5f20] hover:border-[#41ff5f]"
+                  ? "border-[#41ff5f] bg-[#41ff5f10] shadow-[0_0_20px_rgba(65,255,95,0.3)]"
+                  : "border-[#41ff5f20] hover:border-[#41ff5f]"
                   }`}
               >
                 <div className="w-12 h-12 rounded bg-[#41ff5f10] border border-[#41ff5f30] flex items-center justify-center">
