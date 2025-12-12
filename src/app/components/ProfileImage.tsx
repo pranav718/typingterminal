@@ -21,8 +21,8 @@ export default function ProfileImage({ src, alt, className = "w-8 h-8 rounded-fu
       .slice(0, 2)
 
     return (
-      <div 
-        className={`${className} bg-matrix-primary/20 border border-matrix-primary/30 flex items-center justify-center text-matrix-primary font-bold text-xs`}
+      <div
+        className={`${className} bg-matrix-primary/20 flex items-center justify-center text-matrix-primary font-bold text-xs`}
         title={alt}
       >
         {initials}

@@ -1,19 +1,20 @@
-import { query } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { query } from "./_generated/server";
 
 function calculateScore(wpm: number, accuracy: number): number {
   return wpm * (accuracy / 100);
 }
 
 export const getLeaderboard = query({
-  args: { 
+  args: {
     limit: v.optional(v.number()),
     sortBy: v.optional(v.union(
-      v.literal("composite"), 
-      v.literal("wpm"), 
-      v.literal("accuracy")
+      v.literal("composite"),
+      v.literal("wpm"),
+      v.literal("accuracy"),
+      v.literal("sessions")
     )),
     timeRange: v.optional(v.union(
       v.literal("daily"),
@@ -35,7 +36,7 @@ export const getLeaderboard = query({
       const results = await Promise.all(
         allStats.map(async (stat) => {
           const user = await ctx.db.get(stat.userId);
-          
+
           if (!user || !user.name) return null;
 
           return {
@@ -53,7 +54,7 @@ export const getLeaderboard = query({
           };
         })
       );
-      
+
       enrichedStats = results.filter((s): s is NonNullable<typeof s> => s !== null);
 
     } else {
@@ -70,7 +71,7 @@ export const getLeaderboard = query({
 
       const sessions = await ctx.db
         .query("typingSessions")
-        .filter((q) => q.gte(q.field("_creationTime"), startTime)) 
+        .filter((q) => q.gte(q.field("_creationTime"), startTime))
         .collect();
 
       const userAggregates = new Map<string, {
@@ -102,7 +103,7 @@ export const getLeaderboard = query({
           if (!user || !user.name) return null;
 
           const compositeScore = calculateScore(entry.bestWpm, entry.bestAccuracy);
-          
+
           return {
             userId: entry.userId,
             displayName: user.name,
@@ -110,16 +111,15 @@ export const getLeaderboard = query({
             image: user.image,
             bestWpm: entry.bestWpm,
             bestAccuracy: entry.bestAccuracy,
-            averageWpm: 0, 
+            averageWpm: 0,
             averageAccuracy: 0,
             totalSessions: entry.sessions.length,
-            totalWordsTyped: 0, 
+            totalWordsTyped: 0,
             compositeScore: compositeScore,
           };
         })
       );
 
-      // remove nulls
       enrichedStats = results.filter((s): s is NonNullable<typeof s> => s !== null);
     }
 
@@ -128,11 +128,15 @@ export const getLeaderboard = query({
         case "wpm":
           if (b.bestWpm !== a.bestWpm) return b.bestWpm - a.bestWpm;
           return b.bestAccuracy - a.bestAccuracy;
-        
+
         case "accuracy":
           if (b.bestAccuracy !== a.bestAccuracy) return b.bestAccuracy - a.bestAccuracy;
           return b.bestWpm - a.bestWpm;
-        
+
+        case "sessions":
+          if (b.totalSessions !== a.totalSessions) return b.totalSessions - a.totalSessions;
+          return b.compositeScore - a.compositeScore;
+
         case "composite":
         default:
           if (b.compositeScore !== a.compositeScore) return b.compositeScore - a.compositeScore;
@@ -200,7 +204,7 @@ export const getGlobalStats = query({
   handler: async (ctx) => {
     const allStats = await ctx.db.query("userStats").collect();
     if (allStats.length === 0) return { totalUsers: 0, totalSessions: 0, averageWpm: 0, averageAccuracy: 0, highestWpm: 0, highestAccuracy: 0 };
-    
+
     const totalSessions = allStats.reduce((sum, s) => sum + s.totalSessions, 0);
     const totalWpm = allStats.reduce((sum, s) => sum + s.averageWpm, 0);
     const totalAccuracy = allStats.reduce((sum, s) => sum + s.averageAccuracy, 0);
@@ -226,7 +230,7 @@ export const getTopPerformers = query({
     const results = await Promise.all(
       allStats.map(async (stat) => {
         const user = await ctx.db.get(stat.userId);
-        
+
         if (!user || !user.name) return null;
 
         return {

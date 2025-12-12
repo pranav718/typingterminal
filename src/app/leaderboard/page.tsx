@@ -8,7 +8,7 @@ import ProfileImage from "../components/ProfileImage"
 import { useAuth } from "../hooks/useAuth"
 import "../terminal.css"
 
-type LeaderboardCategory = "composite" | "wpm" | "accuracy"
+type LeaderboardCategory = "composite" | "wpm" | "accuracy" | "sessions"
 type TimeRange = "daily" | "weekly" | "monthly" | "all_time"
 
 export default function LeaderboardPage() {
@@ -47,6 +47,8 @@ export default function LeaderboardPage() {
         return "SPEED (WPM)"
       case "accuracy":
         return "ACCURACY"
+      case "sessions":
+        return "TOTAL SESSIONS"
     }
   }
 
@@ -131,7 +133,7 @@ export default function LeaderboardPage() {
           <div>
             <div className="text-xs text-[#7bff9a]/60 mb-2 uppercase tracking-wider">SORT METRIC:</div>
             <div className="flex flex-wrap gap-2">
-              {(["composite", "wpm", "accuracy"] as LeaderboardCategory[]).map((cat) => (
+              {(["composite", "wpm", "accuracy", "sessions"] as LeaderboardCategory[]).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
