@@ -1,11 +1,11 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useQuery } from "convex/react"
-import { api } from "../../../convex/_generated/api"
-import { useAuth } from "../hooks/useAuth"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { api } from "../../../convex/_generated/api"
 import ProfileImage from "../components/ProfileImage"
+import { useAuth } from "../hooks/useAuth"
 import "../terminal.css"
 
 type LeaderboardCategory = "composite" | "wpm" | "accuracy"
@@ -20,7 +20,7 @@ export default function LeaderboardPage() {
   const [showAll, setShowAll] = useState(false)
 
   const leaderboard = useQuery(api.leaderboard.getLeaderboard, {
-    limit: showAll ? 100 : 50,
+    limit: showAll ? 5000 : 50,
     sortBy: category,
     timeRange: timeRange,
   })
@@ -327,6 +327,16 @@ export default function LeaderboardPage() {
           {leaderboard && leaderboard.length === 0 && (
             <div className="p-12 text-center text-[#7bff9a]/60">
               <p>NO RANKINGS FOUND FOR THIS PERIOD.</p>
+            </div>
+          )}
+          {leaderboard && leaderboard.length >= 50 && !showAll && (
+            <div className="p-4 text-center border-t border-[#41ff5f10]">
+              <button
+                onClick={() => setShowAll(true)}
+                className="px-6 py-2 border border-[#41ff5f] text-[#41ff5f] rounded hover:bg-[#41ff5f] hover:text-[#00120b] transition-all font-bold text-sm tracking-wider"
+              >
+                SHOW ALL RANKINGS
+              </button>
             </div>
           )}
         </div>

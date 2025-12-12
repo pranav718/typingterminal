@@ -14,7 +14,7 @@ export default function Leaderboard() {
   const { user } = useAuth()
 
   const leaderboard = useQuery(api.leaderboard.getLeaderboard, {
-    limit: showAll ? 100 : 50,
+    limit: showAll ? 5000 : 50,
     sortBy: category
   })
   
