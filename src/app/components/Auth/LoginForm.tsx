@@ -84,7 +84,7 @@ export default function LoginForm() {
           <div className="w-full border-t border-[#41ff5f20]"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-[#001a0f] text-[#7bff9a]/60 font-mono">OR USE EMAIL</span>
+          <span className="px-4 bg-[#001a0f] text-[#7bff9a]/60 font-mono">OR USE TYPINGTERMINAL ACCOUNT</span>
         </div>
       </div>
 

@@ -98,7 +98,7 @@ const SUGGESTIONS: Suggestion[] = [
     {
         id: "9",
         text: "make the login and create acc with terminal as well",
-        status: "In Progress",
+        status: "Implemented",
         user: {
             name: "positronx",
             handle: "@positronx_",

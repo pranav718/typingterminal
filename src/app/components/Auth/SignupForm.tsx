@@ -23,7 +23,8 @@ export default function SignupForm() {
     }
 
     try {
-      await signUp(email, password, name);
+      const finalName = name.trim() || `Typist_${Math.random().toString(36).substring(2, 8)}`;
+      await signUp(email, password, finalName);
     } catch (err: any) {
       setError(err.message || 'SIGNUP FAILED');
     } finally {
@@ -83,7 +84,7 @@ export default function SignupForm() {
           <div className="w-full border-t border-[#41ff5f20]"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-[#001a0f] text-[#7bff9a]/60 font-mono">OR CREATE ACCOUNT</span>
+          <span className="px-4 bg-[#001a0f] text-[#7bff9a]/60 font-mono">OR USE TYPINGTERMINAL ACCOUNT</span>
         </div>
       </div>
 
@@ -96,7 +97,7 @@ export default function SignupForm() {
 
         <input
           type="text"
-          placeholder="NAME (OPTIONAL)"
+          placeholder="DISPLAY NAME (OR WE'LL PICK ONE)"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={isLoading}
