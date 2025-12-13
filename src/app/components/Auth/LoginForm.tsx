@@ -20,7 +20,7 @@ export default function LoginForm() {
     } catch (err: any) {
       if (err.message?.includes('InvalidAccountId')) {
         setError('ACCOUNT NOT FOUND');
-      } else if (err.message?.includes('InvalidPassword')) {
+      } else if (err.message?.includes('InvalidPassword') || err.message?.includes('InvalidSecret')) {
         setError('INCORRECT PASSWORD');
       } else {
         setError(err.message || 'LOGIN FAILED');
