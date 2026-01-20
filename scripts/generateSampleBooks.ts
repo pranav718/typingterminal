@@ -1,6 +1,6 @@
+import EPub from 'epub';
 import * as fs from 'fs';
 import * as path from 'path';
-import EPub from 'epub';
 
 interface BookMetadata {
   id: string;
@@ -101,6 +101,127 @@ const BOOKS_TO_PROCESS: BookMetadata[] = [
     author: 'Homer',
     filename: 'odyssey.epub',
   },
+  // === NEW BOOKS ADDED ===
+  {
+    id: 'anna-karenina',
+    title: 'Anna Karenina',
+    author: 'Leo Tolstoy',
+    filename: 'anna-karenina.epub',
+  },
+  {
+    id: 'crime-and-punishment',
+    title: 'Crime and Punishment',
+    author: 'Fyodor Dostoevsky',
+    filename: 'crime-and-punishment.epub',
+  },
+  {
+    id: 'brothers-karamazov',
+    title: 'The Brothers Karamazov',
+    author: 'Fyodor Dostoevsky',
+    filename: 'brothers-karamazov.epub',
+  },
+  {
+    id: 'the-idiot',
+    title: 'The Idiot',
+    author: 'Fyodor Dostoevsky',
+    filename: 'the-idiot.epub',
+  },
+  {
+    id: 'madame-bovary',
+    title: 'Madame Bovary',
+    author: 'Gustave Flaubert',
+    filename: 'madame-bovary.epub',
+  },
+  {
+    id: 'emma',
+    title: 'Emma',
+    author: 'Jane Austen',
+    filename: 'emma.epub',
+  },
+  {
+    id: 'northanger-abbey',
+    title: 'Northanger Abbey',
+    author: 'Jane Austen',
+    filename: 'northanger-abbey.epub',
+  },
+  {
+    id: 'persuasion',
+    title: 'Persuasion',
+    author: 'Jane Austen',
+    filename: 'persuasion.epub',
+  },
+  {
+    id: 'tom-sawyer',
+    title: 'The Adventures of Tom Sawyer',
+    author: 'Mark Twain',
+    filename: 'tom-sawyer.epub',
+  },
+  {
+    id: 'huckleberry-finn',
+    title: 'Adventures of Huckleberry Finn',
+    author: 'Mark Twain',
+    filename: 'huckleberry-finn.epub',
+  },
+  {
+    id: 'treasure-island',
+    title: 'Treasure Island',
+    author: 'Robert Louis Stevenson',
+    filename: 'treasure-island.epub',
+  },
+  {
+    id: 'oliver-twist',
+    title: 'Oliver Twist',
+    author: 'Charles Dickens',
+    filename: 'oliver-twist.epub',
+  },
+  {
+    id: 'tale-of-two-cities',
+    title: 'A Tale of Two Cities',
+    author: 'Charles Dickens',
+    filename: 'tale-of-two-cities.epub',
+  },
+  {
+    id: 'around-the-world',
+    title: 'Around the World in Eighty Days',
+    author: 'Jules Verne',
+    filename: 'around-the-world.epub',
+  },
+  {
+    id: 'war-of-the-worlds',
+    title: 'The War of the Worlds',
+    author: 'H.G. Wells',
+    filename: 'war-of-the-worlds.epub',
+  },
+  {
+    id: 'time-machine',
+    title: 'The Time Machine',
+    author: 'H.G. Wells',
+    filename: 'time-machine.epub',
+  },
+  {
+    id: 'heart-of-darkness',
+    title: 'Heart of Darkness',
+    author: 'Joseph Conrad',
+    filename: 'heart-of-darkness.epub',
+  },
+  {
+    id: 'scarlet-letter',
+    title: 'The Scarlet Letter',
+    author: 'Nathaniel Hawthorne',
+    filename: 'scarlet-letter.epub',
+  },
+  {
+    id: 'great-expectations',
+    title: 'Great Expectations',
+    author: 'Charles Dickens',
+    filename: 'great-expectations.epub',
+  },
+  {
+    id: 'sense-and-sensibility',
+    title: 'Sense and Sensibility',
+    author: 'Jane Austen',
+    filename: 'sense-and-sensibility.epub',
+  },
 ];
 
 function processEPUB(filePath: string): Promise<string[]> {
@@ -138,7 +259,7 @@ function processEPUB(filePath: string): Promise<string[]> {
               .replace(/&gt;/g, '>')
               .replace(/\s+/g, ' ')
               .trim();
-            
+
             fullText += ' ' + cleanText;
           }
 
@@ -259,7 +380,7 @@ async function generateSampleBooksFile() {
     }
 
     console.log(`Processing: ${bookMeta.title} by ${bookMeta.author}...`);
-    
+
     try {
       const passages = await processEPUB(epubPath);
 
@@ -299,8 +420,8 @@ export interface SampleBook {
 }
 
 export const SAMPLE_BOOKS: SampleBook[] = ${JSON.stringify(books, null, 2)
-    .replace(/"([^"]+)":/g, '$1:')
-    .replace(/\\\\/g, '\\')};\n`;
+      .replace(/"([^"]+)":/g, '$1:')
+      .replace(/\\\\/g, '\\')};\n`;
 
   const outputDir = path.dirname(outputPath);
   if (!fs.existsSync(outputDir)) {
