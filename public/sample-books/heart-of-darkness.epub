@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head prefix="twitter: https://twitter.com/ schema: http://schema.org/">	<meta charset="utf-8"/>
+	<title>Your Download Has Started! - Standard Ebooks: Free and liberated ebooks, carefully produced for the true book lover</title>
+		<meta content="width=device-width, initial-scale=1" name="viewport"/>
+	<link rel="preload" as="font" href="/fonts/crimson-pro.woff2" type="font/woff2" crossorigin="anonymous"/> 	<link rel="preload" as="font" href="/fonts/league-spartan-bold.woff2" type="font/woff2" crossorigin="anonymous"/>
+	<link rel="preload" as="font" href="/fonts/fork-awesome-subset.woff2" type="font/woff2" crossorigin="anonymous"/>
+	<link rel="preload" as="font" href="/fonts/crimson-pro-italic.woff2" type="font/woff2" crossorigin="anonymous"/> 			<link href="/css/core.css?version=1767732406" media="screen" rel="stylesheet" type="text/css"/>
+					<link href="/css/dark.css?version=1767134120" media="screen and (prefers-color-scheme: dark)" rel="stylesheet" type="text/css"/>
+							<link href="/apple-touch-icon-120x120.png" rel="apple-touch-icon" sizes="120x120"/>
+	<link href="/apple-touch-icon-152x152.png" rel="apple-touch-icon" sizes="152x152"/>
+	<link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+	<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+	<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+	<link href="/manifest.json" rel="manifest"/>
+		<link rel="alternate" type="application/atom+xml" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/atom/new-releases"/>
+	<link rel="alternate" type="application/rss+xml" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/rss/new-releases"/>
+	<link rel="alternate" type="application/atom+xml;profile=opds-catalog;kind=acquisition" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/opds/new-releases"/>
+	<link rel="alternate" type="application/atom+xml" title="Standard Ebooks - Blog" href="https://standardebooks.org/feeds/atom/blog"/>
+	<link rel="alternate" type="application/rss+xml" title="Standard Ebooks - Blog" href="https://standardebooks.org/feeds/rss/blog"/>
+	<link rel="search" href="https://standardebooks.org/opensearch" type="application/opensearchdescription+xml" title="Standard Ebooks"/>			<meta content="#394451" name="theme-color"/>
+		<meta content="Your Download Has Started!" property="og:title"/>
+		<meta content="website" property="og:type"/>
+		<meta content="https://standardebooks.org/ebooks/joseph-conrad/heart-of-darkness/downloads/joseph-conrad_heart-of-darkness.epub" property="og:url"/>
+		<meta content="https://standardebooks.org/images/logo.png" property="og:image"/>
+		<meta content="summary_large_image" name="twitter:card"/>
+		<meta content="@standardebooks" name="twitter:site"/>
+		<meta content="@standardebooks" name="twitter:creator"/>
+		<meta content="@standardebooks@mastodon.social" name="fediverse:creator"/>
+				<meta http-equiv="refresh" content="0; url=/ebooks/joseph-conrad/heart-of-darkness/downloads/joseph-conrad_heart-of-darkness.epub?source=download" />
+	</head>
+<body>
+	<header>
+				<a href="/">Standard Ebooks</a>
+				<a href="/honeypot" hidden="hidden" class="honeypot" rel="nofollow">Following this link will ban your IP for 24 hours</a>
+		<nav>
+			<ul>
+				<li>
+					<a href="/ebooks">Ebooks</a>
+				</li>
+				<li>
+					<a href="/about">About</a>
+				</li>
+				<li>
+					<a href="/newsletter">Newsletter</a>
+				</li>
+				<li>
+					<a href="/contribute">Get Involved</a>
+				</li>
+				<li>
+					<a href="/donate">Donate</a>
+				</li>
+			</ul>
+		</nav>
+	</header>
+<main class="donate">
+	<h1>Your Download Has Started!</h1>
+	<div class="thank-you-container">
+		<picture>
+			<source srcset="/images/covers/joseph-conrad_heart-of-darkness-2befd055-cover@2x.avif 2x, /images/covers/joseph-conrad_heart-of-darkness-2befd055-cover.avif 1x" type="image/avif"/>			<source srcset="/images/covers/joseph-conrad_heart-of-darkness-2befd055-cover@2x.jpg 2x, /images/covers/joseph-conrad_heart-of-darkness-2befd055-cover.jpg 1x" type="image/jpg"/>
+			<img class="ebook" src="/images/covers/joseph-conrad_heart-of-darkness-2befd055-cover@2x.jpg" alt="The cover for the Standard Ebooks edition of Heart of Darkness, by Joseph Conrad" property="schema:image" height="335" width="224"/>
+		</picture>
+		<div>
+						
+			<p class="stinger">Before you go...</p>
+			<p>Will you <a href="/donate">make a donation</a> to help us further our mission of creating beautiful, free ebooks?</p>
+			<p>It takes a team of highly-skilled volunteers hours to create and proof each of our ebooks. We couldn’t do it without the financial support of literature lovers like you. Any amount helps further our mission!</p>
+			<p class="button-row center">
+				<a href="/donate" class="button">Make a donation towards free literature</a>
+			</p>
+			<p class="stinger">Join the Patrons Circle</p>
+			<p><a href="/donate#patrons-circle">Joining our Patrons Circle</a> gives you access to some awesome book-lover benefits:</p>
+			<ul>
+				<li>
+					<p>Your name <a href="/about#patrons-circle">listed on our masthead</a>. (You can also remain anonymous if you prefer.)</p>
+				</li>
+				<li>
+					<p>Access to our various <a href="/feeds">ebook feeds</a>:</p>
+					<ul>
+						<li>
+							<p>Browse and download from the entire Standard Ebooks catalog directly in your ereading app using our <a href="/feeds/opds">OPDS feed</a>.</p>
+						</li>
+						<li>
+							<p>Get notified of new ebooks in your news client with our <a href="/feeds/atom">Atom</a> or <a href="/feeds/rss">RSS</a> feeds.</p>
+						</li>
+						<li>
+							<p>Parse and process the feeds to use our ebooks in your personal software projects.</p>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<p>Access to <a href="/bulk-downloads">bulk ebook downloads</a> to easily download whole collections of ebooks at once.</p>
+				</li>
+				<li>
+					<p>The ability to submit a book for inclusion on our <a href="/contribute/wanted-ebooks">Wanted Ebooks list</a>, once per quarter. (Submissions must conform to our <a href="/contribute/collections-policy">collections policy</a> and are subject to approval.)</p>
+				</li>
+				<li>
+					<p>The right to periodically vote on a selection from our <a href="/contribute/wanted-ebooks">Wanted Ebooks list</a> to choose an ebook for immediate production. The resulting ebook will be a permanent addition to our <a href="/ebooks">online catalog of free digital literature</a>.</p>
+				</li>
+			</ul>
+			<p class="button-row center">
+				<a href="/donate#patrons-circle" class="button">Join the S.E. Patrons Circle</a>
+			</p>
+		</div>
+	</div>
+</main>
+	<footer>
+		<ul class="social-media">
+			<li>
+				<p>
+					<a href="https://x.com/standardebooks" rel="me">X</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://www.facebook.com/standardebooks/" rel="me">Facebook</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://www.instagram.com/standardebooks/" rel="me">Instagram</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://mastodon.social/@standardebooks" rel="me">Mastodon</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://bsky.app/profile/standardebooks.org" rel="me">Bluesky</a>
+				</p>
+			</li>
+		</ul>
+		<p class="newsletter"><a href="/newsletter">Subscribe to our free newsletter</a></p>
+		<ul class="nav-links">
+			<li>
+				<a href="/ebooks">Ebooks</a>
+			</li>
+			<li>
+				<a href="/about">About</a>
+			</li>
+			<li>
+				<a href="/contribute">Get Involved</a>
+			</li>
+			<li>
+				<a href="/donate">Donate</a>
+			</li>
+			<li>
+				<a href="/settings">Settings</a>
+			</li>
+			<li>
+				<a href="https://github.com/standardebooks">GitHub</a>
+			</li>
+			<li>
+				<a href="/bulk-downloads">Bulk downloads</a>
+			</li>
+			<li>
+				<a href="/feeds">Ebook Feeds</a>
+			</li>
+			<li>
+				<a href="/about/accessibility">Accessibility</a>
+			</li>
+		</ul>
+		<p>Content produced by or for Standard Ebooks L<sup>3</sup>C is dedicated to the <a href="https://en.wikipedia.org/wiki/Public_domain">public domain</a> via the <a href="https://creativecommons.org/publicdomain/zero/1.0/" rel="license">CC0 1.0 Universal Public Domain Dedication</a>.</p>
+		<p>Content not produced by or for Standard Ebooks L<sup>3</sup>C but displayed on this website may be subject to copyright.</p>
+		<p>
+			<a href="/">Standard Ebooks</a>
+		</p>
+	</footer>
+</body>
+</html>

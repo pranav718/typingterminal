@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head prefix="twitter: https://twitter.com/ schema: http://schema.org/">	<meta charset="utf-8"/>
+	<title>We Couldn’t Find That Document - Standard Ebooks: Free and liberated ebooks, carefully produced for the true book lover</title>
+			<meta content="We couldn’t find that document." name="description"/>
+		<meta content="width=device-width, initial-scale=1" name="viewport"/>
+	<link rel="preload" as="font" href="/fonts/crimson-pro.woff2" type="font/woff2" crossorigin="anonymous"/> 	<link rel="preload" as="font" href="/fonts/league-spartan-bold.woff2" type="font/woff2" crossorigin="anonymous"/>
+	<link rel="preload" as="font" href="/fonts/fork-awesome-subset.woff2" type="font/woff2" crossorigin="anonymous"/>
+	<link rel="preload" as="font" href="/fonts/crimson-pro-italic.woff2" type="font/woff2" crossorigin="anonymous"/> 			<link href="/css/core.css?version=1767732406" media="screen" rel="stylesheet" type="text/css"/>
+					<link href="/css/dark.css?version=1767134120" media="screen and (prefers-color-scheme: dark)" rel="stylesheet" type="text/css"/>
+							<link href="/apple-touch-icon-120x120.png" rel="apple-touch-icon" sizes="120x120"/>
+	<link href="/apple-touch-icon-152x152.png" rel="apple-touch-icon" sizes="152x152"/>
+	<link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+	<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+	<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+	<link href="/manifest.json" rel="manifest"/>
+		<link rel="alternate" type="application/atom+xml" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/atom/new-releases"/>
+	<link rel="alternate" type="application/rss+xml" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/rss/new-releases"/>
+	<link rel="alternate" type="application/atom+xml;profile=opds-catalog;kind=acquisition" title="Standard Ebooks - New Releases" href="https://standardebooks.org/feeds/opds/new-releases"/>
+	<link rel="alternate" type="application/atom+xml" title="Standard Ebooks - Blog" href="https://standardebooks.org/feeds/atom/blog"/>
+	<link rel="alternate" type="application/rss+xml" title="Standard Ebooks - Blog" href="https://standardebooks.org/feeds/rss/blog"/>
+	<link rel="search" href="https://standardebooks.org/opensearch" type="application/opensearchdescription+xml" title="Standard Ebooks"/>		</head>
+<body>
+	<header>
+				<a href="/">Standard Ebooks</a>
+				<a href="/honeypot" hidden="hidden" class="honeypot" rel="nofollow">Following this link will ban your IP for 24 hours</a>
+		<nav>
+			<ul>
+				<li>
+					<a href="/ebooks">Ebooks</a>
+				</li>
+				<li>
+					<a href="/about">About</a>
+				</li>
+				<li>
+					<a href="/newsletter">Newsletter</a>
+				</li>
+				<li>
+					<a href="/contribute">Get Involved</a>
+				</li>
+				<li>
+					<a href="/donate">Donate</a>
+				</li>
+			</ul>
+		</nav>
+	</header>
+<main>
+	<section class="narrow has-hero">
+		<hgroup>
+			<h1>We Couldn’t Find That Document</h1>
+			<p>This is a 404 error.</p>
+		</hgroup>
+		<picture data-caption="Blind Orion Searching for the Rising Sun. Nicolas Poussin, 1658">
+			<source srcset="/images/blind-orion@2x.avif 2x, /images/blind-orion.avif 1x" type="image/avif"/>
+			<source srcset="/images/blind-orion@2x.jpg 2x, /images/blind-orion.jpg 1x" type="image/jpg"/>
+			<img src="/images/blind-orion@2x.jpg" alt="A classical city is aflame as people scramble in the foreground."/>
+		</picture>
+		<p>We couldn’t find a document at the URL you specified. Did you mistype the URL?</p>
+		<p>If you arrived here from a link on the Standard Ebooks website, please <a href="/about#editor-in-chief">contact us</a> so that we can fix it.</p>
+		<p>If you arrived here from a link elsewhere on the web, please contact the site you came from to ask them to fix their link.</p>
+	</section>
+</main>
+	<footer>
+		<ul class="social-media">
+			<li>
+				<p>
+					<a href="https://x.com/standardebooks" rel="me">X</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://www.facebook.com/standardebooks/" rel="me">Facebook</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://www.instagram.com/standardebooks/" rel="me">Instagram</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://mastodon.social/@standardebooks" rel="me">Mastodon</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					<a href="https://bsky.app/profile/standardebooks.org" rel="me">Bluesky</a>
+				</p>
+			</li>
+		</ul>
+		<p class="newsletter"><a href="/newsletter">Subscribe to our free newsletter</a></p>
+		<ul class="nav-links">
+			<li>
+				<a href="/ebooks">Ebooks</a>
+			</li>
+			<li>
+				<a href="/about">About</a>
+			</li>
+			<li>
+				<a href="/contribute">Get Involved</a>
+			</li>
+			<li>
+				<a href="/donate">Donate</a>
+			</li>
+			<li>
+				<a href="/settings">Settings</a>
+			</li>
+			<li>
+				<a href="https://github.com/standardebooks">GitHub</a>
+			</li>
+			<li>
+				<a href="/bulk-downloads">Bulk downloads</a>
+			</li>
+			<li>
+				<a href="/feeds">Ebook Feeds</a>
+			</li>
+			<li>
+				<a href="/about/accessibility">Accessibility</a>
+			</li>
+		</ul>
+		<p>Content produced by or for Standard Ebooks L<sup>3</sup>C is dedicated to the <a href="https://en.wikipedia.org/wiki/Public_domain">public domain</a> via the <a href="https://creativecommons.org/publicdomain/zero/1.0/" rel="license">CC0 1.0 Universal Public Domain Dedication</a>.</p>
+		<p>Content not produced by or for Standard Ebooks L<sup>3</sup>C but displayed on this website may be subject to copyright.</p>
+		<p>
+			<a href="/">Standard Ebooks</a>
+		</p>
+	</footer>
+</body>
+</html>
