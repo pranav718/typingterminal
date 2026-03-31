@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Providers } from './providers';
 import "./globals.css";
 export const metadata: Metadata = {
+  metadataBase: new URL("https://typingterminal.knightkun.codes"),
   title: "typingterminal",
   description: "a retro terminal-themed typing and competing practice platform",
 };
